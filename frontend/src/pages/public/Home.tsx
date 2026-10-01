@@ -1,16 +1,17 @@
-import { ArrowRight, Calendar } from 'lucide-react'
+import { ArrowRight, Calendar, Loader2 } from 'lucide-react'
 import { Navbar } from '../../components/Navbar'
 import { Footer } from '../../components/Footer'
-import { ARTICLES } from '../../data/blogData'
 import { useNavigate } from 'react-router-dom'
+import { usePublicPosts } from '../../entities/post/hooks/usePosts'
 
 export default function Home() {
-
   const navigate = useNavigate()
-  // 3 static article cards for Home page
-  const latestArticles = ARTICLES.slice(0, 3)
+  const { data: posts = [], isLoading } = usePublicPosts()
 
-  const getCategoryColor = (category: string) => {
+  // 3 published articles for Home page
+  const latestArticles = posts.slice(0, 3)
+
+  const getCategoryColor = (category?: string) => {
     switch (category) {
       case 'Technology':
         return 'bg-blue-50 text-blue-600'
@@ -18,6 +19,8 @@ export default function Home() {
         return 'bg-emerald-50 text-emerald-600'
       case 'Business':
         return 'bg-amber-50 text-amber-600'
+      case 'Design':
+        return 'bg-purple-50 text-purple-600'
       default:
         return 'bg-blue-50 text-blue-600'
     }
@@ -27,7 +30,6 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Navbar */}
       <Navbar />
-
 
       {/* Hero Section */}
       <section className="relative w-full h-[460px] sm:h-[520px] lg:h-[580px] bg-slate-900 overflow-hidden flex items-center">
@@ -93,60 +95,91 @@ export default function Home() {
           </div>
 
           {/* Articles Grid (3 cards) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {latestArticles.map((article) => (
-              <article
-                key={article.id}
-                onClick={() => navigate('/blog-detail')}
-                className="group flex flex-col bg-white rounded-xl border border-slate-200/90 overflow-hidden hover:border-slate-300 hover:shadow-lg transition-all duration-200 cursor-pointer"
-              >
-                {/* Image */}
-                <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                  <img
-                    src={article.imageUrl}
-                    alt={article.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
+          {isLoading ? (
+            <div className="py-16 flex flex-col items-center justify-center text-slate-400">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+              <p className="text-xs">Loading articles...</p>
+            </div>
+          ) : latestArticles.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {latestArticles.map((article) => {
+                const articleId = article._id || article.id!
+                const formattedDate = new Date(article.createdAt || article.updatedAt).toLocaleDateString(
+                  'en-US',
+                  {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  }
+                )
 
-                {/* Content */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    {/* Category */}
-                    <span
-                      className={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mb-3 ${getCategoryColor(
-                        article.category
-                      )}`}
-                    >
-                      {article.category}
-                    </span>
-
-                    {/* Title */}
-                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-snug mb-2">
-                      {article.title}
-                    </h3>
-
-                    {/* Excerpt */}
-                    <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 leading-relaxed">
-                      {article.excerpt}
-                    </p>
-                  </div>
-
-                  {/* Bottom Meta */}
-                  <div className="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{article.date}</span>
+                return (
+                  <article
+                    key={articleId}
+                    onClick={() => navigate(`/blog/${articleId}`)}
+                    className="group flex flex-col bg-white rounded-xl border border-slate-200/90 overflow-hidden hover:border-slate-300 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                      <img
+                        src={
+                          article.imageUrl ||
+                          'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80'
+                        }
+                        alt={article.title}
+                        onError={(e) => {
+                          ;(e.target as HTMLImageElement).src =
+                            'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80'
+                        }}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
                     </div>
-                    <span className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all">
-                      <ArrowRight className="w-4 h-4" />
-                    </span>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+
+                    {/* Content */}
+                    <div className="p-5 flex-1 flex flex-col justify-between">
+                      <div>
+                        {/* Category */}
+                        <span
+                          className={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mb-3 ${getCategoryColor(
+                            article.category
+                          )}`}
+                        >
+                          {article.category || 'Technology'}
+                        </span>
+
+                        {/* Title */}
+                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-snug mb-2">
+                          {article.title}
+                        </h3>
+
+                        {/* Excerpt */}
+                        <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                          {article.description}
+                        </p>
+                      </div>
+
+                      {/* Meta Footer */}
+                      <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{formattedDate}</span>
+                        </div>
+                        <span className="text-blue-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                          <span>Read More</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="py-16 text-center text-slate-400">
+              <p className="text-sm font-medium">No published articles available yet.</p>
+            </div>
+          )}
         </div>
       </section>
 

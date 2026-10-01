@@ -1,6 +1,8 @@
-import { LayoutDashboard, FileText, Users, Settings, LogOut, X } from 'lucide-react'
+import { LayoutDashboard, FileText, LogOut, X } from 'lucide-react'
 import { Logo } from '../../../components/Logo'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useUserStore } from '../../../entities/user/model/userStore'
+import { useAuth } from '../../../features/auth/hooks/useAuth'
 
 export type AdminTab = 'dashboard' | 'posts' | 'create-post' | 'edit-post' | 'preview-post' | 'empty-posts'
 
@@ -19,6 +21,8 @@ export function AdminSidebar({
 }: AdminSidebarProps = {}) {
   const location = useLocation()
   const navigate = useNavigate()
+  const { user, role } = useUserStore()
+  const { logout } = useAuth()
 
   const menuItems = [
     {
@@ -55,10 +59,7 @@ export function AdminSidebar({
   }
 
   const handleLogout = () => {
-    if (onNavigate) {
-      onNavigate('admin-login')
-    }
-    navigate('/admin/login')
+    logout()
     if (onCloseMobile) onCloseMobile()
   }
 
@@ -89,12 +90,16 @@ export function AdminSidebar({
 
       {/* Admin Profile Section */}
       <div className="px-6 py-5 border-b border-slate-800/60 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-blue-600/30 border border-blue-500/40 text-blue-400 flex items-center justify-center font-bold text-sm">
-          A
+        <div className="w-10 h-10 rounded-full bg-blue-600/30 border border-blue-500/40 text-blue-400 flex items-center justify-center font-bold text-sm uppercase">
+          {user?.name ? user.name[0] : 'A'}
         </div>
         <div className="flex flex-col min-w-0">
-          <span className="text-sm font-semibold text-white truncate">Admin</span>
-          <span className="text-xs text-slate-400 truncate">Administrator</span>
+          <span className="text-sm font-semibold text-white truncate">
+            {user?.name || 'Administrator'}
+          </span>
+          <span className="text-xs text-slate-400 truncate capitalize">
+            {role || 'admin'}
+          </span>
         </div>
       </div>
 

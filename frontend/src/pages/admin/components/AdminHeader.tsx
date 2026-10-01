@@ -1,5 +1,6 @@
 import { Search, Bell, Menu, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useUserStore } from '../../../entities/user/model/userStore'
 
 interface AdminHeaderProps {
   searchQuery?: string
@@ -14,6 +15,7 @@ export function AdminHeader({
   onToggleMobileMenu,
   onNavigatePublic,
 }: AdminHeaderProps) {
+  const { user, role } = useUserStore()
   return (
     <header className="sticky top-0 z-20 bg-white border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between transition-all">
       {/* Left: Mobile Toggle & Search */}
@@ -66,15 +68,20 @@ export function AdminHeader({
 
         {/* User Profile Pill */}
         <div className="flex items-center gap-2.5 pl-2 sm:border-l sm:border-slate-200">
-          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-xs">
-            A
+          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-xs uppercase">
+            {user?.name ? user.name[0] : 'A'}
           </div>
           <div className="hidden md:flex flex-col text-left">
-            <span className="text-xs font-semibold text-slate-800 leading-tight">Admin</span>
-            <span className="text-[11px] text-slate-400 leading-tight">Administrator</span>
+            <span className="text-xs font-semibold text-slate-800 leading-tight">
+              {user?.name || 'Administrator'}
+            </span>
+            <span className="text-[11px] text-slate-400 leading-tight capitalize">
+              {role || 'admin'}
+            </span>
           </div>
         </div>
       </div>
     </header>
   )
 }
+
