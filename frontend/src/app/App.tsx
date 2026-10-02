@@ -1,4 +1,4 @@
-import AppRoutes from './routes/AppRoutes';
+import AppRoutes from './router/AppRoutes';
 import { QueryProvider } from './providers/QueryProvider';
 
 export default function App() {

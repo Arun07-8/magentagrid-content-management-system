@@ -39,5 +39,5 @@ export const updatePostSchema = z.object({
   status: z.enum(['Draft', 'Published']).optional(),
 });
 
-export type CreatePostInput = z.infer<typeof createPostSchema>;
+export type CreatePostInput = z.input<typeof createPostSchema>;
 export type UpdatePostInput = z.infer<typeof updatePostSchema>;

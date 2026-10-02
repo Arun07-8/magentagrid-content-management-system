@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useRealtimePosts } from '../../entities/post/hooks/usePosts';
-import { useUserStore } from '../../entities/user/model/userStore';
+import { useRealtimePosts } from '../../entities/post';
+import { useUserStore } from '../../entities/user';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 1000 * 30, // 30 seconds
+      staleTime: 1000 * 30, 
     },
   },
 });

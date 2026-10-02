@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config';
 
 class ApiClient {
   private getHeaders(): HeadersInit {
@@ -16,27 +16,25 @@ class ApiClient {
 
   private async handleResponse<T>(response: Response): Promise<T> {
     const contentType = response.headers.get('content-type');
-    let data: any = {};
-
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      const text = await response.text();
-      data = { message: text };
-    }
+    const data: Record<string, unknown> =
+      contentType && contentType.includes('application/json')
+        ? await response.json()
+        : { message: await response.text() };
 
     if (!response.ok) {
+      const errors = data?.errors as Array<{ message?: string }> | undefined;
       const errorMessage =
-        data?.message ||
-        data?.errors?.[0]?.message ||
+        (typeof data?.message === 'string' && data.message) ||
+        errors?.[0]?.message ||
         `Request failed with status ${response.status}`;
-      const error: any = new Error(errorMessage);
-      error.status = response.status;
-      error.data = data;
+      const error = Object.assign(new Error(errorMessage), {
+        status: response.status,
+        data,
+      });
       throw error;
     }
 
-    return data;
+    return data as T;
   }
 
   async get<T>(endpoint: string, params?: Record<string, string | number | undefined>): Promise<T> {
