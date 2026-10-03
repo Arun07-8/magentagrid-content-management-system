@@ -1,11 +1,10 @@
-import { LayoutDashboard, FileText, LogOut, X } from 'lucide-react';
+import { FileText, LogOut, X } from 'lucide-react';
 import { Logo } from '../shared/ui';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUserStore } from '../entities/user';
 import { useAuth } from '../features/auth';
 
 export type AdminTab =
-  | 'dashboard'
   | 'posts'
   | 'post-create'
   | 'post-edit'
@@ -30,7 +29,7 @@ export function AdminSidebar({
 }: AdminSidebarProps = {}) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, role } = useUserStore();
+  const { user } = useUserStore();
   const { logout } = useAuth();
 
   const isPostsActive =
@@ -45,14 +44,6 @@ export function AdminSidebar({
     location.pathname.startsWith('/admin/posts');
 
   const menuItems = [
-    {
-      id: 'admin-dashboard',
-      path: '/admin/dashboard',
-      label: 'Dashboard',
-      icon: LayoutDashboard,
-      isActive:
-        currentTab === 'dashboard' || location.pathname === '/admin/dashboard',
-    },
     {
       id: 'admin-posts',
       path: '/admin/posts',

@@ -18,13 +18,8 @@ export class PostService {
   /**
    * Get all published posts for the public website
    */
-  async getPublicPosts(filter: { search?: string; category?: string } = {}): Promise<any[]> {
+  async getPublicPosts(filter: { search?: string } = {}): Promise<any[]> {
     const query: any = { status: 'Published' };
-
-    if (filter.category && filter.category !== 'All') {
-      query.category = filter.category;
-    }
-
     if (filter.search && filter.search.trim()) {
       const searchRegex = new RegExp(filter.search.trim(), 'i');
       query.$or = [{ title: searchRegex }, { description: searchRegex }, { content: searchRegex }];
@@ -52,7 +47,7 @@ export class PostService {
   }
 
   /**
-   * Get all posts for CMS dashboard/list (Drafts + Published)
+   * Get all posts for CMS list (Drafts + Published)
    */
   async getAllPosts(filter: { search?: string; status?: string } = {}): Promise<any[]> {
     const query: any = {};

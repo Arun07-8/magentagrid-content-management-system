@@ -19,7 +19,6 @@ export const createPostSchema = z.object({
     .nullable()
     .optional()
     .transform((val) => val ?? ''),
-  category: z.string().optional().default('Technology'),
   status: z.enum(['Draft', 'Published']).optional().default('Draft'),
 });
 
@@ -43,7 +42,6 @@ export const updatePostSchema = z.object({
     .nullable()
     .optional()
     .transform((val) => (val === null ? '' : val)),
-  category: z.string().optional(),
   status: z.enum(['Draft', 'Published']).optional(),
 });
 

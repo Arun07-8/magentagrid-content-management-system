@@ -16,7 +16,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin/posts" replace />;
   }
 
   return <>{children}</>;
