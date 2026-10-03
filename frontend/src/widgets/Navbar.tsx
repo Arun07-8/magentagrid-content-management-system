@@ -10,7 +10,7 @@ export function Navbar() {
   const navItems = [
     { label: 'Home', path: '/' },
     { label: 'About', path: '/about' },
-    { label: 'Blog', path: '/blog' },
+    { label: 'Blog / News', path: '/blog' },
   ];
 
   const isItemActive = (path: string) => {
@@ -19,51 +19,54 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-zinc-200/80 transition-all duration-200 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14">
-          {/* Brand Logo */}
-          <Link
-            to="/"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center focus:outline-none group cursor-pointer"
-            aria-label="CMS Home"
-          >
-            <Logo variant="dark" />
-          </Link>
+    <header className="bg-white border-b border-zinc-200 shadow-sm sticky top-0 z-40">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-18">
+          {/* Brand Logo (Left) */}
+          <div className="w-48 flex-shrink-0 flex items-center ml-4">
+            <Link
+              to="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center focus:outline-none"
+              aria-label="CMS Home"
+            >
+              <Logo variant="dark" />
+            </Link>
+          </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <div className="flex items-center gap-1">
-              {navItems.map((item) => {
-                const isActive = isItemActive(item.path);
+          <nav className="hidden md:flex flex-1 items-center justify-center gap-8">
+            {navItems.map((item) => {
+              const isActive = isItemActive(item.path);
 
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`font-medium text-xs sm:text-sm tracking-tight transition-colors py-1.5 px-3 rounded-lg relative cursor-pointer ${
-                      isActive
-                        ? 'text-zinc-900 bg-zinc-100 font-semibold'
-                        : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`font-sans text-[14px] leading-[16.1px] tracking-[0px] font-semibold transition-all  border-b-[2.5px] ${isActive
+                      ? 'text-[#2A3039] border-[#2A3039]'
+                      : 'text-[#2A3039]/70 border-transparent hover:text-blue-600'
                     }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
+          {/* Desktop Right Spacer (For perfect centering) */}
+          <div className="hidden md:block w-48 flex-shrink-0 mr-4" />
+
+
+
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center">
+          <div className="flex md:hidden items-center justify-end w-48">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 focus:outline-none transition-colors"
+              className="p-2 text-zinc-600 hover:text-zinc-900 focus:outline-none"
               aria-label="Toggle navigation menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
@@ -71,7 +74,7 @@ export function Navbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-zinc-200/80 bg-white px-4 pt-2 pb-4 space-y-1 shadow-md animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="md:hidden border-t border-zinc-100 bg-white px-6 py-6 flex flex-col gap-5 shadow-lg">
           {navItems.map((item) => {
             const isActive = isItemActive(item.path);
             return (
@@ -79,16 +82,14 @@ export function Navbar() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-zinc-100 text-zinc-900 font-semibold'
-                    : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
-                }`}
+                className={`block w-fit font-sans text-[14px] leading-[16.1px] tracking-[0px] font-semibold transition-all pb-1 border-b-[2.5px] ${isActive ? 'text-[#2A3039] border-[#2A3039]' : 'text-[#2A3039]/70 border-transparent hover:text-blue-600'
+                  }`}
               >
                 {item.label}
               </Link>
             );
           })}
+
         </div>
       )}
     </header>

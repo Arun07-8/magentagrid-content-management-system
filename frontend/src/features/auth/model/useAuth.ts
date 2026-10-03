@@ -11,7 +11,7 @@ export const useAuth = () => {
     mutationFn: authApi.login,
     onSuccess: (data) => {
       setAuth(data.user, data.token);
-      navigate('/admin/dashboard');
+      navigate('/admin/posts');
     },
   });
 

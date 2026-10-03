@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
-import { PublicLayout } from '../../../widgets';
-import { Button } from '../../../shared/ui';
+import { PublicLayout } from '../../widgets';
+import { Button } from '../../shared/ui';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
@@ -43,3 +43,4 @@ export default function NotFoundPage() {
     </PublicLayout>
   );
 }
+

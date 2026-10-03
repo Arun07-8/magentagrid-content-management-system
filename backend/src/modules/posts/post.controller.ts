@@ -5,10 +5,9 @@ export class PostController {
   // Public endpoints
   async getPublicPosts(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { search, category } = req.query;
+      const { search } = req.query;
       const posts = await postService.getPublicPosts({
         search: search as string,
-        category: category as string,
       });
 
       res.status(200).json({

@@ -1,16 +1,15 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import HomePage from '../../pages/public/home';
-import AboutPage from '../../pages/public/about';
-import BlogPage from '../../pages/public/blog';
-import BlogDetailPage from '../../pages/public/blog-detail';
-import NotFoundPage from '../../pages/public/not-found';
+import HomePage from '../../pages/public/HomePage';
+import AboutPage from '../../pages/public/AboutPage';
+import BlogPage from '../../pages/public/BlogPage';
+import BlogDetailPage from '../../pages/public/BlogDetailPage';
+import NotFoundPage from '../../pages/public/NotFoundPage';
 
-import AdminLoginPage from '../../pages/admin/login';
-import AdminDashboardPage from '../../pages/admin/dashboard';
-import AdminPostsPage from '../../pages/admin/posts';
-import PostCreatePage from '../../pages/admin/post-create';
-import PostEditPage from '../../pages/admin/post-edit';
-import PostPreviewPage from '../../pages/admin/post-preview';
+import AdminLoginPage from '../../pages/admin/AdminLoginPage';
+import AdminPostsPage from '../../pages/admin/AdminPostsPage';
+import PostCreatePage from '../../pages/admin/PostCreatePage';
+import PostEditPage from '../../pages/admin/PostEditPage';
+import PostPreviewPage from '../../pages/admin/PostPreviewPage';
 import { ProtectedRoute } from './ProtectedRoute';
 
 export default function AppRoutes() {
@@ -31,19 +30,7 @@ export default function AppRoutes() {
       <Route path="/login" element={<AdminLoginPage />} />
       <Route
         path="/admin"
-        element={
-          <ProtectedRoute>
-            <AdminDashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/dashboard"
-        element={
-          <ProtectedRoute>
-            <AdminDashboardPage />
-          </ProtectedRoute>
-        }
+        element={<Navigate to="/admin/posts" replace />}
       />
       <Route
         path="/admin/posts"

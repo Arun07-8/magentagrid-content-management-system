@@ -1,12 +1,10 @@
-import { Calendar, Clock, User as UserIcon } from 'lucide-react';
-import { Badge } from '../../../shared/ui';
+
 
 interface PostViewProps {
   title: string;
   content: string;
   description?: string;
   imageUrl?: string;
-  category?: string;
   date?: string;
   readTime?: string;
   authorName?: string;
@@ -17,84 +15,66 @@ export function PostView({
   content,
   description,
   imageUrl,
-  category = 'Technology',
   date,
   readTime = '4 min read',
-  authorName = 'CMS Editorial',
+  authorName = 'Editorial Team',
 }: PostViewProps) {
-  // Format content paragraphs
   const paragraphs = content.split('\n\n').filter((p) => p.trim().length > 0);
 
   return (
-    <article className="space-y-6">
-      {/* Category Tag */}
-      {category && (
-        <div>
-          <Badge variant="neutral">
-            {category}
-          </Badge>
+    <article className="max-w-[720px] mx-auto w-full">
+      <header className="mb-12 text-left">
+        <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-zinc-900 tracking-tight leading-[1.05] mb-6">
+          {title}
+        </h1>
+
+        {description && (
+          <p className="text-[22px] text-zinc-500 font-medium leading-[1.6] mb-8 max-w-[680px]">
+            {description}
+          </p>
+        )}
+
+        <div className="flex flex-wrap items-center justify-start gap-4 text-sm font-semibold text-zinc-500 pt-6 border-t border-zinc-200">
+          {authorName && (
+            <div className="flex items-center gap-2">
+              <span className="text-zinc-900">{authorName}</span>
+            </div>
+          )}
+          {date && (
+            <>
+              <span className="text-zinc-300">·</span>
+              <div className="flex items-center gap-1.5">
+                <span>{date}</span>
+              </div>
+            </>
+          )}
+          {readTime && (
+            <>
+              <span className="text-zinc-300">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="lowercase">{readTime}</span>
+              </div>
+            </>
+          )}
         </div>
-      )}
+      </header>
 
-      {/* Article Title */}
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-zinc-900 tracking-tight leading-[1.2]">
-        {title}
-      </h1>
-
-      {/* Short Subtitle / Lead Excerpt */}
-      {description && (
-        <p className="text-base sm:text-lg text-zinc-600 font-normal leading-relaxed">
-          {description}
-        </p>
-      )}
-
-      {/* Meta Byline Row */}
-      <div className="flex flex-wrap items-center gap-3.5 text-xs text-zinc-500 py-3.5 border-y border-zinc-200/80">
-        {authorName && (
-          <div className="flex items-center gap-1.5 font-medium text-zinc-800">
-            <UserIcon className="w-3.5 h-3.5 text-zinc-400" />
-            <span>{authorName}</span>
-          </div>
-        )}
-        {date && (
-          <>
-            <span className="text-zinc-300">•</span>
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{date}</span>
-            </div>
-          </>
-        )}
-        {readTime && (
-          <>
-            <span className="text-zinc-300">•</span>
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{readTime}</span>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Featured Image */}
       {imageUrl && (
-        <div className="relative rounded-xl overflow-hidden aspect-[16/9] bg-zinc-100 shadow-xs border border-zinc-200/80">
+        <div className="mb-14 aspect-[16/9] w-full overflow-hidden bg-zinc-100 border border-zinc-200">
           <img
             src={imageUrl}
             alt={title}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80';
-            }}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
           />
         </div>
       )}
 
-      {/* Article Content */}
-      <div className="text-zinc-800 text-base sm:text-[17px] leading-[1.8] space-y-6 pt-2">
+      <div className="prose prose-zinc prose-lg max-w-none text-[19px] text-zinc-800 leading-[1.8] font-serif-optional">
         {paragraphs.map((para, idx) => (
-          <p key={idx} className="whitespace-pre-line font-normal">
+          <p key={idx} className="mb-8 whitespace-pre-wrap">
             {para}
           </p>
         ))}

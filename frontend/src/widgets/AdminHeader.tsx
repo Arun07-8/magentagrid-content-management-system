@@ -14,7 +14,7 @@ export function AdminHeader({
   onToggleMobileMenu,
   showSearch = true,
 }: AdminHeaderProps) {
-  const { user, role } = useUserStore();
+  const { user } = useUserStore();
 
   return (
     <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-zinc-200/80 px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between transition-all">

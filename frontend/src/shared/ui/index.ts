@@ -5,3 +5,4 @@ export * from './Modal';
 export * from './EmptyState';
 export * from './ErrorState';
 export * from './Logo';
+export * from './Toast';

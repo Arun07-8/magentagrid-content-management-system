@@ -7,7 +7,6 @@ export interface IPost extends Document {
   description: string;
   content: string;
   imageUrl?: string;
-  category?: string;
   status: PostStatus;
   author?: {
     id: mongoose.Types.ObjectId;
@@ -38,10 +37,6 @@ const PostSchema = new Schema<IPost>(
     imageUrl: {
       type: String,
       default: '',
-    },
-    category: {
-      type: String,
-      default: 'Technology',
     },
     status: {
       type: String,

@@ -1,22 +1,20 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { AdminLayout } from '../../../widgets';
-import { PostForm, useUpdatePost } from '../../../features/post-management';
-import { useCmsPost, useCmsPosts } from '../../../entities/post';
-import { Spinner, ErrorState, Button } from '../../../shared/ui';
-import type { PostStatus } from '../../../shared/types';
+import { AdminLayout } from '../../widgets';
+import { PostForm } from '../../features/post-management';
+import type { PostFormPreviewData } from '../../features/post-management';
+import { useCmsPost, useUpdatePost } from '../../entities/post';
+import { Spinner, ErrorState, Button } from '../../shared/ui';
+import type { PostStatus } from '../../shared/types';
+import { toast } from '../../store/toast';
 
 export default function PostEditPage() {
   const navigate = useNavigate();
-  const { id: paramId } = useParams<{ id: string }>();
+  const { id: postId } = useParams<{ id: string }>();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const { data: allPosts } = useCmsPosts();
-  const effectiveId =
-    paramId || (allPosts && allPosts.length > 0 ? allPosts[0]._id || allPosts[0].id : undefined);
-
-  const { data: post, isLoading, isError, error } = useCmsPost(effectiveId);
+  const { data: post, isLoading, isError, error } = useCmsPost(postId);
   const updateMutation = useUpdatePost();
 
   const handleUpdate = async (formData: {
@@ -25,31 +23,37 @@ export default function PostEditPage() {
     content: string;
     imageUrl?: string;
     imageFile?: File | null;
-    category?: string;
     status: PostStatus;
   }) => {
-    if (!effectiveId) return;
+    if (!postId) return;
     setSubmitError(null);
 
     try {
       await updateMutation.mutateAsync({
-        id: effectiveId,
+        id: postId,
         payload: {
           title: formData.title,
           description: formData.description,
           content: formData.content,
           imageUrl: formData.imageUrl,
           image: formData.imageFile,
-          category: formData.category,
           status: formData.status,
         },
       });
+      toast.success('Post updated successfully!');
       navigate('/admin/posts');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update post.';
       setSubmitError(message);
+      toast.error(message);
       throw err;
     }
+  };
+
+  const handlePreview = (previewData: PostFormPreviewData) => {
+    // Always use current form state; pass postId so Preview page can show it
+    // but the actual content always comes from navigation state
+    navigate(`/admin/posts/preview/${postId ?? ''}`, { state: { previewData } });
   };
 
   return (
@@ -82,7 +86,7 @@ export default function PostEditPage() {
           onSubmit={handleUpdate}
           isSubmitting={updateMutation.isPending}
           errorMessage={submitError}
-          onPreview={() => navigate(`/admin/posts/preview/${effectiveId}`)}
+          onPreview={handlePreview}
         />
       )}
     </AdminLayout>
