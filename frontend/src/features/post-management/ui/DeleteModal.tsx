@@ -23,13 +23,13 @@ export function DeleteModal({
           <Trash2 className="w-5 h-5 stroke-[1.75]" />
         </div>
 
-        <h3 className="text-base font-semibold text-slate-900 mb-1.5">Delete post</h3>
+        <h3 className="text-base font-semibold text-zinc-900 mb-1.5">Delete post</h3>
 
-        <p className="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed">
+        <p className="text-xs sm:text-sm text-zinc-500 mb-6 leading-relaxed">
           {postTitle ? (
             <>
               Are you sure you want to permanently delete{' '}
-              <span className="font-semibold text-slate-700">&quot;{postTitle}&quot;</span>? This action
+              <span className="font-semibold text-zinc-800">&quot;{postTitle}&quot;</span>? This action
               cannot be undone.
             </>
           ) : (

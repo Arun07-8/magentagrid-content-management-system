@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link2, Check, ArrowLeft } from 'lucide-react';
+import { Link2, Check, ArrowLeft, FileText } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PublicLayout } from '../../../widgets';
 import { PostView, usePublicPost, usePublicPosts } from '../../../entities/post';
@@ -36,7 +36,7 @@ export default function BlogDetailPage() {
           <div className="mb-8 flex items-center justify-between">
             <button
               onClick={() => navigate('/blog')}
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-zinc-500 hover:text-zinc-950 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Articles</span>
@@ -44,7 +44,7 @@ export default function BlogDetailPage() {
 
             <button
               onClick={handleCopyLink}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 transition-colors cursor-pointer shadow-xs"
             >
               {copied ? (
                 <>
@@ -53,7 +53,7 @@ export default function BlogDetailPage() {
                 </>
               ) : (
                 <>
-                  <Link2 className="w-3.5 h-3.5 text-slate-500" />
+                  <Link2 className="w-3.5 h-3.5 text-zinc-500" />
                   <span>Share</span>
                 </>
               )}
@@ -92,8 +92,8 @@ export default function BlogDetailPage() {
             </div>
 
             <aside className="lg:col-span-4 space-y-6">
-              <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-xs">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4 px-1">
+              <div className="bg-white rounded-xl p-5 border border-zinc-200/80 shadow-xs">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-4 px-1">
                   Related Dispatches
                 </h3>
 
@@ -110,27 +110,27 @@ export default function BlogDetailPage() {
                             navigate(`/blog/${itemId}`);
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                           }}
-                          className="group flex items-start gap-3 cursor-pointer pt-3.5 first:pt-0 border-t border-slate-100 first:border-0"
+                          className="group flex items-start gap-3 cursor-pointer pt-3.5 first:pt-0 border-t border-zinc-100 first:border-0"
                         >
-                          <div className="w-16 h-14 rounded-lg overflow-hidden bg-slate-100 border border-slate-100 flex-shrink-0">
-                            <img
-                              src={
-                                item.imageUrl ||
-                                'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80'
-                              }
-                              alt={item.title}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80';
-                              }}
-                              className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-150"
-                            />
+                          <div className="w-16 h-14 rounded-lg overflow-hidden bg-zinc-100 border border-zinc-200/60 flex-shrink-0 flex items-center justify-center">
+                            {item.imageUrl ? (
+                              <img
+                                src={item.imageUrl}
+                                alt={item.title}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-150"
+                              />
+                            ) : (
+                              <FileText className="w-4 h-4 text-zinc-400" />
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-semibold text-slate-900 group-hover:text-slate-700 transition-colors line-clamp-2 leading-snug">
+                            <h4 className="text-xs font-semibold text-zinc-900 group-hover:text-zinc-700 transition-colors line-clamp-2 leading-snug">
                               {item.title}
                             </h4>
-                            <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-1">
+                            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 mt-1">
                               {itemDate && (
                                 <div className="flex items-center gap-1">
                                   <span>{itemDate}</span>
@@ -149,7 +149,7 @@ export default function BlogDetailPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400">No other articles available.</p>
+                  <p className="text-xs text-zinc-400">No other articles available.</p>
                 )}
               </div>
             </aside>

@@ -43,9 +43,11 @@ export const usePublishPost = () => {
 
   return useMutation({
     mutationFn: (id: string) => postManagementApi.publishPost(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: PUBLIC_POSTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['cms-post', id] });
+      queryClient.invalidateQueries({ queryKey: ['public-post', id] });
     },
   });
 };
@@ -58,9 +60,11 @@ export const useUnpublishPost = () => {
 
   return useMutation({
     mutationFn: (id: string) => postManagementApi.unpublishPost(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: PUBLIC_POSTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['cms-post', id] });
+      queryClient.invalidateQueries({ queryKey: ['public-post', id] });
     },
   });
 };
@@ -73,9 +77,11 @@ export const useDeletePost = () => {
 
   return useMutation({
     mutationFn: (id: string) => postManagementApi.deletePost(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: PUBLIC_POSTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['cms-post', id] });
+      queryClient.invalidateQueries({ queryKey: ['public-post', id] });
     },
   });
 };

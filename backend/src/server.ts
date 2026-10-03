@@ -3,8 +3,6 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { connectDB } from './config/db.js';
 import { initSocket } from './config/socket.js';
-import { authService } from './modules/auth/auth.service.js';
-import { postService } from './modules/posts/post.service.js';
 import logger from './utils/logger.js';
 
 const startServer = async () => {
@@ -21,18 +19,9 @@ const startServer = async () => {
   });
 
   // Connect to Database asynchronously without blocking server start
-  connectDB()
-    .then(async () => {
-      try {
-        await authService.seedInitialUsers();
-        await postService.seedInitialPosts();
-      } catch (error: any) {
-        logger.warn(`Could not seed initial MongoDB data: ${error.message}`);
-      }
-    })
-    .catch((error) => {
-      logger.warn(`Database connection attempt failed: ${error.message}`);
-    });
+  connectDB().catch((error) => {
+    logger.warn(`Database connection attempt failed: ${error.message}`);
+  });
 
   // Graceful shutdown handlers
   const shutdown = () => {

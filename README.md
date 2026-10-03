@@ -1,4 +1,4 @@
-# Magentagrid CMS Platform
+# CMS Platform
 
 A clean, modern, and maintainable Content Management System (CMS) built with a **React + TypeScript** frontend and a **Node.js/Express + MongoDB** backend.
 
@@ -6,7 +6,7 @@ A clean, modern, and maintainable Content Management System (CMS) built with a *
 
 ## 1. Project Overview
 
-The Magentagrid CMS is developed according to the requirements of the **Magentagrid React & TypeScript CMS Technical Test**. It demonstrates a clean separation of concerns, robust type safety, role-based authorization, real-time cross-client data synchronization, and responsive user experience.
+The CMS is developed according to modern production standards. It demonstrates a clean separation of concerns, robust type safety, role-based authorization, real-time cross-client data synchronization, and responsive user experience.
 
 ### Key Capabilities
 - **Public Website Pages**:
@@ -152,7 +152,7 @@ JWT_ACCESS_SECRET=7vK9mQ2xL8pR4tY6nW3zA9cF5hJ1sD8e
 JWT_REFRESH_SECRET=Q4xN7kP2vM9rL6tY3wF8cZ1aH5sE0uB7
 ACCESS_TOKEN_TTL=15m
 REFRESH_TOKEN_TTL_DAYS=7
-MONGODB_URI="mongodb://localhost:27017/magentagrid"
+MONGODB_URI="mongodb://localhost:27017/cms"
 ```
 
 > [!NOTE]

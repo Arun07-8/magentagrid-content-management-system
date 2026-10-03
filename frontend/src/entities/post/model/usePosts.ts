@@ -9,9 +9,9 @@ export const PUBLIC_POSTS_QUERY_KEY = ['public-posts'];
 /**
  * Fetch published posts for public website
  */
-export const usePublicPosts = (params?: { category?: string }) => {
+export const usePublicPosts = (params?: { category?: string; search?: string }) => {
   return useQuery({
-    queryKey: [...PUBLIC_POSTS_QUERY_KEY, params?.category || 'All'],
+    queryKey: [...PUBLIC_POSTS_QUERY_KEY, params?.category || 'All', params?.search || ''],
     queryFn: () => postApi.getPublicPosts(params),
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
@@ -60,11 +60,17 @@ export const useRealtimePosts = () => {
   useEffect(() => {
     const socket = getSocket();
 
-    const handlePostsChanged = (payload: unknown) => {
-      console.log('Real-time update received:', payload);
+    const handlePostsChanged = (payload: any) => {
       // Invalidate both CMS and public query caches
       queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: PUBLIC_POSTS_QUERY_KEY });
+
+      // Targeted single-post cache invalidation if an ID was emitted
+      const targetId = payload?.post?._id || payload?.post?.id || payload?.id;
+      if (targetId) {
+        queryClient.invalidateQueries({ queryKey: ['cms-post', targetId] });
+        queryClient.invalidateQueries({ queryKey: ['public-post', targetId] });
+      }
     };
 
     socket.on('posts:changed', handlePostsChanged);

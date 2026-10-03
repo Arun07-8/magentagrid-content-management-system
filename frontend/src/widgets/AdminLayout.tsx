@@ -20,7 +20,7 @@ export function AdminLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50/60 flex">
+    <div className="min-h-screen bg-zinc-50/70 flex">
       <AdminSidebar
         currentTab={currentTab}
         mobileOpen={mobileMenuOpen}

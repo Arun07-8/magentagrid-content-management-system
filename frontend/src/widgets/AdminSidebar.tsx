@@ -76,9 +76,9 @@ export function AdminSidebar({
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-300 w-64 border-r border-slate-800 select-none">
+    <div className="flex flex-col h-full bg-zinc-950 text-zinc-400 w-64 border-r border-zinc-800/80 select-none">
       {/* Brand Header */}
-      <div className="h-14 sm:h-15 px-5 border-b border-slate-800 flex items-center justify-between">
+      <div className="h-14 px-5 border-b border-zinc-800/80 flex items-center justify-between">
         <Link
           to="/admin/dashboard"
           onClick={() => {
@@ -92,7 +92,7 @@ export function AdminSidebar({
         {onCloseMobile && (
           <button
             onClick={onCloseMobile}
-            className="lg:hidden p-1 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 cursor-pointer"
+            className="lg:hidden p-1 text-zinc-400 hover:text-white rounded-md hover:bg-zinc-800 cursor-pointer"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -100,23 +100,11 @@ export function AdminSidebar({
         )}
       </div>
 
-      {/* Admin Profile Section */}
-      <div className="px-5 py-4 border-b border-slate-800 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center font-semibold text-xs uppercase flex-shrink-0">
-          {user?.name ? user.name[0] : 'A'}
-        </div>
-        <div className="flex flex-col min-w-0">
-          <span className="text-xs font-semibold text-white truncate">
-            {user?.name || 'Administrator'}
-          </span>
-          <span className="text-[11px] text-slate-400 truncate capitalize font-medium">
-            {role || 'admin'}
-          </span>
-        </div>
-      </div>
-
       {/* Navigation Menu */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <div className="px-3 pb-2 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+          Platform
+        </div>
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -126,8 +114,8 @@ export function AdminSidebar({
               onClick={() => handleNav(item.id, item.path)}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
                 item.isActive
-                  ? 'bg-slate-800 text-white font-semibold'
-                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                  ? 'bg-zinc-900 text-white font-medium border border-zinc-800/90 shadow-xs'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
               }`}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
@@ -137,11 +125,27 @@ export function AdminSidebar({
         })}
       </nav>
 
-      {/* Bottom Logout */}
-      <div className="p-3 border-t border-slate-800">
+      {/* Bottom Profile & Logout */}
+      <div className="p-3 border-t border-zinc-800/80 space-y-2">
+        {/* Admin Profile Section */}
+        <div className="px-3 py-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-200 flex items-center justify-center font-semibold text-xs uppercase flex-shrink-0">
+            {user?.username ? user.username[0].toUpperCase() : 'A'}
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-semibold text-zinc-100 truncate">
+              {user?.username || 'Administrator'}
+            </span>
+            <span className="text-[11px] text-zinc-400 truncate font-normal">
+              {user?.email || 'admin@example.com'}
+            </span>
+          </div>
+        </div>
+
+        {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-zinc-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           <span>Logout</span>
@@ -159,10 +163,10 @@ export function AdminSidebar({
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-[2px] transition-opacity"
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
           />
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-slate-900 shadow-2xl">
+          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-zinc-950 shadow-2xl">
             {sidebarContent}
           </div>
         </div>

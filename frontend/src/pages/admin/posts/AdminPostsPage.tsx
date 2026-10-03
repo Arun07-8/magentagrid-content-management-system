@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  FileText,
 } from 'lucide-react';
 import { AdminLayout } from '../../../widgets';
 import { useCmsPosts } from '../../../entities/post';
@@ -33,6 +34,7 @@ export default function AdminPostsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Draft' | 'Published'>('All');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -134,7 +136,7 @@ export default function AdminPostsPage() {
           </div>
           <button
             onClick={() => setActionError(null)}
-            className="text-slate-400 hover:text-slate-700 font-bold"
+            className="text-zinc-400 hover:text-zinc-700 font-bold"
           >
             ✕
           </button>
@@ -144,17 +146,17 @@ export default function AdminPostsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">
             Posts
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
             Manage your articles, drafts, categories, and publishing workflows.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Status Filter Segmented Control */}
-          <div className="flex items-center bg-slate-100/90 border border-slate-200/80 rounded-lg p-0.5 text-xs">
+          <div className="flex items-center bg-zinc-100 border border-zinc-200 rounded-lg p-0.5 text-xs">
             {(['All', 'Published', 'Draft'] as const).map((st) => (
               <button
                 key={st}
@@ -162,11 +164,10 @@ export default function AdminPostsPage() {
                   setStatusFilter(st);
                   setCurrentPage(1);
                 }}
-                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer font-medium ${
-                  statusFilter === st
-                    ? 'bg-white text-slate-900 font-semibold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer font-medium ${statusFilter === st
+                    ? 'bg-white text-zinc-900 font-semibold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900'
+                  }`}
               >
                 {st}
               </button>
@@ -183,7 +184,7 @@ export default function AdminPostsPage() {
       </div>
 
       {/* Main Table Container */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-zinc-200/80 shadow-xs overflow-hidden">
         {isLoading ? (
           <Spinner fullHeight text="Loading posts..." />
         ) : isError ? (
@@ -212,8 +213,8 @@ export default function AdminPostsPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs sm:text-sm text-slate-600">
-                <thead className="bg-slate-50/75 text-[11px] uppercase font-semibold text-slate-400 border-b border-slate-100">
+              <table className="w-full text-left text-xs sm:text-sm text-zinc-600">
+                <thead className="bg-zinc-50/75 text-[11px] uppercase font-semibold text-zinc-500 border-b border-zinc-100">
                   <tr>
                     <th className="py-3 px-4 w-10">
                       <input
@@ -223,7 +224,7 @@ export default function AdminPostsPage() {
                           paginatedPosts.length > 0
                         }
                         onChange={toggleSelectAll}
-                        className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900/20 border-slate-300 cursor-pointer"
+                        className="w-4 h-4 rounded text-zinc-900 focus:ring-zinc-900 border-zinc-300 cursor-pointer accent-zinc-900"
                       />
                     </th>
                     <th className="py-3 px-4">Article</th>
@@ -234,7 +235,7 @@ export default function AdminPostsPage() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100 font-normal">
+                <tbody className="divide-y divide-zinc-100 font-normal">
                   {paginatedPosts.map((post) => {
                     const postId = post._id || post.id!;
                     const isSelected = selectedIds.includes(postId);
@@ -244,38 +245,37 @@ export default function AdminPostsPage() {
                     return (
                       <tr
                         key={postId}
-                        className={`hover:bg-slate-50/60 transition-colors group ${
-                          isSelected ? 'bg-slate-50/90' : ''
-                        }`}
+                        className={`hover:bg-zinc-50/70 transition-colors group ${isSelected ? 'bg-zinc-50' : ''
+                          }`}
                       >
                         <td className="py-3 px-4">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelectOne(postId)}
-                            className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900/20 border-slate-300 cursor-pointer"
+                            className="w-4 h-4 rounded text-zinc-900 focus:ring-zinc-900 border-zinc-300 cursor-pointer accent-zinc-900"
                           />
                         </td>
 
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-md overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200/60">
-                              <img
-                                src={
-                                  post.imageUrl ||
-                                  'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80'
-                                }
-                                alt={post.title}
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src =
-                                    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80';
-                                }}
-                                className="w-full h-full object-cover"
-                              />
+                            <div className="w-9 h-9 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200/60 flex items-center justify-center">
+                              {post.imageUrl ? (
+                                <img
+                                  src={post.imageUrl}
+                                  alt={post.title}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <FileText className="w-4 h-4 text-zinc-400" />
+                              )}
                             </div>
                             <span
                               onClick={() => navigate(`/admin/posts/edit/${postId}`)}
-                              className="font-medium text-slate-900 hover:text-slate-700 transition-colors cursor-pointer truncate max-w-xs sm:max-w-sm"
+                              className="font-medium text-zinc-900 hover:text-zinc-700 transition-colors cursor-pointer truncate max-w-xs sm:max-w-sm"
                             >
                               {post.title}
                             </span>
@@ -283,7 +283,7 @@ export default function AdminPostsPage() {
                         </td>
 
                         <td className="py-3 px-4">
-                          <span className="text-xs text-slate-600 font-medium">
+                          <span className="text-xs text-zinc-600 font-medium">
                             {post.category || 'Technology'}
                           </span>
                         </td>
@@ -294,88 +294,31 @@ export default function AdminPostsPage() {
                           </Badge>
                         </td>
 
-                        <td className="py-3 px-4 text-xs text-slate-400 whitespace-nowrap">
+                        <td className="py-3 px-4 text-xs text-zinc-400 whitespace-nowrap">
                           {formattedDate}
                         </td>
 
-                        <td className="py-3 px-4 text-right relative">
+                        <td className="py-3 px-4 text-right">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setActiveMenuId(isMenuOpen ? null : postId);
+                              if (isMenuOpen) {
+                                setActiveMenuId(null);
+                                setMenuPosition(null);
+                              } else {
+                                const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                                setMenuPosition({
+                                  top: rect.bottom + 6,
+                                  right: window.innerWidth - rect.right,
+                                });
+                                setActiveMenuId(postId);
+                              }
                             }}
-                            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100 focus:outline-none cursor-pointer"
+                            className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-md hover:bg-zinc-100 focus:outline-none cursor-pointer"
                             aria-label="Actions"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
-
-                          {isMenuOpen && (
-                            <>
-                              <div
-                                className="fixed inset-0 z-30"
-                                onClick={() => setActiveMenuId(null)}
-                              />
-                              <div className="absolute right-4 mt-1 w-40 bg-white border border-slate-200/90 rounded-xl shadow-lg py-1.5 z-40 text-left animate-in fade-in zoom-in-95 duration-100">
-                                <button
-                                  onClick={() => {
-                                    setActiveMenuId(null);
-                                    navigate(`/admin/posts/edit/${postId}`);
-                                  }}
-                                  className="w-full px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
-                                >
-                                  <Edit className="w-3.5 h-3.5 text-slate-400" />
-                                  <span>Edit</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setActiveMenuId(null);
-                                    navigate(`/admin/posts/preview/${postId}`);
-                                  }}
-                                  className="w-full px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
-                                >
-                                  <Eye className="w-3.5 h-3.5 text-slate-400" />
-                                  <span>Preview</span>
-                                </button>
-
-                                {isAdmin ? (
-                                  <button
-                                    onClick={(e) => handleTogglePublish(post, e)}
-                                    className="w-full px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-t border-slate-100 font-medium"
-                                  >
-                                    {post.status === 'Published' ? (
-                                      <>
-                                        <Clock className="w-3.5 h-3.5 text-amber-500" />
-                                        <span>Unpublish</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                                        <span>Publish</span>
-                                      </>
-                                    )}
-                                  </button>
-                                ) : null}
-
-                                {isAdmin ? (
-                                  <>
-                                    <div className="my-1 border-t border-slate-100" />
-                                    <button
-                                      onClick={(e) => handleDeleteClick(post, e)}
-                                      className="w-full px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer font-medium"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5 text-rose-500" />
-                                      <span>Delete</span>
-                                    </button>
-                                  </>
-                                ) : (
-                                  <div className="px-3 py-1 text-[10px] text-slate-400 border-t border-slate-100">
-                                    Editor: Read/Edit only
-                                  </div>
-                                )}
-                              </div>
-                            </>
-                          )}
                         </td>
                       </tr>
                     );
@@ -385,8 +328,8 @@ export default function AdminPostsPage() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="p-3.5 sm:p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-xs text-slate-400 font-normal order-2 sm:order-1">
+            <div className="p-3.5 sm:p-4 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-xs text-zinc-400 font-normal order-2 sm:order-1">
                 Showing {Math.min((currentPage - 1) * itemsPerPage + 1, posts.length)}-
                 {Math.min(currentPage * itemsPerPage, posts.length)} of {posts.length} posts
               </span>
@@ -395,7 +338,7 @@ export default function AdminPostsPage() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  className="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-7 h-7 rounded-md border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-zinc-50 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Previous"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -405,11 +348,10 @@ export default function AdminPostsPage() {
                   <button
                     key={num}
                     onClick={() => setCurrentPage(num)}
-                    className={`w-7 h-7 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                      currentPage === num
-                        ? 'bg-slate-900 text-white'
-                        : 'text-slate-600 hover:bg-slate-100'
-                    }`}
+                    className={`w-7 h-7 rounded-md text-xs font-semibold transition-colors cursor-pointer ${currentPage === num
+                        ? 'bg-zinc-900 text-white'
+                        : 'text-zinc-600 hover:bg-zinc-100'
+                      }`}
                   >
                     {num}
                   </button>
@@ -418,7 +360,7 @@ export default function AdminPostsPage() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  className="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-7 h-7 rounded-md border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-zinc-50 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Next"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -429,6 +371,75 @@ export default function AdminPostsPage() {
         )}
       </div>
 
+      {/* Fixed-position dropdown — renders above all table overflow */}
+      {activeMenuId && menuPosition && (() => {
+        const post = paginatedPosts.find(p => (p._id || p.id) === activeMenuId);
+        if (!post) return null;
+        const postId = post._id || post.id!;
+        return (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => { setActiveMenuId(null); setMenuPosition(null); }}
+            />
+            <div
+              className="fixed z-50 w-44 bg-white border border-zinc-200 rounded-xl shadow-xl py-1.5 text-left animate-in fade-in zoom-in-95 duration-100"
+              style={{ top: menuPosition.top, right: menuPosition.right }}
+            >
+              <button
+                onClick={() => {
+                  setActiveMenuId(null); setMenuPosition(null);
+                  navigate(`/admin/posts/edit/${postId}`);
+                }}
+                className="w-full px-3 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50 flex items-center gap-2 cursor-pointer font-medium"
+              >
+                <Edit className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Edit</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenuId(null); setMenuPosition(null);
+                  navigate(`/admin/posts/preview/${postId}`);
+                }}
+                className="w-full px-3 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50 flex items-center gap-2 cursor-pointer font-medium"
+              >
+                <Eye className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Preview</span>
+              </button>
+
+              {isAdmin ? (
+                <button
+                  onClick={(e) => handleTogglePublish(post, e)}
+                  className="w-full px-3 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50 flex items-center gap-2 cursor-pointer border-t border-zinc-100 font-medium"
+                >
+                  {post.status === 'Published' ? (
+                    <><Clock className="w-3.5 h-3.5 text-amber-500" /><span>Unpublish</span></>
+                  ) : (
+                    <><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /><span>Publish</span></>
+                  )}
+                </button>
+              ) : null}
+
+              {isAdmin ? (
+                <>
+                  <div className="my-1 border-t border-zinc-100" />
+                  <button
+                    onClick={(e) => handleDeleteClick(post, e)}
+                    className="w-full px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer font-medium"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete</span>
+                  </button>
+                </>
+              ) : (
+                <div className="px-3 py-1.5 text-[10px] text-zinc-400 border-t border-zinc-100">
+                  Editor: Read/Edit only
+                </div>
+              )}
+            </div>
+          </>
+        );
+      })()}
       <DeleteModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
