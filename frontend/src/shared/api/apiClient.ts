@@ -1,12 +1,14 @@
 import { API_BASE_URL } from '../config';
 
 class ApiClient {
-  private getHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
+  private getHeaders(isFormData?: boolean): HeadersInit {
+    const headers: HeadersInit = {};
 
-    const token = localStorage.getItem('magentagrid_token');
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    const token = localStorage.getItem('cms_token');
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -22,10 +24,16 @@ class ApiClient {
         : { message: await response.text() };
 
     if (!response.ok) {
+      // Clear expired credentials on 401 unauthorized (unless attempting login)
+      if (response.status === 401 && !response.url.includes('/auth/login')) {
+        localStorage.removeItem('cms_token');
+        localStorage.removeItem('cms_user');
+      }
+
       const errors = data?.errors as Array<{ message?: string }> | undefined;
       const errorMessage =
-        (typeof data?.message === 'string' && data.message) ||
         errors?.[0]?.message ||
+        (typeof data?.message === 'string' && data.message) ||
         `Request failed with status ${response.status}`;
       const error = Object.assign(new Error(errorMessage), {
         status: response.status,
@@ -61,30 +69,33 @@ class ApiClient {
   }
 
   async post<T>(endpoint: string, body?: unknown): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
-      headers: this.getHeaders(),
-      body: body ? JSON.stringify(body) : undefined,
+      headers: this.getHeaders(isFormData),
+      body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
     });
 
     return this.handleResponse<T>(response);
   }
 
   async put<T>(endpoint: string, body?: unknown): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
-      headers: this.getHeaders(),
-      body: body ? JSON.stringify(body) : undefined,
+      headers: this.getHeaders(isFormData),
+      body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
     });
 
     return this.handleResponse<T>(response);
   }
 
   async patch<T>(endpoint: string, body?: unknown): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PATCH',
-      headers: this.getHeaders(),
-      body: body ? JSON.stringify(body) : undefined,
+      headers: this.getHeaders(isFormData),
+      body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
     });
 
     return this.handleResponse<T>(response);

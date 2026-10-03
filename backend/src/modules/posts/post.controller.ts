@@ -68,7 +68,7 @@ export class PostController {
     try {
       const author = {
         id: req.user!.id,
-        name: req.user!.name,
+        name: req.user!.username,
       };
 
       const post = await postService.createPost(req.body, author, req.user!.role);

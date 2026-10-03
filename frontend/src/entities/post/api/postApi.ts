@@ -3,7 +3,7 @@ import type { Post, ApiResponse } from '../../../shared/types';
 
 export const postApi = {
   // Public domain queries
-  getPublicPosts: async (params?: { category?: string }): Promise<Post[]> => {
+  getPublicPosts: async (params?: { category?: string; search?: string }): Promise<Post[]> => {
     const res = await apiClient.get<ApiResponse<Post[]>>('/posts/public', params);
     return res.data;
   },

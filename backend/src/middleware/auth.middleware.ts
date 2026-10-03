@@ -7,7 +7,7 @@ import { AppError } from './error.middleware.js';
 export interface AuthenticatedUser {
   id: string;
   email: string;
-  name: string;
+  username: string;
   role: UserRole;
 }
 

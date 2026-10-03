@@ -18,8 +18,8 @@ export const useUserStore = create<UserState>((set) => ({
   role: null,
 
   setAuth: (user: User, token: string) => {
-    localStorage.setItem('magentagrid_token', token);
-    localStorage.setItem('magentagrid_user', JSON.stringify(user));
+    localStorage.setItem('cms_token', token);
+    localStorage.setItem('cms_user', JSON.stringify(user));
     set({
       user,
       token,
@@ -29,8 +29,8 @@ export const useUserStore = create<UserState>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('magentagrid_token');
-    localStorage.removeItem('magentagrid_user');
+    localStorage.removeItem('cms_token');
+    localStorage.removeItem('cms_user');
     set({
       user: null,
       token: null,
@@ -41,8 +41,8 @@ export const useUserStore = create<UserState>((set) => ({
 
   initialize: () => {
     try {
-      const token = localStorage.getItem('magentagrid_token');
-      const userStr = localStorage.getItem('magentagrid_user');
+      const token = localStorage.getItem('cms_token');
+      const userStr = localStorage.getItem('cms_user');
 
       if (token && userStr) {
         const user = JSON.parse(userStr) as User;
@@ -55,8 +55,8 @@ export const useUserStore = create<UserState>((set) => ({
       }
     } catch (e) {
       console.error('Failed to restore authentication state:', e);
-      localStorage.removeItem('magentagrid_token');
-      localStorage.removeItem('magentagrid_user');
+      localStorage.removeItem('cms_token');
+      localStorage.removeItem('cms_user');
     }
   },
 }));

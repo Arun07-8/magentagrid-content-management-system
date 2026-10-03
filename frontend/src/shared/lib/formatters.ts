@@ -29,14 +29,14 @@ export function formatViews(views?: number): string {
 export function getCategoryBadgeClass(category?: string): string {
   switch (category) {
     case 'Technology':
-      return 'bg-blue-50 text-blue-600 border-blue-100';
+      return 'bg-zinc-100 text-zinc-800 border-zinc-200/80';
     case 'Lifestyle':
-      return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      return 'bg-emerald-50 text-emerald-800 border-emerald-200/80';
     case 'Business':
-      return 'bg-amber-50 text-amber-600 border-amber-100';
+      return 'bg-amber-50 text-amber-800 border-amber-200/80';
     case 'Design':
-      return 'bg-purple-50 text-purple-600 border-purple-100';
+      return 'bg-purple-50 text-purple-800 border-purple-200/80';
     default:
-      return 'bg-blue-50 text-blue-600 border-blue-100';
+      return 'bg-zinc-100 text-zinc-800 border-zinc-200/80';
   }
 }

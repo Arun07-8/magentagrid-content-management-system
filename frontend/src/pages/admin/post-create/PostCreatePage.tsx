@@ -15,12 +15,21 @@ export default function PostCreatePage() {
     description: string;
     content: string;
     imageUrl?: string;
+    imageFile?: File | null;
     category?: string;
     status: PostStatus;
   }) => {
     setSubmitError(null);
     try {
-      await createMutation.mutateAsync(formData);
+      await createMutation.mutateAsync({
+        title: formData.title,
+        description: formData.description,
+        content: formData.content,
+        imageUrl: formData.imageUrl,
+        image: formData.imageFile,
+        category: formData.category,
+        status: formData.status,
+      });
       navigate(`/admin/posts`);
     } catch (err: unknown) {
       const message =

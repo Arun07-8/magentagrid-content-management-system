@@ -14,7 +14,11 @@ export const createPostSchema = z.object({
   content: z
     .string()
     .min(1, 'Main content is required'),
-  imageUrl: z.string().optional().default(''),
+  imageUrl: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => val ?? ''),
   category: z.string().optional().default('Technology'),
   status: z.enum(['Draft', 'Published']).optional().default('Draft'),
 });
@@ -34,10 +38,14 @@ export const updatePostSchema = z.object({
     .max(500, 'Description cannot exceed 500 characters')
     .optional(),
   content: z.string().min(1, 'Main content cannot be empty').optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === null ? '' : val)),
   category: z.string().optional(),
   status: z.enum(['Draft', 'Published']).optional(),
 });
 
-export type CreatePostInput = z.input<typeof createPostSchema>;
+export type CreatePostInput = z.infer<typeof createPostSchema>;
 export type UpdatePostInput = z.infer<typeof updatePostSchema>;

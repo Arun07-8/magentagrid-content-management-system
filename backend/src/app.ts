@@ -1,3 +1,4 @@
+import path from 'path';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import authRoutes from './modules/auth/auth.routes.js';
@@ -18,6 +19,10 @@ export const createApp = () => {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+  // Static uploads directory
+  const uploadsPath = path.join(process.cwd(), 'uploads');
+  app.use('/uploads', express.static(uploadsPath));
+
   // HTTP Request Logging
   app.use((req: Request, _res: Response, next) => {
     logger.info(`${req.method} ${req.url}`);
@@ -28,7 +33,7 @@ export const createApp = () => {
   app.get('/api/health', (_req: Request, res: Response) => {
     res.status(200).json({
       status: 'ok',
-      service: 'magentagrid-cms-backend',
+      service: 'cms-backend',
       timestamp: new Date().toISOString(),
     });
   });

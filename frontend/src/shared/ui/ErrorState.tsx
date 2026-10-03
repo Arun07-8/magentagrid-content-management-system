@@ -25,8 +25,8 @@ export function ErrorState({
         <AlertCircle className="w-5 h-5 stroke-[1.75]" />
       </div>
       <div>
-        <h3 className="text-sm sm:text-base font-semibold text-slate-900">{title}</h3>
-        {message && <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">{message}</p>}
+        <h3 className="text-sm sm:text-base font-semibold text-zinc-900">{title}</h3>
+        {message && <p className="text-xs text-zinc-500 max-w-sm mx-auto mt-1">{message}</p>}
       </div>
       {onRetry && (
         <div className="pt-2">

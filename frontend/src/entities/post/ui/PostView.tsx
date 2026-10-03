@@ -20,7 +20,7 @@ export function PostView({
   category = 'Technology',
   date,
   readTime = '4 min read',
-  authorName = 'Magentagrid Editorial',
+  authorName = 'CMS Editorial',
 }: PostViewProps) {
   // Format content paragraphs
   const paragraphs = content.split('\n\n').filter((p) => p.trim().length > 0);
@@ -37,39 +37,39 @@ export function PostView({
       )}
 
       {/* Article Title */}
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.2]">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-zinc-900 tracking-tight leading-[1.2]">
         {title}
       </h1>
 
       {/* Short Subtitle / Lead Excerpt */}
       {description && (
-        <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-600 font-normal leading-relaxed">
           {description}
         </p>
       )}
 
       {/* Meta Byline Row */}
-      <div className="flex flex-wrap items-center gap-3.5 text-xs text-slate-500 py-3.5 border-y border-slate-200/80">
+      <div className="flex flex-wrap items-center gap-3.5 text-xs text-zinc-500 py-3.5 border-y border-zinc-200/80">
         {authorName && (
-          <div className="flex items-center gap-1.5 font-medium text-slate-800">
-            <UserIcon className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center gap-1.5 font-medium text-zinc-800">
+            <UserIcon className="w-3.5 h-3.5 text-zinc-400" />
             <span>{authorName}</span>
           </div>
         )}
         {date && (
           <>
-            <span className="text-slate-300">•</span>
+            <span className="text-zinc-300">•</span>
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <Calendar className="w-3.5 h-3.5 text-zinc-400" />
               <span>{date}</span>
             </div>
           </>
         )}
         {readTime && (
           <>
-            <span className="text-slate-300">•</span>
+            <span className="text-zinc-300">•</span>
             <div className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <Clock className="w-3.5 h-3.5 text-zinc-400" />
               <span>{readTime}</span>
             </div>
           </>
@@ -78,7 +78,7 @@ export function PostView({
 
       {/* Featured Image */}
       {imageUrl && (
-        <div className="relative rounded-xl overflow-hidden aspect-[16/9] bg-slate-100 shadow-xs border border-slate-200/80">
+        <div className="relative rounded-xl overflow-hidden aspect-[16/9] bg-zinc-100 shadow-xs border border-zinc-200/80">
           <img
             src={imageUrl}
             alt={title}
@@ -92,9 +92,9 @@ export function PostView({
       )}
 
       {/* Article Content */}
-      <div className="text-slate-700 text-base sm:text-[17px] leading-[1.75] space-y-6 pt-2">
+      <div className="text-zinc-800 text-base sm:text-[17px] leading-[1.8] space-y-6 pt-2">
         {paragraphs.map((para, idx) => (
-          <p key={idx} className="whitespace-pre-line">
+          <p key={idx} className="whitespace-pre-line font-normal">
             {para}
           </p>
         ))}

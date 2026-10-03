@@ -69,22 +69,22 @@ export default function AboutPage() {
   return (
     <PublicLayout>
       {/* Editorial Header */}
-      <section className="bg-slate-50/70 py-16 sm:py-24 border-b border-slate-200/80">
+      <section className="bg-zinc-50/70 py-16 sm:py-24 border-b border-zinc-200/80">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-600 text-xs font-medium mb-4 shadow-xs">
-            <span>About Magentagrid</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-zinc-200 text-zinc-700 text-xs font-medium mb-4 shadow-xs">
+            <span>About CMS</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-5 leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-zinc-950 tracking-tight mb-5 leading-tight">
             We help thoughtful ideas travel farther.
           </h1>
-          <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
-            Magentagrid is a modern, lightweight content management platform built to help editors, writers, and businesses publish stories with precision and craft.
+          <p className="text-zinc-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
+            CMS is a modern, lightweight content management platform built to help editors, writers, and businesses publish stories with precision and craft.
           </p>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-14 sm:py-16 bg-white border-b border-slate-100">
+      <section className="py-14 sm:py-16 bg-white border-b border-zinc-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {stats.map((item, idx) => {
@@ -92,15 +92,15 @@ export default function AboutPage() {
               return (
                 <div
                   key={idx}
-                  className="bg-white rounded-xl p-5 sm:p-6 text-left border border-slate-200/80 shadow-xs"
+                  className="bg-white rounded-xl p-5 sm:p-6 text-left border border-zinc-200/80 shadow-xs"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center mb-4 border border-slate-200/60">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-100 text-zinc-700 flex items-center justify-center mb-4 border border-zinc-200/60">
                     <Icon className="w-4 h-4 stroke-[1.75]" />
                   </div>
-                  <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight mb-1">
                     {item.value}
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-500 font-medium">
+                  <div className="text-xs sm:text-sm text-zinc-500 font-medium">
                     {item.label}
                   </div>
                 </div>
@@ -111,16 +111,16 @@ export default function AboutPage() {
       </section>
 
       {/* Values Section */}
-      <section className="py-16 sm:py-20 bg-slate-50/70 border-b border-slate-200/80">
+      <section className="py-16 sm:py-20 bg-zinc-50/70 border-b border-zinc-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mb-12">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 block mb-1">
               Core Principles
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-950 tracking-tight">
               What Drives Our Platform
             </h2>
-            <p className="text-slate-500 text-sm mt-2 leading-relaxed">
+            <p className="text-zinc-500 text-sm mt-2 leading-relaxed">
               Our principles shape every feature we build, every interface we design, and every article we publish.
             </p>
           </div>
@@ -131,13 +131,13 @@ export default function AboutPage() {
               return (
                 <div
                   key={idx}
-                  className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200/80 shadow-xs"
+                  className="bg-white rounded-xl p-6 sm:p-8 border border-zinc-200/80 shadow-xs"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center mb-5 border border-slate-200/60">
+                  <div className="w-9 h-9 rounded-lg bg-zinc-100 text-zinc-700 flex items-center justify-center mb-5 border border-zinc-200/60">
                     <Icon className="w-4 h-4 stroke-[1.75]" />
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 mb-2">{v.title}</h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">{v.description}</p>
+                  <h3 className="text-base font-bold text-zinc-950 mb-2">{v.title}</h3>
+                  <p className="text-zinc-600 text-sm leading-relaxed">{v.description}</p>
                 </div>
               );
             })}
@@ -149,13 +149,13 @@ export default function AboutPage() {
       <section className="py-16 sm:py-20 bg-white flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mb-12">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 block mb-1">
               The People
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-950 tracking-tight">
               Editorial &amp; Engineering Team
             </h2>
-            <p className="text-slate-500 text-sm mt-2 leading-relaxed">
+            <p className="text-zinc-500 text-sm mt-2 leading-relaxed">
               Passionate professionals committed to exceptional publishing craft and editorial performance.
             </p>
           </div>
@@ -163,15 +163,15 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-6">
             {team.map((member, idx) => (
               <div key={idx} className="group">
-                <div className="aspect-[4/5] rounded-xl overflow-hidden bg-slate-100 mb-3 border border-slate-200/80 shadow-xs">
+                <div className="aspect-[4/5] rounded-xl overflow-hidden bg-zinc-100 mb-3 border border-zinc-200/80 shadow-xs">
                   <img
                     src={member.image}
                     alt={member.name}
                     className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
                   />
                 </div>
-                <h4 className="text-sm font-semibold text-slate-900">{member.name}</h4>
-                <p className="text-xs text-slate-500 mt-0.5">{member.role}</p>
+                <h4 className="text-sm font-semibold text-zinc-950">{member.name}</h4>
+                <p className="text-xs text-zinc-500 mt-0.5">{member.role}</p>
               </div>
             ))}
           </div>

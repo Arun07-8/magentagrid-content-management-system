@@ -24,6 +24,7 @@ export default function PostEditPage() {
     description: string;
     content: string;
     imageUrl?: string;
+    imageFile?: File | null;
     category?: string;
     status: PostStatus;
   }) => {
@@ -33,7 +34,15 @@ export default function PostEditPage() {
     try {
       await updateMutation.mutateAsync({
         id: effectiveId,
-        payload: formData,
+        payload: {
+          title: formData.title,
+          description: formData.description,
+          content: formData.content,
+          imageUrl: formData.imageUrl,
+          image: formData.imageFile,
+          category: formData.category,
+          status: formData.status,
+        },
       });
       navigate('/admin/posts');
     } catch (err: unknown) {
@@ -63,7 +72,7 @@ export default function PostEditPage() {
           }
         />
       ) : !post ? (
-        <div className="py-16 text-center text-slate-400">
+        <div className="py-16 text-center text-zinc-400">
           <p>No post found to edit.</p>
         </div>
       ) : (
