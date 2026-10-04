@@ -6,9 +6,8 @@ import { getSocket } from '../../../shared/api/socket';
 export const POSTS_QUERY_KEY = ['posts'];
 export const PUBLIC_POSTS_QUERY_KEY = ['public-posts'];
 
-/**
- * Fetch published posts for public website
- */
+/* Fetch published posts for public website */
+
 export const usePublicPosts = (params?: { search?: string }) => {
   return useQuery({
     queryKey: [...PUBLIC_POSTS_QUERY_KEY, params?.search || ''],
@@ -17,9 +16,7 @@ export const usePublicPosts = (params?: { search?: string }) => {
   });
 };
 
-/**
- * Fetch single published post for public view
- */
+/* Fetch single published post for public view */
 export const usePublicPost = (id: string | undefined) => {
   return useQuery({
     queryKey: ['public-post', id],
@@ -29,20 +26,17 @@ export const usePublicPost = (id: string | undefined) => {
   });
 };
 
-/**
- * Fetch all posts for CMS list
- */
+
+/* Fetch all posts for CMS list */
 export const useCmsPosts = (params?: { search?: string; status?: string }) => {
   return useQuery({
     queryKey: [...POSTS_QUERY_KEY, params?.search || '', params?.status || 'All'],
     queryFn: () => postApi.getCmsPosts(params),
-    staleTime: 1000 * 60 * 1, // 1 minute
+    staleTime: 1000 * 60 * 1,
   });
 };
 
-/**
- * Fetch single post for CMS edit/preview
- */
+/* Fetch single post for CMS edit/preview */
 export const useCmsPost = (id: string | undefined) => {
   return useQuery({
     queryKey: ['cms-post', id],
@@ -51,9 +45,7 @@ export const useCmsPost = (id: string | undefined) => {
   });
 };
 
-/**
- * Real-time subscription hook to automatically invalidate cache when posts change
- */
+/* Real-time subscription hook to automatically invalidate cache when posts change */
 export const useRealtimePosts = () => {
   const queryClient = useQueryClient();
 
@@ -61,11 +53,8 @@ export const useRealtimePosts = () => {
     const socket = getSocket();
 
     const handlePostsChanged = (payload: any) => {
-      // Invalidate both CMS and public query caches
       queryClient.invalidateQueries({ queryKey: POSTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: PUBLIC_POSTS_QUERY_KEY });
-
-      // Targeted single-post cache invalidation if an ID was emitted
       const targetId = payload?.post?._id || payload?.post?.id || payload?.id;
       if (targetId) {
         queryClient.invalidateQueries({ queryKey: ['cms-post', targetId] });
@@ -81,9 +70,7 @@ export const useRealtimePosts = () => {
   }, [queryClient]);
 };
 
-/**
- * Mutation: Create Post
- */
+/* Mutation: Create Post*/
 export const useCreatePost = () => {
   const queryClient = useQueryClient();
 
@@ -96,9 +83,7 @@ export const useCreatePost = () => {
   });
 };
 
-/**
- * Mutation: Update Post
- */
+/* Mutation: Update Post */
 export const useUpdatePost = () => {
   const queryClient = useQueryClient();
 
@@ -114,9 +99,7 @@ export const useUpdatePost = () => {
   });
 };
 
-/**
- * Mutation: Publish Post (Admin only)
- */
+/* Mutation: Publish Post (Admin only) */
 export const usePublishPost = () => {
   const queryClient = useQueryClient();
 
@@ -131,9 +114,7 @@ export const usePublishPost = () => {
   });
 };
 
-/**
- * Mutation: Unpublish Post (Admin only)
- */
+/* Mutation: Unpublish Post (Admin only) */
 export const useUnpublishPost = () => {
   const queryClient = useQueryClient();
 
@@ -148,9 +129,7 @@ export const useUnpublishPost = () => {
   });
 };
 
-/**
- * Mutation: Delete Post (Admin only)
- */
+/* Mutation: Delete Post (Admin only) */
 export const useDeletePost = () => {
   const queryClient = useQueryClient();
 

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRealtimePosts } from '../../entities/post';
 import { useUserStore } from '../../entities/user';
-import { authApi } from '../../features/auth';
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,25 +16,15 @@ const queryClient = new QueryClient({
 
 function RealtimeListener({ children }: { children: React.ReactNode }) {
   useRealtimePosts();
-  const { initialize, setAuth, logout } = useUserStore();
+  const { checkAuth } = useUserStore();
+  const hasCheckedRef = React.useRef(false);
 
   useEffect(() => {
-    initialize();
-
-    // Verify session with the backend database
-    const token = localStorage.getItem('cms_token');
-    if (token) {
-      authApi
-        .getMe()
-        .then((freshUser) => {
-          setAuth(freshUser, token);
-        })
-        .catch(() => {
-          // Token is expired or user was removed from database
-          logout();
-        });
+    if (!hasCheckedRef.current) {
+      hasCheckedRef.current = true;
+      checkAuth();
     }
-  }, [initialize, setAuth, logout]);
+  }, [checkAuth]);
 
   return <>{children}</>;
 }

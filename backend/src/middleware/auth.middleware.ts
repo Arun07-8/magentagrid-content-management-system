@@ -20,13 +20,24 @@ declare global {
 }
 
 export const authenticate = (req: Request, _res: Response, next: NextFunction): void => {
-  const authHeader = req.headers.authorization;
+  let token: string | undefined;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next(new AppError('Authentication required. No token provided.', 401));
+  // 1. Check cookies first
+  if (req.cookies && (req.cookies.cms_token || req.cookies.token)) {
+    token = req.cookies.cms_token || req.cookies.token;
   }
 
-  const token = authHeader.split(' ')[1];
+  // 2. Fallback to Authorization: Bearer header
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
+
+  if (!token) {
+    return next(new AppError('Authentication required. No token provided.', 401));
+  }
 
   try {
     const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as AuthenticatedUser;

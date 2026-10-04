@@ -1,5 +1,4 @@
-import { Search, Bell, Menu } from 'lucide-react';
-import { useUserStore } from '../entities/user';
+import { Search, Menu, SlidersHorizontal } from 'lucide-react';
 
 export interface AdminHeaderProps {
   searchQuery?: string;
@@ -14,68 +13,42 @@ export function AdminHeader({
   onToggleMobileMenu,
   showSearch = true,
 }: AdminHeaderProps) {
-  const { user } = useUserStore();
-
   return (
-    <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-zinc-200/80 px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between transition-all">
-      {/* Left: Mobile Toggle & Search */}
-      <div className="flex items-center gap-3 flex-1 max-w-md">
-        {onToggleMobileMenu && (
-          <button
-            onClick={onToggleMobileMenu}
-            className="lg:hidden p-1.5 text-zinc-500 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 focus:outline-none transition-colors cursor-pointer"
-            aria-label="Open sidebar"
-          >
-            <Menu className="w-5 h-5 stroke-[1.75]" />
-          </button>
-        )}
+    <header className={`flex items-center gap-3 min-w-0 ${!showSearch ? 'lg:hidden' : ''}`}>
+      {/* Mobile Sidebar Toggle Button */}
+      {onToggleMobileMenu && (
+        <button
+          onClick={onToggleMobileMenu}
+          className="lg:hidden w-10 h-10 rounded-full bg-white border-2 border-zinc-200 shadow-[0_6px_24px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition flex-shrink-0 cursor-pointer"
+          aria-label="Open sidebar"
+        >
+          <Menu className="w-4 h-4 stroke-[2]" />
+        </button>
+      )}
 
-        {showSearch && onSearchChange && (
-          <div className="relative w-full max-w-xs sm:max-w-sm">
+      {/* Center Pill: Search input with Filter icon */}
+      {showSearch && onSearchChange && (
+        <div className="flex-1 max-w-xl min-w-0">
+          <div className="w-full h-10 px-4 rounded-full bg-white border-2 border-zinc-200 shadow-[0_6px_24px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] flex items-center gap-2.5 transition-all focus-within:border-zinc-400 focus-within:shadow-md">
+            <Search className="w-4 h-4 text-zinc-400 stroke-[2] flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search posts..."
+              placeholder="Search for articles, drafts..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-8 pr-12 py-1.5 bg-zinc-50/80 hover:bg-zinc-50 focus:bg-white border border-zinc-200/90 rounded-lg text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-300 focus:ring-2 focus:ring-zinc-900/5 transition-all shadow-2xs"
+              className="w-full bg-transparent text-[14px] leading-[16.1px] tracking-[0px] text-[#2A3039] placeholder:text-zinc-400 focus:outline-none font-medium truncate"
             />
-            <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2]" />
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:flex items-center">
-              <span className="text-[10px] font-mono text-zinc-400 bg-white border border-zinc-200 rounded px-1.5 py-0.5 leading-none shadow-2xs">
-                /
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Right: Actions & User Info */}
-      <div className="flex items-center gap-3">
-        {/* Notifications Button */}
-        <button
-          className="relative p-2 text-zinc-500 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 border border-transparent hover:border-zinc-200/60 transition-all cursor-pointer"
-          aria-label="Notifications"
-          title="Notifications"
-        >
-          <Bell className="w-4 h-4 stroke-[1.75]" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-zinc-900 rounded-full ring-2 ring-white" />
-        </button>
-
-        {/* User Profile Pill */}
-        <div className="flex items-center gap-2.5 pl-3 border-l border-zinc-200/80">
-          <div className="w-7 h-7 rounded-lg bg-zinc-900 text-white font-semibold flex items-center justify-center text-xs uppercase shadow-2xs">
-            {user?.username ? user.username[0].toUpperCase() : 'A'}
-          </div>
-          <div className="hidden md:flex flex-col text-left">
-            <span className="text-xs font-semibold text-zinc-900 leading-tight">
-              {user?.username || 'Administrator'}
-            </span>
-            <span className="text-[11px] text-zinc-400 leading-tight font-normal">
-              {user?.email || 'admin@example.com'}
-            </span>
+            <button
+              type="button"
+              title="Filters"
+              className="text-zinc-400 hover:text-zinc-700 transition flex-shrink-0 cursor-pointer"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 stroke-[1.75]" />
+            </button>
           </div>
         </div>
-      </div>
+      )}
     </header>
   );
 }
+

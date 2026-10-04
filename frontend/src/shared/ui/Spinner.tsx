@@ -21,7 +21,7 @@ export function Spinner({
 
   const content = (
     <div className={`flex flex-col items-center justify-center gap-2 text-slate-400 ${className}`}>
-      <Loader2 className={`${sizeMap[size]} animate-spin text-blue-600`} />
+      <Loader2 className={`${sizeMap[size]} animate-spin text-[#FCD06B]`} />
       {text && <p className="text-xs font-medium text-slate-500">{text}</p>}
     </div>
   );

@@ -13,6 +13,20 @@ export function formatDate(dateString?: string): string {
 }
 
 /**
+ * Format a date string into full editorial format (e.g. "September 30, 2026")
+ */
+export function formatFullDate(dateString?: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+/**
  * Format view counts with K suffix if >= 1000 (e.g. "1.2K")
  */
 export function formatViews(views?: number): string {

@@ -17,6 +17,7 @@ export interface Post {
   description: string;
   content: string;
   imageUrl?: string;
+  category?: string;
   status: PostStatus;
   author?: {
     id: string;

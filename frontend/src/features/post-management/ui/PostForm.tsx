@@ -232,27 +232,27 @@ export function PostForm({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white max-w-[1400px] mx-auto">
+    <div className="flex flex-col flex-1 h-full min-h-0 bg-white rounded-[28px] border-2 border-zinc-200 shadow-[0_12px_40px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] overflow-hidden">
       {/* Editor Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 lg:px-10 py-6 border-b border-zinc-200 bg-white">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 lg:px-8 py-5 border-b-2 border-zinc-100 bg-white flex-shrink-0">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate('/admin/posts')}
-            className="flex items-center gap-2 text-[14px] font-semibold text-zinc-500 hover:text-zinc-900 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 hover:text-zinc-900 rounded-full transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             Back
           </button>
-          <div className="w-px h-4 bg-zinc-300" />
-          <h1 className="text-[18px] font-bold text-zinc-900 tracking-tight">
-            {mode === 'create' ? 'New Article' : 'Edit Article'}
+          <div className="w-px h-4 bg-zinc-200" />
+          <h1 className="text-base sm:text-lg font-bold text-zinc-900 tracking-tight">
+            {mode === 'create' ? 'Create Article' : 'Edit Article'}
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {showSavedFeedback && (
-            <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-[4px] border border-emerald-100 animate-in fade-in">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
               <Check className="w-3.5 h-3.5" />
               Saved
             </span>
@@ -262,7 +262,7 @@ export function PostForm({
             type="button"
             disabled={isSubmitting}
             onClick={() => handleAction('Draft')}
-            className="px-4 py-2.5 text-sm font-semibold text-zinc-700 bg-white border border-zinc-200 rounded-[6px] hover:bg-zinc-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-xs font-semibold text-zinc-700 bg-white border border-zinc-200 rounded-full hover:bg-zinc-50 transition-colors disabled:opacity-50"
           >
             Save Draft
           </button>
@@ -272,7 +272,7 @@ export function PostForm({
               type="button"
               disabled={isSubmitting}
               onClick={() => handleAction('Published')}
-              className="px-4 py-2.5 text-sm font-semibold text-white bg-zinc-900 border border-transparent rounded-[6px] hover:bg-zinc-800 transition-colors disabled:opacity-50"
+              className="px-5 py-2 text-xs font-semibold text-white bg-zinc-900 rounded-full hover:bg-zinc-800 transition-colors disabled:opacity-50 shadow-sm"
             >
               {isSubmitting ? 'Publishing...' : 'Publish'}
             </button>
@@ -281,28 +281,28 @@ export function PostForm({
       </div>
 
       {errorMessage && (
-        <div className="mx-6 lg:mx-10 mt-6 p-4 bg-red-50 text-red-700 text-sm font-medium rounded-md border border-red-100 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500" />
+        <div className="mx-6 lg:mx-8 mt-5 p-4 bg-red-50 text-red-700 text-xs font-medium rounded-2xl border border-red-100 flex items-center gap-2.5">
+          <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
           {errorMessage}
         </div>
       )}
 
       {/* Editor Body */}
-      <div className="flex flex-col lg:flex-row flex-1 divide-y lg:divide-y-0 lg:divide-x divide-zinc-200">
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0 divide-y lg:divide-y-0 lg:divide-x divide-zinc-100 overflow-hidden">
         
         {/* Main Content Area */}
-        <div className="flex-1 p-6 lg:p-10 space-y-10 overflow-y-auto">
+        <div className="flex-1 p-6 lg:p-8 space-y-8 overflow-y-auto">
           
           <div>
             <input
               type="text"
-              placeholder="Article Title"
+              placeholder="Article title..."
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
                 if (fieldErrors.title) setFieldErrors({ ...fieldErrors, title: undefined });
               }}
-              className={`w-full text-3xl sm:text-4xl font-bold text-zinc-900 placeholder:text-zinc-300 border-0 outline-none p-0 focus:ring-0 resize-none ${
+              className={`w-full text-2xl sm:text-3xl font-bold text-zinc-900 placeholder:text-zinc-300 border-0 outline-none p-0 focus:ring-0 resize-none ${
                 fieldErrors.title ? 'text-red-900 placeholder:text-red-300' : ''
               }`}
             />
@@ -317,14 +317,14 @@ export function PostForm({
           <div>
             <textarea
               rows={2}
-              placeholder="A short introductory excerpt..."
+              placeholder="A short introductory excerpt for the card..."
               value={description}
               onChange={(e) => {
                 setDescription(e.target.value);
                 if (fieldErrors.description)
                   setFieldErrors({ ...fieldErrors, description: undefined });
               }}
-              className={`w-full text-xl text-zinc-500 placeholder:text-zinc-400 border-0 outline-none p-0 focus:ring-0 resize-none leading-relaxed font-medium ${
+              className={`w-full text-base sm:text-lg text-zinc-500 placeholder:text-zinc-400 border-0 outline-none p-0 focus:ring-0 resize-none leading-relaxed font-normal ${
                 fieldErrors.description ? 'text-red-700 placeholder:text-red-300' : ''
               }`}
             />
@@ -338,29 +338,29 @@ export function PostForm({
 
           <div className="pt-6 border-t border-zinc-100">
             {/* Markdown Toolbar */}
-            <div className="flex flex-wrap items-center gap-1 mb-4 text-zinc-500">
-              <button onClick={() => insertFormatting('**', '**')} className="p-1.5 hover:text-zinc-900 hover:bg-zinc-100 rounded-[4px] transition-colors"><Bold className="w-4 h-4" /></button>
-              <button onClick={() => insertFormatting('*', '*')} className="p-1.5 hover:text-zinc-900 hover:bg-zinc-100 rounded-[4px] transition-colors"><Italic className="w-4 h-4" /></button>
-              <button onClick={() => insertFormatting('<u>', '</u>')} className="p-1.5 hover:text-zinc-900 hover:bg-zinc-100 rounded-[4px] transition-colors"><Underline className="w-4 h-4" /></button>
-              <div className="w-px h-4 bg-zinc-200 mx-2" />
-              <button onClick={() => insertFormatting('## ')} className="p-1.5 hover:text-zinc-900 hover:bg-zinc-100 rounded-[4px] transition-colors"><Heading className="w-4 h-4" /></button>
-              <button onClick={() => insertFormatting('- ')} className="p-1.5 hover:text-zinc-900 hover:bg-zinc-100 rounded-[4px] transition-colors"><List className="w-4 h-4" /></button>
-              <button onClick={() => insertFormatting('1. ')} className="p-1.5 hover:text-zinc-900 hover:bg-zinc-100 rounded-[4px] transition-colors"><ListOrdered className="w-4 h-4" /></button>
-              <div className="w-px h-4 bg-zinc-200 mx-2" />
-              <button onClick={() => insertFormatting('[Link Title](', ')')} className="p-1.5 hover:text-zinc-900 hover:bg-zinc-100 rounded-[4px] transition-colors"><LinkIcon className="w-4 h-4" /></button>
-              <button onClick={() => insertFormatting('`', '`')} className="p-1.5 hover:text-zinc-900 hover:bg-zinc-100 rounded-[4px] transition-colors"><Code className="w-4 h-4" /></button>
+            <div className="inline-flex flex-wrap items-center gap-1 mb-4 p-1 bg-zinc-100/80 rounded-full text-zinc-500">
+              <button onClick={() => insertFormatting('**', '**')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Bold className="w-3.5 h-3.5" /></button>
+              <button onClick={() => insertFormatting('*', '*')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Italic className="w-3.5 h-3.5" /></button>
+              <button onClick={() => insertFormatting('<u>', '</u>')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Underline className="w-3.5 h-3.5" /></button>
+              <div className="w-px h-3.5 bg-zinc-300 mx-1" />
+              <button onClick={() => insertFormatting('## ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Heading className="w-3.5 h-3.5" /></button>
+              <button onClick={() => insertFormatting('- ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><List className="w-3.5 h-3.5" /></button>
+              <button onClick={() => insertFormatting('1. ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><ListOrdered className="w-3.5 h-3.5" /></button>
+              <div className="w-px h-3.5 bg-zinc-300 mx-1" />
+              <button onClick={() => insertFormatting('[Link Title](', ')')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><LinkIcon className="w-3.5 h-3.5" /></button>
+              <button onClick={() => insertFormatting('`', '`')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Code className="w-3.5 h-3.5" /></button>
             </div>
 
             <textarea
               id="post-content-area"
-              rows={16}
-              placeholder="Write your article content here..."
+              rows={8}
+              placeholder="Write your article content here in markdown..."
               value={content}
               onChange={(e) => {
                 setContent(e.target.value);
                 if (fieldErrors.content) setFieldErrors({ ...fieldErrors, content: undefined });
               }}
-              className="w-full text-lg text-zinc-800 placeholder:text-zinc-300 border-0 outline-none p-0 focus:ring-0 resize-y leading-[1.8]"
+              className="w-full min-h-[160px] text-base text-zinc-800 placeholder:text-zinc-300 border-0 outline-none p-0 focus:ring-0 resize-none leading-[1.8]"
             />
             {fieldErrors.content && (
               <p className="text-xs text-red-600 mt-2 font-medium flex items-center gap-1">
@@ -372,18 +372,17 @@ export function PostForm({
         </div>
 
         {/* Sidebar Settings */}
-        <div className="w-full lg:w-[320px] p-6 lg:p-8 bg-zinc-50/30 overflow-y-auto space-y-10">
+        <div className="w-full lg:w-[320px] p-6 lg:p-7 bg-[#FAFBFD]/60 space-y-6 overflow-y-auto flex-shrink-0 flex flex-col justify-between min-h-0">
           
           {mode === 'edit' && (
-            <div className="space-y-4">
-              <h3 className="text-[12px] font-bold text-zinc-900 uppercase tracking-widest">Metadata</h3>
+            <div className="space-y-3">
+              <h3 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Status</h3>
               <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-2">Status</label>
                 <select
                   value={status}
                   disabled={!isAdmin}
                   onChange={(e) => setStatus(e.target.value as PostStatus)}
-                  className={`w-full h-10 px-3 border border-zinc-200 rounded-[6px] text-sm text-zinc-900 focus:outline-none focus:border-zinc-400 font-medium ${
+                  className={`w-full h-10 px-3.5 border border-zinc-200/80 rounded-full text-xs text-zinc-900 focus:outline-none focus:border-zinc-400 font-semibold ${
                     !isAdmin ? 'bg-zinc-100 cursor-not-allowed text-zinc-500' : 'bg-white cursor-pointer'
                   }`}
                 >
@@ -394,15 +393,15 @@ export function PostForm({
             </div>
           )}
 
-          <div className="space-y-4">
-            <h3 className="text-[12px] font-bold text-zinc-900 uppercase tracking-widest">Cover Image</h3>
+          <div className="space-y-3">
+            <h3 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Cover Image</h3>
             
-            <div className="flex bg-white rounded-[6px] border border-zinc-200 overflow-hidden text-sm font-medium">
+            <div className="flex bg-zinc-100 p-1 rounded-full text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setImageTab('upload')}
-                className={`flex-1 py-2 text-center transition-colors ${
-                  imageTab === 'upload' ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900'
+                className={`flex-1 py-1.5 text-center rounded-full transition-all ${
+                  imageTab === 'upload' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-900'
                 }`}
               >
                 Upload
@@ -410,11 +409,11 @@ export function PostForm({
               <button
                 type="button"
                 onClick={() => setImageTab('url')}
-                className={`flex-1 py-2 text-center transition-colors border-l border-zinc-200 ${
-                  imageTab === 'url' ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900'
+                className={`flex-1 py-1.5 text-center rounded-full transition-all ${
+                  imageTab === 'url' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-900'
                 }`}
               >
-                URL
+                Image URL
               </button>
             </div>
 
@@ -433,11 +432,11 @@ export function PostForm({
                 />
                 <label
                   htmlFor="featured-image-file"
-                  className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-[6px] p-6 flex flex-col items-center justify-center cursor-pointer transition-colors text-center"
+                  className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors text-center bg-white"
                 >
                   <UploadCloud className="w-6 h-6 text-zinc-400 mb-2" />
-                  <span className="text-sm font-medium text-zinc-700">Choose file</span>
-                  <span className="text-xs text-zinc-400 mt-1">JPG, PNG, WebP</span>
+                  <span className="text-xs font-semibold text-zinc-700">Choose image</span>
+                  <span className="text-[11px] text-zinc-400 mt-0.5">JPG, PNG, WebP up to 10MB</span>
                 </label>
               </div>
             )}
@@ -446,7 +445,7 @@ export function PostForm({
               <div>
                 <input
                   type="text"
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="https://images.unsplash.com/..."
                   value={imageUrl}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -456,7 +455,7 @@ export function PostForm({
                     setImageError(false);
                     setPreviewUrl(val.trim());
                   }}
-                  className="w-full h-10 px-3 bg-white border border-zinc-200 rounded-[6px] text-sm text-zinc-900 focus:outline-none focus:border-zinc-400"
+                  className="w-full h-10 px-4 bg-white border border-zinc-200/80 rounded-full text-xs text-zinc-900 focus:outline-none focus:border-zinc-400"
                 />
               </div>
             )}
@@ -466,7 +465,7 @@ export function PostForm({
             )}
 
             {previewUrl && (
-              <div className="relative aspect-[16/10] bg-zinc-100 rounded-[4px] border border-zinc-200 overflow-hidden group mt-4">
+              <div className="relative aspect-[16/10] bg-zinc-100 rounded-2xl border border-zinc-200/80 overflow-hidden group mt-3">
                 {!imageError ? (
                   <img
                     src={previewUrl}
@@ -482,15 +481,15 @@ export function PostForm({
                 <button
                   type="button"
                   onClick={handleRemoveImage}
-                  className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-red-50 text-zinc-700 hover:text-red-600 rounded-[4px] opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                  className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-red-50 text-zinc-700 hover:text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-sm"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-zinc-200/60">
+          <div className="pt-3 border-t border-zinc-200/60">
             {onPreview && (
               <button
                 type="button"
@@ -504,9 +503,9 @@ export function PostForm({
                     status,
                   });
                 }}
-                className="w-full h-10 flex items-center justify-center gap-2 bg-white border border-zinc-200 text-sm font-medium text-zinc-700 rounded-[6px] hover:bg-zinc-50 transition-colors"
+                className="w-full h-10 flex items-center justify-center gap-2 bg-white border border-zinc-200/80 text-xs font-semibold text-zinc-700 rounded-full hover:bg-zinc-50 transition-colors shadow-xs"
               >
-                <Eye className="w-4 h-4" /> Preview
+                <Eye className="w-3.5 h-3.5" /> Preview Article
               </button>
             )}
           </div>
