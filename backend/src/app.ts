@@ -1,6 +1,7 @@
 import path from 'path';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import authRoutes from './modules/auth/auth.routes.js';
 import postRoutes from './modules/posts/post.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
@@ -12,12 +13,17 @@ export const createApp = () => {
   // Middlewares
   app.use(
     cors({
-      origin: '*',
+      origin: (origin, callback) => {
+        // Echo calling origin back so credentials / cookies work seamlessly
+        callback(null, origin || true);
+      },
       credentials: true,
     })
   );
+  app.use(cookieParser());
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 
   // Static uploads directory
   const uploadsPath = path.join(process.cwd(), 'uploads');

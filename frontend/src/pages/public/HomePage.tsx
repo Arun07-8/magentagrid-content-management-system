@@ -1,9 +1,8 @@
 
 import { useNavigate } from 'react-router-dom';
 import { PublicLayout } from '../../widgets';
-import { usePublicPosts } from '../../entities/post';
+import { usePublicPosts, ArticleCard } from '../../entities/post';
 import { Spinner } from '../../shared/ui';
-import { formatDate } from '../../shared/lib';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -25,7 +24,7 @@ export default function HomePage() {
                 {/* Left Side Content */}
                 <div className="w-full lg:w-[35%] flex flex-col justify-center pt-8 lg:pt-0 lg:mt-12">
                   <h1 className="text-[32px] sm:text-[38px] lg:text-[54px] font-bold text-zinc-900 tracking-tight leading-[1.1] mb-5">
-                    Discover insights that <span className="text-blue-600">spark curiosity</span>.
+                    Discover insights that <span className="text-[#FCD06B]">spark curiosity</span>.
                   </h1>
 
                   <p className="text-[15px] sm:text-[16px] text-zinc-500 font-medium leading-[1.6] max-w-[480px] mb-8">
@@ -35,7 +34,7 @@ export default function HomePage() {
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       onClick={() => navigate('/blog')}
-                      className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white text-[15px] font-semibold px-7 py-3.5 rounded-full transition-all shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)] hover:-translate-y-0.5"
+                      className="inline-flex items-center justify-center bg-[#FCD06B] hover:bg-[#f0be4d] text-zinc-950 text-[15px] font-bold px-7 py-3.5 rounded-full transition-all shadow-[0_4px_14px_rgba(252,208,107,0.35)] hover:shadow-[0_6px_20px_rgba(252,208,107,0.45)] hover:-translate-y-0.5"
                     >
                       Explore Articles
                     </button>
@@ -77,34 +76,13 @@ export default function HomePage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6 lg:gap-10">
                   {displayPosts.map((story) => (
-                    <article
+                    <ArticleCard
                       key={story._id || story.id}
-                      className="group flex flex-col cursor-pointer transition-all"
+                      post={story}
                       onClick={() => navigate(`/blog/${story._id || story.id}`)}
-                    >
-                      {story.imageUrl && (
-                        <div className="w-full aspect-[16/10] overflow-hidden rounded-xl bg-zinc-100 mb-5">
-                          <img
-                            src={story.imageUrl}
-                            alt={story.title}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        </div>
-                      )}
-
-                      <div className="flex flex-col flex-1">
-
-                        <h3 className="text-[20px] font-bold text-zinc-900 group-hover:text-blue-600 transition-colors mb-3 leading-[1.35]">
-                          {story.title}
-                        </h3>
-
-                        <span className="text-[13.5px] text-zinc-500">
-                          {formatDate(story.createdAt)}
-                        </span>
-                      </div>
-                    </article>
+                    />
                   ))}
                 </div>
               </div>

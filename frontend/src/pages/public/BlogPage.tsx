@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PublicLayout } from '../../widgets';
-import { usePublicPosts } from '../../entities/post';
+import { usePublicPosts, ArticleCard } from '../../entities/post';
 import { Spinner, EmptyState, ErrorState } from '../../shared/ui';
-import { formatDate } from '../../shared/lib';
 
 export default function BlogPage() {
   const navigate = useNavigate();
@@ -49,40 +48,15 @@ export default function BlogPage() {
           />
         ) : allPosts.length > 0 ? (
           <div className="flex flex-col">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6 lg:gap-10">
               {paginatedFeed.map((story) => {
                 const storyId = story._id || story.id;
                 return (
-                  <article
+                  <ArticleCard
                     key={storyId}
-                    className="group flex flex-col cursor-pointer transition-all"
+                    post={story}
                     onClick={() => navigate(`/blog/${storyId}`)}
-                  >
-                    {story.imageUrl ? (
-                      <div className="w-full aspect-[16/10] overflow-hidden rounded-xl bg-zinc-100 mb-5">
-                        <img
-                          src={story.imageUrl}
-                          alt={story.title}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full aspect-[16/10] overflow-hidden rounded-xl bg-zinc-100 mb-5 flex items-center justify-center">
-                        <span className="text-zinc-400 font-medium text-[13px]">No Image</span>
-                      </div>
-                    )}
-
-                    <div className="flex flex-col flex-1">
-
-                      <h3 className="text-[20px] font-bold text-zinc-900 group-hover:text-blue-600 transition-colors mb-3 leading-[1.35]">
-                        {story.title}
-                      </h3>
-
-                      <span className="text-[13.5px] text-zinc-500">
-                        {formatDate(story.createdAt)}
-                      </span>
-                    </div>
-                  </article>
+                  />
                 );
               })}
             </div>

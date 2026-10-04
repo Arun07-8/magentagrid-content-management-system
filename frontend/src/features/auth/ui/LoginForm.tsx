@@ -4,11 +4,10 @@ import { useAuth } from '../model/useAuth';
 import { toast } from '../../../store/toast';
 
 export function LoginForm() {
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [localError, setLocalError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{
     email?: string;
     password?: string;
@@ -16,7 +15,6 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocalError(null);
 
     const cleanEmail = email.trim();
     const errors: { email?: string; password?: string } = {};
@@ -44,12 +42,9 @@ export function LoginForm() {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Login failed. Please check your credentials.';
-      setLocalError(message);
       toast.error(message);
     }
   };
-
-  const displayedError = localError || (error?.message ? String(error.message) : null);
 
   return (
     <div className="w-full max-w-sm">
@@ -61,12 +56,6 @@ export function LoginForm() {
           Enter your credentials to access the workspace.
         </p>
       </div>
-
-      {displayedError && (
-        <div className="mb-6 p-3 bg-red-50 text-red-700 text-sm font-medium rounded-[4px] border border-red-100">
-          {displayedError}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <div>

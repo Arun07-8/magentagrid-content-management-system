@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Link2, Check, ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PublicLayout } from '../../widgets';
-import { PostView, usePublicPost, usePublicPosts } from '../../entities/post';
+import { PostView, usePublicPost, usePublicPosts, ArticleCard, getArticleCategory } from '../../entities/post';
 import { Spinner, ErrorState, Button } from '../../shared/ui';
-import { formatDate } from '../../shared/lib';
+import { formatFullDate } from '../../shared/lib';
 
 export default function BlogDetailPage() {
   const navigate = useNavigate();
@@ -14,7 +13,7 @@ export default function BlogDetailPage() {
   const effectiveId =
     paramId || slug || (allPosts.length > 0 ? allPosts[0]._id || allPosts[0].id : undefined);
 
-  const { data: post, isLoading, isError, error } = usePublicPost(effectiveId);
+  const { data: post, isLoading, isError, error, refetch } = usePublicPost(effectiveId);
   const [copied, setCopied] = useState(false);
 
   const relatedPosts = allPosts
@@ -27,118 +26,72 @@ export default function BlogDetailPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const formattedDate = formatDate(post?.createdAt);
+  const displayCategory = post ? getArticleCategory(post) : 'Guides';
+  const formattedDate = post ? formatFullDate(post.createdAt || post.updatedAt) : '';
 
   return (
     <PublicLayout>
-      <main className="flex-1 bg-white pt-10 pb-24">
-        {/* Top Navigation */}
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 flex justify-between items-center border-b border-zinc-200/60 pb-6">
-          <button
-            onClick={() => navigate('/blog')}
-            className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to Dispatches
-          </button>
-          
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
-          >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span className="text-emerald-700">Link Copied</span>
-              </>
-            ) : (
-              <>
-                <Link2 className="w-4 h-4" /> Share Article
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Article Body */}
-        <div className="px-4 sm:px-6 lg:px-8">
-          {isLoading ? (
+      <main className="flex-1 bg-white pb-24">
+        {isLoading ? (
+          <div className="py-24">
             <Spinner fullHeight text="Loading article..." />
-          ) : isError || !post ? (
+          </div>
+        ) : isError || !post ? (
+          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <ErrorState
               title="Article not found"
               message={
                 error?.message ||
                 'The article you are trying to view is either unavailable or has been removed.'
               }
+              onRetry={() => refetch()}
               action={
                 <Button onClick={() => navigate('/blog')} size="sm">
                   Browse All Articles
                 </Button>
               }
             />
-          ) : (
-            <PostView
-              title={post.title}
-              description={post.description}
-              content={post.content}
-              imageUrl={post.imageUrl}
-              date={formattedDate}
-              readTime={post.readTime}
-              authorName={post.author?.name}
-            />
-          )}
-        </div>
+          </div>
+        ) : (
+          <PostView
+            title={post.title}
+            description={post.description}
+            content={post.content}
+            imageUrl={post.imageUrl}
+            category={displayCategory}
+            date={formattedDate}
+            readTime={post.readTime}
+            authorName={post.author?.name}
+            onShare={handleCopyLink}
+            copied={copied}
+          />
+        )}
 
         {/* Related Articles */}
         {relatedPosts.length > 0 && !isLoading && !isError && post && (
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 mt-24 pt-16 border-t border-zinc-200/60">
-            <h3 className="text-xl font-bold text-zinc-900 tracking-tight mb-10">More to Read</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {relatedPosts.map((item, index) => {
+          <div className="max-w-[1000px] mx-auto px-4 sm:px-6 mt-14 sm:mt-16 pt-10 sm:pt-12 border-t border-zinc-200/60">
+            <div className="flex items-end justify-between mb-6">
+              <h3 className="text-lg sm:text-xl font-bold text-zinc-900 tracking-tight">More to Read</h3>
+              <button
+                onClick={() => navigate('/blog')}
+                className="text-xs sm:text-[13px] font-semibold text-zinc-500 hover:text-zinc-900 transition-colors"
+              >
+                View all →
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
+              {relatedPosts.map((item) => {
                 const itemId = item._id || item.id;
-                const isLarge = index === 0;
-                
                 return (
-                  <article
+                  <ArticleCard
                     key={itemId}
+                    post={item}
+                    size="sm"
                     onClick={() => {
                       navigate(`/blog/${itemId}`);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className={`group cursor-pointer flex flex-col ${isLarge ? 'md:col-span-2 md:grid md:grid-cols-2 md:gap-8' : ''}`}
-                  >
-                    <div className={isLarge ? '' : 'mb-4'}>
-                      {item.imageUrl ? (
-                        <div className={`aspect-[16/10] overflow-hidden rounded-[4px] bg-zinc-100 ${isLarge ? 'h-full' : ''}`}>
-                          <img
-                            src={item.imageUrl}
-                            alt={item.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className={`aspect-[16/10] overflow-hidden rounded-[4px] bg-zinc-100 flex items-center justify-center ${isLarge ? 'h-full' : ''}`}>
-                          <span className="text-zinc-400 font-medium">No Image</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className={`flex flex-col justify-center ${isLarge ? '' : ''}`}>
-                      <h4 className={`font-bold text-zinc-900 group-hover:text-zinc-600 transition-colors mb-2 leading-snug ${isLarge ? 'text-2xl mb-3' : 'text-lg'}`}>
-                        {item.title}
-                      </h4>
-                      {isLarge && (
-                         <p className="text-zinc-500 text-base line-clamp-2 mb-4">
-                           {item.description || item.content}
-                         </p>
-                      )}
-                      <div className="text-[13px] font-medium text-zinc-400 mt-auto">
-                        {formatDate(item.createdAt)}
-                      </div>
-                    </div>
-                  </article>
+                  />
                 );
               })}
             </div>

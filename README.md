@@ -1,140 +1,52 @@
-# CMS Platform
+# Content Management System (CMS) Platform
 
-A clean, modern, and maintainable Content Management System (CMS) built with a **React + TypeScript** frontend and a **Node.js/Express + MongoDB** backend.
-
----
-
-## 1. Project Overview
-
-The CMS is developed according to modern production standards. It demonstrates a clean separation of concerns, robust type safety, role-based authorization, real-time cross-client data synchronization, and responsive user experience.
-
-### Key Capabilities
-- **Public Website Pages**:
-  - **Home**: Hero banner, latest updates, and featured published articles.
-  - **About**: Company mission, vision, values, and milestone stats.
-  - **News / Blog Listing**: Filterable by category, searchable by title/content, with responsive grid and pagination.
-  - **News / Blog Details**: Full article presentation with metadata, reading time, author, and related published posts.
-  - **404 Not Found Page**: Friendly fallback with navigation to home.
-- **CMS Management**:
-  - **Dashboard**: Overview statistics (Total Posts, Published, Drafts, Views), real-time indicator, and quick links.
-  - **Post List**: Comprehensive view with status pills, pagination, and context action dropdown.
-  - **Create Post**: Reusable form with validation, Markdown/rich toolbar helpers, image URL preview, and status controls.
-  - **Edit Post**: Edit title, short description, body content, and metadata with unsaved input preservation.
-  - **Preview Post**: Multi-device simulator supporting **Desktop**, **Tablet**, and **Mobile** responsive widths using the shared post-rendering component.
-  - **Publish / Unpublish**: Fast one-click state transitions with instant server and client reflection.
-  - **Delete Post**: Safe deletion workflow with confirmation modal.
-- **Strict Role Permissions**:
-  - **Admin**: Full access (Create, View, Edit, Publish, Unpublish, Delete).
-  - **Editor**: Limited access (Create, View, Edit; cannot Publish, Unpublish, or Delete). Both frontend UI and backend API independently enforce this rule.
-- **Real-Time Synchronization**:
-  - Socket.IO broadcasts all mutations (`posts:changed`).
-  - TanStack Query automatically invalidates and updates server caches in open browser windows without manual page refresh.
+A full-stack, responsive Content Management System (CMS) built with **React + TypeScript** on the frontend and **Node.js/Express + MongoDB** on the backend. Designed with role-based access control (Admin & Editor), secure JWT authentication via HttpOnly cookies with automatic token refresh, real-time cross-client data synchronization via Socket.IO, and a Feature-Sliced Design (FSD) architecture.
 
 ---
 
-## 2. Architecture & Design Principles
+## 📌 Submission Overview & Quick Links
 
-### Backend: Modular Monolithic Architecture
-The backend follows a **Modular Monolithic Architecture** ensuring clear module boundaries, zero circular dependencies, and maintainable data ownership:
-
-```
-backend/
-├── src/
-│   ├── config/              # Centralized environment, database, and socket setup
-│   │   ├── env.ts           # Type-safe environment validation via Zod
-│   │   ├── db.ts            # MongoDB connection with informative error diagnostics
-│   │   └── socket.ts        # Socket.IO initialization and real-time event broadcaster
-│   ├── middleware/          # Cross-cutting HTTP middlewares
-│   │   ├── auth.middleware.ts     # JWT bearer token verification
-│   │   ├── role.middleware.ts     # Role authorization guard (Admin vs Editor)
-│   │   ├── validate.middleware.ts # Zod request body validation
-│   │   └── error.middleware.ts    # Centralized error handler (Zod, Mongoose, AppError)
-│   ├── modules/             # Self-contained business modules
-│   │   ├── auth/            # Authentication & Identity module
-│   │   │   ├── user.model.ts      # Mongoose User schema & password hashing
-│   │   │   ├── auth.validation.ts # Zod validation schemas
-│   │   │   ├── auth.service.ts    # Authentication business logic & tokens
-│   │   │   ├── auth.controller.ts # Route handlers
-│   │   │   └── auth.routes.ts     # Express router definition
-│   │   └── posts/           # Content Management module
-│   │       ├── post.model.ts      # Mongoose Post schema with auto-readTime
-│   │       ├── post.validation.ts # Zod validation schemas
-│   │       ├── post.service.ts    # Post CRUD, publish logic, and dual-mode persistence
-│   │       ├── post.controller.ts # Route handlers
-│   │       └── post.routes.ts     # Public and protected Express routes
-│   ├── utils/
-│   │   ├── logger.ts        # Winston logger with automated directory initialization
-│   │   └── seed.ts          # Seed utility for initial users and articles
-│   ├── app.ts               # Express application builder (CORS, parser, routes)
-│   ├── server.ts            # HTTP & Socket.IO server entrypoint
-│   └── tests/               # Automated unit and integration tests
-```
-
-### Frontend: Feature-Sliced Architecture (FSD)
-The frontend cleanly isolates application layers according to **Feature-Sliced Architecture** guidelines:
-
-```
-frontend/
-├── src/
-│   ├── app/                 # Application initialization, routing, and providers
-│   │   ├── App.tsx          # App root component wrapped with QueryProvider
-│   │   ├── providers/       # QueryClientProvider & global real-time listener
-│   │   └── routes/          # AppRoutes & ProtectedRoute guards
-│   ├── pages/               # Page composition
-│   │   ├── public/          # Home, About, Blog, BlogDetail, NotFound
-│   │   └── admin/           # AdminDashboard, AdminLogin, Posts, CreatePost, EditPost, PreviewPost, EmptyPosts
-│   ├── features/            # User actions and use-case workflows
-│   │   ├── auth/            # Auth hooks, API communication, and login form logic
-│   │   └── post/            # PostForm reusable UI component with inline validation
-│   ├── entities/            # Business entities and server cache hooks
-│   │   ├── user/            # Zustand user authentication store & token handling
-│   │   └── post/            # TanStack Query hooks, post API service, and PostView component
-│   ├── shared/              # Reusable primitives and infrastructure
-│   │   ├── api/             # apiClient (typed fetch wrapper) & socket client
-│   │   └── types/           # TypeScript interfaces (User, Post, ApiResponse)
-│   └── components/          # Reusable public layout components (Navbar, Footer, Logo)
-```
+- **Git Repository**: [https://github.com/Arun07-8/magentagrid-content-management-system.git](https://github.com/Arun07-8/magentagrid-content-management-system.git)
+- **Deployment Status**: Configured for local evaluation (`http://localhost:5173` frontend & `http://localhost:5000` backend).
 
 ---
 
-## 3. Technology Stack
+## 🔐 Test Login Credentials
 
-- **Frontend**:
-  - React 19 + TypeScript
-  - TailwindCSS v4
-  - React Router DOM v7
-  - TanStack Query (React Query) v5 (Server state, fetching & cache invalidation)
-  - Zustand (Client authentication and session state)
-  - Socket.IO Client (Real-time events)
-  - Lucide React (Icons)
-  - Vite v8 (Build tool & development server)
-- **Backend**:
-  - Node.js + Express 5
-  - TypeScript (ES2022, NodeNext resolution)
-  - MongoDB + Mongoose 9
-  - Socket.IO Server (Real-time updates)
-  - JSON Web Tokens (JWT) + BcryptJS (Authentication & password hashing)
-  - Winston (Logging)
-  - Zod 4 (Schema validation)
-  - Native `node:test` + TSX (Automated test runner)
+The application provides seeded accounts with distinct role capabilities:
+
+| Role | Email | Password | Allowed Actions |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `arunadmin@gmail.com` | `Admin123!` | Full access: View, Create, Edit, Publish, Unpublish, Delete |
+| **Editor** | `aruneditor@gmail.com` | `Admin123!` | Limited access: View, Create, Edit (Cannot Publish, Unpublish, or Delete) |
+
+*Alternative seeded test accounts*:
+- Admin: `adminarun@gmail.com` / `Admin123!`
+- Editor: `test.editor@example.com` / `Admin123!`
 
 ---
 
-## 4. Setup & Running Instructions
+## 🛠️ Setup & Running Instructions
 
 ### Prerequisites
-- Node.js (v18.0.0 or higher recommended)
-- npm (v9.0.0 or higher)
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
+- **MongoDB**: Local MongoDB instance (`mongodb://localhost:27017/cms`) or MongoDB Atlas URI
 
-### 1. Clone & Install Dependencies
+### 1. Clone Repository & Install Dependencies
 
-#### Backend
+```bash
+git clone https://github.com/Arun07-8/magentagrid-content-management-system.git
+cd magentagrid-content-management-system
+```
+
+#### Backend Setup:
 ```bash
 cd backend
 npm install
 ```
 
-#### Frontend
+#### Frontend Setup:
 ```bash
 cd frontend
 npm install
@@ -144,8 +56,8 @@ npm install
 
 ### 2. Environment Configuration
 
-#### Backend Configuration (`backend/.env`)
-Create or edit `backend/.env`:
+#### Backend Environment (`backend/.env`)
+Create `backend/.env` (or use existing `.env`):
 ```env
 PORT=5000
 JWT_ACCESS_SECRET=7vK9mQ2xL8pR4tY6nW3zA9cF5hJ1sD8e
@@ -155,12 +67,8 @@ REFRESH_TOKEN_TTL_DAYS=7
 MONGODB_URI="mongodb://localhost:27017/cms"
 ```
 
-> [!NOTE]
-> **MongoDB Resilience / Zero-Config Review**:
-> The backend features **dual-mode persistence**. If a MongoDB instance (or Atlas cluster) is connected, all records persist directly to MongoDB. If MongoDB is unreachable (e.g. Atlas IP Access List restrictions), the backend automatically and seamlessly utilizes an in-memory repository pre-seeded with sample data. This allows immediate, zero-downtime evaluation.
-
-#### Frontend Configuration (`frontend/.env`)
-Create `frontend/.env` (optional, defaults are already pre-configured):
+#### Frontend Environment (`frontend/.env`)
+Create `frontend/.env`:
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
@@ -168,16 +76,48 @@ VITE_SOCKET_URL=http://localhost:5000
 
 ---
 
-### 3. Running Locally
+### 3. CLI User Creation Scripts
 
-#### Start the Backend Server:
+Create Admin or Editor accounts directly from the terminal:
+
+```bash
+cd backend
+
+# Create an Admin User
+npm run create:admin
+
+# Create an Editor User
+npm run create:editor
+```
+
+**CLI Prompt Interaction**:
+```text
+Username: newadmin
+Email: newadmin@example.com
+Password: ******** (masked)
+
+Admin user created successfully.
+Username: newadmin
+Email: newadmin@example.com
+Role: Admin
+```
+- Validates input format (non-empty username/email, email regex, min 6-char password).
+- Checks for duplicate username or email in MongoDB.
+- Automatically hashes passwords via `bcryptjs` before persisting.
+- Masked password input in terminal.
+
+---
+
+### 4. Running the Application
+
+#### Step 1: Start Backend Server
 ```bash
 cd backend
 npm run dev
 ```
-*Backend runs on `http://localhost:5000` (API: `http://localhost:5000/api`).*
+*Backend runs on `http://localhost:5000` (Health check: `http://localhost:5000/api/health`).*
 
-#### Start the Frontend Dev Server:
+#### Step 2: Start Frontend Development Server
 ```bash
 cd frontend
 npm run dev
@@ -186,130 +126,160 @@ npm run dev
 
 ---
 
-## 5. Test Credentials
+## 🌟 Main Features
 
-The system includes pre-seeded test accounts with distinct roles:
+### Public Website
+- **Home (`/`)**: Hero banner, call-to-action buttons, and latest published article grid.
+- **About (`/about`)**: Structured, content-focused overview of who we are, what we do, purpose, vision, and core values.
+- **Blog / News (`/blog` & `/news`)**: Published articles listing with category tags, date formatting, 2-column mobile card grid, and pagination.
+- **Article Details (`/blog/:id` & `/news/:id`)**: Full article reader with author metadata, read time, formatted paragraphs, and compact "More to Read" related articles section.
+- **404 Page (`*`)**: Clean fallback page for invalid routes.
 
-| Role | Email | Password | Permissions |
-|---|---|---|---|
-| **Admin** | `admin@example.com` | `password123` | Full access: View, Create, Edit, Publish, Unpublish, Delete |
-| **Editor** | `editor@example.com` | `password123` | Limited access: View, Create, Edit (Cannot Publish, Unpublish, or Delete) |
+### Protected Admin CMS
+- **Articles Directory (`/admin/posts`)**: Data table on desktop/tablet viewports; converts to a responsive card list on mobile screens. Includes full-width search bar, status filter pills (`All`, `Published`, `Draft`), per-page pagination, and inline actions.
+- **Create Post (`/admin/posts/create`)**: Form for creating new articles with title, short description, content, category selection, image upload/preview, and draft/publish status options.
+- **Edit Post (`/admin/posts/edit/:id`)**: Edit existing posts with pre-filled form fields.
+- **Device Simulator Preview (`/admin/posts/preview/:id`)**: Real-time article preview with device width toggles (**Desktop ~1280px**, **Tablet ~768px**, **Mobile ~390px**).
 
-*The CMS login page (`/admin/login`) also includes quick-fill buttons to switch between Admin and Editor accounts instantly.*
+### Authentication & Session Management
+- **Dual JWT + HttpOnly Cookie Flow**: Short-lived access token (`15m` TTL) and refresh token (`7d` TTL) stored in HttpOnly cookies (`cms_token`, `cms_refresh_token`).
+- **Seamless Page Refresh**: `checkAuth()` verifies `/api/auth/me` on startup. If access token is expired, `apiClient` automatically initiates a single-flight `/api/auth/refresh` call and retries pending requests without logging out the user.
+- **ProtectedRoute Guard**: Prevents premature redirection to `/admin/login` while initial session check is pending by rendering a clean loading indicator.
 
----
+### Role-Based Authorization
+- **Admin**: Full permissions (Create, View, Edit, Publish, Unpublish, Delete).
+- **Editor**: Limited permissions (Create, View, Edit). Protected actions (Publish, Unpublish, Delete) are disabled in the UI and enforced at the backend middleware level (`requireRole('admin')` returning `403 Forbidden`).
 
-## 6. Authentication & Permissions
-
-1. **Authentication Flow**:
-   - `POST /api/auth/login`: Validates credentials, compares hashed passwords via Bcrypt, and returns a signed JWT access token.
-   - The token is securely stored by the frontend and attached automatically to subsequent API calls as `Authorization: Bearer <token>`.
-2. **CMS Route Protection**:
-   - The `ProtectedRoute` component inspects the client authentication state. Unauthenticated requests are immediately redirected to `/admin/login`.
-3. **Backend Role Enforcement**:
-   - The `requireRole('admin')` middleware guards sensitive routes (`PATCH /api/posts/:id/publish`, `PATCH /api/posts/:id/unpublish`, `DELETE /api/posts/:id`).
-   - If an Editor attempts to call these endpoints directly (e.g., via Postman or script), the backend rejects the request with `403 Forbidden`.
-   - Creating or editing posts with `status: 'Published'` as an Editor is independently rejected or forced to `'Draft'` status.
-
----
-
-## 7. Real-Time Data Updates
-
-The application employs **Socket.IO** for real-time synchronization between browser windows:
-1. Whenever an Admin creates, updates, publishes, unpublishes, or deletes an article in the CMS, the backend emits a `posts:changed` event with the mutation action and post payload.
-2. The frontend maintains an active socket connection configured in `QueryProvider`.
-3. Upon receiving `posts:changed`, the frontend automatically calls:
-   ```ts
-   queryClient.invalidateQueries({ queryKey: ['posts'] });
-   queryClient.invalidateQueries({ queryKey: ['public-posts'] });
-   ```
-4. **Verification Scenario**:
-   - Open **Browser Window 1**: Public website (`http://localhost:5173/blog`).
-   - Open **Browser Window 2**: CMS dashboard (`http://localhost:5173/admin/posts`).
-   - When an article is published or modified in Window 2, Window 1 updates dynamically without manual browser refresh.
+### Real-Time Synchronization
+- Socket.IO broadcasts `posts:changed` events on mutations.
+- TanStack Query automatically invalidates `['posts']` and `['public-posts']` query caches in open browser windows without requiring manual page reloads.
 
 ---
 
-## 8. State Management & API Caching
-
-- **Server State (TanStack Query)**:
-  - `usePublicPosts(params)`: Queries published posts with 2-minute cache `staleTime`.
-  - `useCmsPosts(params)`: Queries all CMS posts with 1-minute cache `staleTime`.
-  - `useCreatePost`, `useUpdatePost`, `usePublishPost`, `useUnpublishPost`, `useDeletePost`: Perform mutations and trigger query invalidations.
-- **Client State (Zustand)**:
-  - `useUserStore`: Stores current user profile, JWT token, and role.
-  - Automatically restored on page refresh from `localStorage`.
-- **Separation of Concerns**:
-  - Server data is never duplicated in ad-hoc local state variables.
-  - Form state during editing is isolated within `PostForm`, ensuring input is retained even if a network request encounters an error.
+### Responsive Design
+- Optimized across all breakpoints: **Desktop (1920px/1440px)**, **Laptop (1366px)**, **Tablet (1024px/768px)**, **Mobile (430px/390px)**, and **Small Mobile (320px)**.
+- Slide-over mobile navigation drawer on public header (`Navbar.tsx`) and admin layout (`AdminSidebar.tsx`).
+- 2-column post card grid on mobile viewports for public feed.
 
 ---
 
-## 9. API Overview
+## 🏗️ Architecture & Project Structure
 
-### Public Endpoints (No Auth Required)
-- `GET /api/health` — Health check endpoint
-- `GET /api/posts/public` — Retrieve published posts only (supports `?search=` and `?category=`)
-- `GET /api/posts/public/:id` — Retrieve a single published post and increment read view count
+### Backend Architecture: Modular Monolith
+The backend isolates business modules with clear boundaries and centralized middleware:
 
-### Authentication Endpoints
-- `POST /api/auth/login` — Login with email and password
-- `POST /api/auth/logout` — Invalidate user session
-- `GET /api/auth/me` — Retrieve current authenticated user profile (`Bearer` token required)
+```
+backend/
+├── src/
+│   ├── cli/                   # User creation CLI commands
+│   │   ├── createAdmin.ts     # Admin creation entrypoint
+│   │   ├── createEditor.ts    # Editor creation entrypoint
+│   │   └── userPrompt.ts      # Shared masked input & DB creation handler
+│   ├── config/                # Environment, DB & Socket setup
+│   │   ├── env.ts             # Zod type-safe environment configuration
+│   │   ├── db.ts              # MongoDB Mongoose connection handler
+│   │   └── socket.ts          # Socket.IO server broadcaster
+│   ├── middleware/            # Express middlewares
+│   │   ├── auth.middleware.ts # JWT verification (Cookie & Bearer)
+│   │   ├── role.middleware.ts # Role guard (Admin / Editor)
+│   │   ├── validate.middleware.ts # Zod schema validator
+│   │   ├── upload.middleware.ts   # Multer file upload handler
+│   │   └── error.middleware.ts    # Centralized error middleware
+│   ├── modules/               # Domain business modules
+│   │   ├── auth/              # Auth module (User model, Controller, Service, Routes)
+│   │   └── posts/             # Posts module (Post model, Controller, Service, Routes)
+│   ├── utils/
+│   │   └── logger.ts          # Winston logger
+│   ├── app.ts                 # Express application setup & CORS configuration
+│   └── server.ts              # HTTP server & Socket.IO initialization
+```
 
-### CMS Post Management Endpoints (`Bearer` Token Required)
-- `GET /api/posts` — Get all posts (Draft & Published, supports `?search=` and `?status=`)
-- `GET /api/posts/:id` — Get single post by ID (Admin & Editor)
-- `POST /api/posts` — Create a new post (Admin & Editor)
-- `PUT /api/posts/:id` — Update post details (Admin & Editor)
-- `PATCH /api/posts/:id/publish` — Publish article (**Admin only**)
-- `PATCH /api/posts/:id/unpublish` — Unpublish article (**Admin only**)
-- `DELETE /api/posts/:id` — Delete article (**Admin only**)
+### Frontend Architecture: Feature-Sliced Design (FSD)
+The frontend separates responsibilities into layers:
+
+```
+frontend/
+├── src/
+│   ├── app/                   # App setup, providers & router
+│   │   ├── App.tsx            # App root
+│   │   ├── providers/         # QueryProvider & Socket listener
+│   │   └── router/            # AppRoutes & ProtectedRoute
+│   ├── pages/                 # Full page components
+│   │   ├── public/            # HomePage, AboutPage, BlogPage, BlogDetailPage, NotFoundPage
+│   │   └── admin/             # AdminLoginPage, AdminPostsPage, PostCreatePage, PostEditPage, PostPreviewPage
+│   ├── widgets/               # Layout components (Navbar, AdminSidebar, AdminHeader, AdminLayout, PublicLayout)
+│   ├── features/              # Use-case modules
+│   │   ├── auth/              # LoginForm, useAuth, authApi
+│   │   └── post-management/   # PostForm, DeleteModal
+│   ├── entities/              # Core business entities
+│   │   ├── user/              # userStore (Zustand) & session check
+│   │   └── post/              # PostView, ArticleCard, usePosts, postApi
+│   └── shared/                # Primitives & utilities
+│       ├── api/               # apiClient (fetch wrapper with auto-refresh interceptor)
+│       ├── lib/               # Date formatters & helpers
+│       ├── ui/                # Logo, Spinner, Button, Badge, Toast
+│       └── types/             # Shared TypeScript types
+```
 
 ---
 
-## 10. Automated Testing
+## 💻 Technology Stack
 
-The project includes automated integration and unit tests covering essential requirements:
-- Form validation constraint verification (Zod schemas)
-- Password hashing & verification
-- Admin & Editor authentication
-- Unauthorized role access rejection (Editor blocked from publishing & deleting)
-- Full article lifecycle (Create draft → Verify excluded from public site → Publish → Verify visible in public site → Unpublish → Delete)
+### Frontend
+- **React 19 + TypeScript**: UI component layer with static type checking.
+- **React Router DOM v7**: Declarative client-side routing & protected route management.
+- **TanStack Query (React Query) v5**: Asynchronous server-state management, query caching, and cache invalidation.
+- **Zustand v5**: Lightweight client authentication & session store.
+- **Tailwind CSS v4**: Responsive utility-first styling.
+- **Socket.IO Client v4**: WebSockets for real-time `posts:changed` listeners.
+- **Lucide React**: Modern icon primitives.
+- **Vite v8**: Development server & production bundler.
 
-To execute the test suite:
+### Backend
+- **Node.js + Express 5**: Core REST API application framework.
+- **TypeScript**: End-to-end type safety.
+- **MongoDB + Mongoose 9**: Document database & ODM schema modeling.
+- **JSON Web Tokens (jwt) & bcryptjs**: Cryptographic authentication tokens and password hashing.
+- **cookie-parser**: Parses HttpOnly auth cookies (`cms_token`, `cms_refresh_token`).
+- **Socket.IO v4**: WebSocket server for broadcasting real-time events.
+- **Zod 4**: Schema validation for request payloads and environment variables.
+- **Winston**: Structured HTTP request & application logging.
+- **tsx**: TypeScript execution engine for dev server and CLI scripts.
+
+---
+
+## 🧪 Automated Testing
+
+The backend includes automated integration & unit tests:
 ```bash
 cd backend
 npm test
 ```
 
-Test Results:
-```text
-✔ Auth Service & Validation Tests (289ms)
-  ✔ loginSchema validates email and password constraints
-  ✔ Admin login succeeds with correct credentials
-  ✔ Editor login succeeds with correct role
-  ✔ Login fails with invalid password
-✔ Post Module & Role-Based Permissions Tests (8ms)
-  ✔ createPostSchema validates required fields
-  ✔ Editor role is blocked from publishing post directly
-  ✔ Admin role can create, publish, unpublish, and delete posts
-
-ℹ tests 9 | pass 9 | fail 0
-```
+**Automated Test Coverage**:
+- Request payload Zod validation
+- Password hashing & verification
+- Admin & Editor authentication
+- Role permission enforcement (`requireRole` middleware blocking Editors from publishing/deleting)
+- Full post lifecycle (Draft -> Published -> Unpublish -> Delete)
 
 ---
 
-## 11. AI Assistance Used
+## 🤖 AI Assistance Disclosure
 
-In adherence to technical test disclosure rules:
-- **Google Antigravity AI Assistant** was utilized to assist in inspecting the existing codebase, setting up modular monolithic routing, structuring TypeScript types, implementing TanStack Query hooks, configuring Socket.IO real-time communication, and writing automated test specifications.
-- Every architectural choice, type definition, and file was reviewed and validated for simplicity, maintainability, and standards compliance.
+In compliance with technical test submission guidelines:
+- **AI Tool Used**: **Google Antigravity AI Assistant** (Powered by Gemini 3.6 Flash & Gemini 3.8 Flash).
+- **How AI Helped**:
+  - Assisted in designing the Modular Monolith backend and FSD frontend structures.
+  - Implemented the automatic token refresh & retry interceptor in `apiClient.ts` to solve session drop on page refresh.
+  - Configured responsive grid scaling, mobile slide-over navigation drawers, and mobile admin card views.
+  - Formatted automated integration test specifications and CLI user creation scripts.
+  - All code generated was manually reviewed, verified via TypeScript compilation (`tsc`), and tested across browser and API execution flows.
 
 ---
 
-## 12. Assumptions & Notes
+## 📋 Assumptions
 
-1. **Routing Aliases**: Both `/blog` (from existing template) and `/news` (from technical test specifications) are supported and route to the same responsive blog listing and detail components.
-2. **Device Preview Parity**: The CMS preview screen (`/admin/posts/preview/:id`) directly reuses the `PostView` component to ensure exact visual parity with the live public blog article view.
-3. **Draft Isolation**: The public website and endpoints (`/api/posts/public`) strictly filter out drafts (`status: 'Published'`). Draft articles are only accessible to authenticated CMS users.
+1. **Routing Aliases**: `/blog` and `/news` route to the same responsive blog listing and article detail pages.
+2. **Device Simulator**: The CMS post preview (`/admin/posts/preview/:id`) uses the shared `PostView` component to match public render fidelity.
+3. **Draft Privacy**: Public API endpoints (`/api/posts/public`) filter for `status: 'Published'`. Drafts are strictly accessible within the protected admin CMS.
