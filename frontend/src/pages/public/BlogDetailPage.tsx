@@ -11,13 +11,13 @@ export default function BlogDetailPage() {
 
   const { data: allPosts = [] } = usePublicPosts();
   const effectiveId =
-    paramId || slug || (allPosts.length > 0 ? allPosts[0]._id || allPosts[0].id : undefined);
+    paramId || slug || (allPosts.length > 0 ? allPosts[0]._id || (allPosts[0] as any).id : undefined);
 
   const { data: post, isLoading, isError, error, refetch } = usePublicPost(effectiveId);
   const [copied, setCopied] = useState(false);
 
   const relatedPosts = allPosts
-    .filter((a) => (a._id || a.id) !== effectiveId)
+    .filter((a) => (a._id || (a as any).id) !== effectiveId)
     .slice(0, 3);
 
   const handleCopyLink = () => {
@@ -26,18 +26,18 @@ export default function BlogDetailPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const displayCategory = post ? getArticleCategory(post) : 'Guides';
+  const displayCategory = post ? getArticleCategory(post) : 'Editorial';
   const formattedDate = post ? formatFullDate(post.createdAt || post.updatedAt) : '';
 
   return (
     <PublicLayout>
       <main className="flex-1 bg-white pb-24">
         {isLoading ? (
-          <div className="py-24">
+          <div className="py-32">
             <Spinner fullHeight text="Loading article..." />
           </div>
         ) : isError || !post ? (
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <ErrorState
               title="Article not found"
               message={
@@ -67,25 +67,35 @@ export default function BlogDetailPage() {
           />
         )}
 
-        {/* Related Articles */}
+        {/* Related Articles Strip */}
         {relatedPosts.length > 0 && !isLoading && !isError && post && (
-          <div className="max-w-[1000px] mx-auto px-4 sm:px-6 mt-14 sm:mt-16 pt-10 sm:pt-12 border-t border-zinc-200/60">
-            <div className="flex items-end justify-between mb-6">
-              <h3 className="text-lg sm:text-xl font-bold text-zinc-900 tracking-tight">More to Read</h3>
+          <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 mt-14 sm:mt-20 pt-12 border-t border-zinc-200">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-1">
+                  CURATED DISPATCHES
+                </span>
+                <h3 className="text-2xl font-black text-zinc-950 tracking-tight font-['Plus_Jakarta_Sans']">
+                  More Stories to Read
+                </h3>
+              </div>
               <button
+                type="button"
                 onClick={() => navigate('/blog')}
-                className="text-xs sm:text-[13px] font-semibold text-zinc-500 hover:text-zinc-900 transition-colors"
+                className="text-xs sm:text-sm font-bold text-zinc-900 hover:text-amber-600 transition-colors cursor-pointer"
               >
-                View all →
+                View all stories →
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
               {relatedPosts.map((item) => {
-                const itemId = item._id || item.id;
+                const itemId = item._id || (item as any).id;
                 return (
                   <ArticleCard
                     key={itemId}
                     post={item}
+                    variant="grid"
                     size="sm"
                     onClick={() => {
                       navigate(`/blog/${itemId}`);

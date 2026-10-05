@@ -51,7 +51,7 @@ export function AdminLayout({
           )}
 
           {/* Main Content Area */}
-          <main className="flex-1 flex flex-col min-w-0 lg:h-full">
+          <main className="flex-1 flex flex-col min-w-0 min-h-0 lg:h-full overflow-y-auto">
             {children}
           </main>
         </div>

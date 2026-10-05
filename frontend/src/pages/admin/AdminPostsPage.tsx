@@ -14,6 +14,7 @@ import {
   Image as ImageIcon,
   Search,
   SlidersHorizontal,
+  ArrowLeft,
 } from 'lucide-react';
 import { AdminLayout } from '../../widgets';
 import {
@@ -146,6 +147,14 @@ export default function AdminPostsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => navigate('/admin/pages?section=blog')}
+              className="h-9 px-3.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Blog Section</span>
+            </button>
+
             {/* Filter Pills */}
             <div className="flex items-center gap-1 bg-[#F4F5F8] p-1 rounded-full border border-zinc-200/60">
               {(['All', 'Published', 'Draft'] as const).map((st) => (

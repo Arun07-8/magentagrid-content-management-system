@@ -4,6 +4,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './modules/auth/auth.routes.js';
 import postRoutes from './modules/posts/post.routes.js';
+import pageRoutes from './modules/pages/page.routes.js';
+import settingsRoutes from './modules/settings/settings.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import logger from './utils/logger.js';
 
@@ -47,6 +49,8 @@ export const createApp = () => {
   // Module Routes
   app.use('/api/auth', authRoutes);
   app.use('/api/posts', postRoutes);
+  app.use('/api/pages', pageRoutes);
+  app.use('/api/settings', settingsRoutes);
 
   // 404 for unhandled API routes
   app.use((req: Request, res: Response) => {

@@ -1,13 +1,11 @@
 import {
-  FileText,
   LogOut,
   X,
-  Plus,
   LayoutGrid,
-  Sparkles,
+  Layers,
+  Globe,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Logo } from '../shared/ui';
 import { useUserStore } from '../entities/user';
 import { useAuth } from '../features/auth';
 
@@ -19,7 +17,10 @@ export type AdminTab =
   | 'create-post'
   | 'edit-post'
   | 'preview-post'
-  | 'empty-posts';
+  | 'empty-posts'
+  | 'pages'
+  | 'pages-edit'
+  | 'pages-preview';
 
 export interface AdminSidebarProps {
   currentTab?: AdminTab;
@@ -39,15 +40,11 @@ export function AdminSidebar({
   const { user } = useUserStore();
   const { logout } = useAuth();
 
-  const isPostsActive =
-    currentTab === 'posts' ||
-    location.pathname === '/admin/posts' ||
-    location.pathname === '/admin/dashboard';
-
-  const isCreateActive =
-    currentTab === 'post-create' ||
-    currentTab === 'create-post' ||
-    location.pathname === '/admin/posts/create';
+  const isPagesActive =
+    currentTab === 'pages' ||
+    currentTab === 'pages-edit' ||
+    currentTab === 'pages-preview' ||
+    location.pathname.startsWith('/admin/pages');
 
   const handleNav = (tabId: string, path: string) => {
     if (onNavigate) {
@@ -69,14 +66,15 @@ export function AdminSidebar({
         {/* Brand Header */}
         <div className="flex items-center justify-between px-1 pb-4 border-b-2 border-zinc-100">
           <Link
-            to="/admin/posts"
+            to="/admin/pages"
             onClick={() => onCloseMobile?.()}
             className="flex items-center gap-2 focus:outline-none cursor-pointer group"
           >
-            <Logo imageClassName="h-7 sm:h-8" />
-            <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200/80">
-              Studio
-            </span>
+            <img
+              src="/logo/logo.png"
+              alt="Logo"
+              className="h-8 sm:h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            />
           </Link>
 
           {onCloseMobile ? (
@@ -105,39 +103,25 @@ export function AdminSidebar({
           </div>
           <nav className="space-y-1">
             <Link
-              to="/admin/posts"
-              onClick={() => handleNav('posts', '/admin/posts')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] transition-all cursor-pointer ${
-                isPostsActive
+              to="/admin/pages"
+              onClick={() => handleNav('pages', '/admin/pages')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] transition-all cursor-pointer ${isPagesActive
                   ? 'bg-[#F1F3F7] text-[#2A3039] font-semibold shadow-2xs border border-white/80'
                   : 'text-zinc-500 hover:text-[#2A3039] hover:bg-[#F8F9FA] font-medium'
-              }`}
+                }`}
             >
-              <FileText className="w-4 h-4 flex-shrink-0" />
-              <span>Posts</span>
+              <Layers className="w-4 h-4 flex-shrink-0" />
+              <span>Pages CMS</span>
             </Link>
 
             <Link
-              to="/admin/posts/create"
-              onClick={() => handleNav('post-create', '/admin/posts/create')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] transition-all cursor-pointer ${
-                isCreateActive
-                  ? 'bg-[#F1F3F7] text-[#2A3039] font-semibold shadow-2xs border border-white/80'
-                  : 'text-zinc-500 hover:text-[#2A3039] hover:bg-[#F8F9FA] font-medium'
-              }`}
-            >
-              <Plus className="w-4 h-4 flex-shrink-0" />
-              <span>New Article</span>
-            </Link>
-
-            <Link
-              to="/blog"
+              to="/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] font-medium text-zinc-500 hover:text-[#2A3039] hover:bg-[#F8F9FA] transition-all cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 flex-shrink-0 text-[#FCD06B]" />
-              <span>Public Feed</span>
+              <Globe className="w-4 h-4 flex-shrink-0 text-[#FCD06B]" />
+              <span>View Website</span>
             </Link>
           </nav>
         </div>
@@ -155,7 +139,7 @@ export function AdminSidebar({
               {user?.username || 'Administrator'}
             </span>
             <span className="text-[11px] text-zinc-400 truncate leading-tight font-normal mt-0.5">
-              {user?.email || 'admin@magentagrid.com'}
+              {user?.email || 'admin@editorial.io'}
             </span>
           </div>
         </div>

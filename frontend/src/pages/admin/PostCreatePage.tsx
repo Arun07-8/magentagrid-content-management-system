@@ -33,7 +33,7 @@ export default function PostCreatePage() {
         status: formData.status,
       });
       toast.success('Post created successfully!');
-      navigate(`/admin/posts`);
+      navigate('/admin/pages?section=blog');
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Failed to create post. Please try again.';

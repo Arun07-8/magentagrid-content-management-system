@@ -41,7 +41,7 @@ export default function PostEditPage() {
         },
       });
       toast.success('Post updated successfully!');
-      navigate('/admin/posts');
+      navigate('/admin/pages?section=blog');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update post.';
       setSubmitError(message);
@@ -68,10 +68,10 @@ export default function PostEditPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/admin/posts')}
+              onClick={() => navigate('/admin/pages?section=blog')}
               leftIcon={<ArrowLeft className="w-4 h-4" />}
             >
-              Return to Posts
+              Return to Blog Section
             </Button>
           }
         />

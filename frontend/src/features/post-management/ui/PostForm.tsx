@@ -46,6 +46,12 @@ interface PostFormProps {
   onPreview?: (data: PostFormPreviewData) => void;
 }
 
+export function countWords(text: string): number {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).filter(Boolean).length;
+}
+
 export function PostForm({
   initialData,
   onSubmit,
@@ -108,20 +114,32 @@ export function PostForm({
   const validate = (): boolean => {
     const errors: { title?: string; description?: string; content?: string } = {};
 
-    if (!title.trim()) {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
       errors.title = 'Title is required';
-    } else if (title.trim().length > 200) {
-      errors.title = 'Title cannot exceed 200 characters';
+    } else if (trimmedTitle.length < 5) {
+      errors.title = 'Title must be at least 5 characters';
+    } else if (trimmedTitle.length > 100) {
+      errors.title = 'Title cannot exceed 100 characters';
     }
 
-    if (!description.trim()) {
+    const trimmedDesc = description.trim();
+    if (!trimmedDesc) {
       errors.description = 'Short description is required';
-    } else if (description.trim().length > 500) {
-      errors.description = 'Short description cannot exceed 500 characters';
+    } else if (trimmedDesc.length < 20) {
+      errors.description = 'Short description must be at least 20 characters';
+    } else if (trimmedDesc.length > 300) {
+      errors.description = 'Short description cannot exceed 300 characters';
     }
 
-    if (!content.trim()) {
+    const trimmedContent = content.trim();
+    const wordCount = countWords(trimmedContent);
+    if (!trimmedContent) {
       errors.content = 'Main content is required';
+    } else if (wordCount < 150) {
+      errors.content = `Main content must be at least 150 words (currently ${wordCount} words)`;
+    } else if (wordCount > 500) {
+      errors.content = `Main content cannot exceed 500 words (currently ${wordCount} words)`;
     }
 
     setFieldErrors(errors);
@@ -238,11 +256,11 @@ export function PostForm({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate('/admin/posts')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 hover:text-zinc-900 rounded-full transition-colors"
+            onClick={() => navigate('/admin/pages?section=blog')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 hover:text-zinc-900 rounded-full transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back
+            Back to Blog CMS
           </button>
           <div className="w-px h-4 bg-zinc-200" />
           <h1 className="text-base sm:text-lg font-bold text-zinc-900 tracking-tight">
@@ -328,27 +346,55 @@ export function PostForm({
                 fieldErrors.description ? 'text-red-700 placeholder:text-red-300' : ''
               }`}
             />
-            {fieldErrors.description && (
-              <p className="text-xs text-red-600 mt-1 font-medium flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {fieldErrors.description}
-              </p>
-            )}
+            <div className="flex items-center justify-between mt-1">
+              {fieldErrors.description ? (
+                <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {fieldErrors.description}
+                </p>
+              ) : <div />}
+              <span
+                className={`text-xs font-mono font-medium ml-auto ${
+                  description.trim().length > 300
+                    ? 'text-red-600 font-bold'
+                    : description.trim().length > 0 && description.trim().length < 20
+                    ? 'text-amber-600'
+                    : 'text-zinc-400'
+                }`}
+              >
+                {description.trim().length} / 300
+              </span>
+            </div>
           </div>
 
           <div className="pt-6 border-t border-zinc-100">
-            {/* Markdown Toolbar */}
-            <div className="inline-flex flex-wrap items-center gap-1 mb-4 p-1 bg-zinc-100/80 rounded-full text-zinc-500">
-              <button onClick={() => insertFormatting('**', '**')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Bold className="w-3.5 h-3.5" /></button>
-              <button onClick={() => insertFormatting('*', '*')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Italic className="w-3.5 h-3.5" /></button>
-              <button onClick={() => insertFormatting('<u>', '</u>')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Underline className="w-3.5 h-3.5" /></button>
-              <div className="w-px h-3.5 bg-zinc-300 mx-1" />
-              <button onClick={() => insertFormatting('## ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Heading className="w-3.5 h-3.5" /></button>
-              <button onClick={() => insertFormatting('- ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><List className="w-3.5 h-3.5" /></button>
-              <button onClick={() => insertFormatting('1. ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><ListOrdered className="w-3.5 h-3.5" /></button>
-              <div className="w-px h-3.5 bg-zinc-300 mx-1" />
-              <button onClick={() => insertFormatting('[Link Title](', ')')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><LinkIcon className="w-3.5 h-3.5" /></button>
-              <button onClick={() => insertFormatting('`', '`')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors"><Code className="w-3.5 h-3.5" /></button>
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+              {/* Markdown Toolbar */}
+              <div className="inline-flex flex-wrap items-center gap-1 p-1 bg-zinc-100/80 rounded-full text-zinc-500">
+                <button onClick={() => insertFormatting('**', '**')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors" title="Bold"><Bold className="w-3.5 h-3.5" /></button>
+                <button onClick={() => insertFormatting('*', '*')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors" title="Italic"><Italic className="w-3.5 h-3.5" /></button>
+                <button onClick={() => insertFormatting('<u>', '</u>')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors" title="Underline"><Underline className="w-3.5 h-3.5" /></button>
+                <div className="w-px h-3.5 bg-zinc-300 mx-1" />
+                <button onClick={() => insertFormatting('## ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors" title="Heading"><Heading className="w-3.5 h-3.5" /></button>
+                <button onClick={() => insertFormatting('- ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors" title="Bullet List"><List className="w-3.5 h-3.5" /></button>
+                <button onClick={() => insertFormatting('1. ')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors" title="Numbered List"><ListOrdered className="w-3.5 h-3.5" /></button>
+                <div className="w-px h-3.5 bg-zinc-300 mx-1" />
+                <button onClick={() => insertFormatting('[Link Title](', ')')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors" title="Link"><LinkIcon className="w-3.5 h-3.5" /></button>
+                <button onClick={() => insertFormatting('`', '`')} className="p-1.5 hover:text-zinc-900 hover:bg-white rounded-full transition-colors" title="Code"><Code className="w-3.5 h-3.5" /></button>
+              </div>
+
+              {/* Live Word Counter */}
+              <span
+                className={`text-xs font-mono font-medium px-3 py-1 rounded-full border ${
+                  countWords(content) > 500
+                    ? 'text-red-600 bg-red-50 border-red-200 font-bold'
+                    : countWords(content) > 0 && countWords(content) < 150
+                    ? 'text-amber-700 bg-amber-50 border-amber-200'
+                    : 'text-zinc-500 bg-zinc-100 border-zinc-200/60'
+                }`}
+              >
+                {countWords(content)} / 500 words
+              </span>
             </div>
 
             <textarea

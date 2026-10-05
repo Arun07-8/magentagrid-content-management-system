@@ -1,101 +1,62 @@
-
-import { useNavigate } from 'react-router-dom';
 import { PublicLayout } from '../../widgets';
-import { usePublicPosts, ArticleCard } from '../../entities/post';
+import { usePublicPosts } from '../../entities/post';
+import { usePublicHomePage, usePublicAboutPage, useRealtimePages } from '../../entities/page';
 import { Spinner } from '../../shared/ui';
+import { HeroSection } from './components/HeroSection';
+import { AboutSection } from './components/AboutSection';
+import { ServicesSection } from './components/ServicesSection';
+import { WhyUsSection } from './components/WhyUsSection';
+import { CaseStudiesSection } from './components/CaseStudiesSection';
+import { BlogSection } from './components/BlogSection';
+import { ProcessSection } from './components/ProcessSection';
+import { TestimonialsSection } from './components/TestimonialsSection';
+import { LogoCloudSection } from './components/LogoCloudSection';
 
 export default function HomePage() {
-  const navigate = useNavigate();
-  const { data: posts = [], isLoading } = usePublicPosts();
+  // Listen to real-time socket events for pages
+  useRealtimePages();
 
-  const displayPosts = posts.slice(0, 12);
+  const { data: posts = [], isLoading: isPostsLoading } = usePublicPosts();
+  const { data: homeSections } = usePublicHomePage();
+  const { data: aboutSections } = usePublicAboutPage();
+
+  const isLoading = isPostsLoading && !homeSections;
 
   return (
-    <PublicLayout>
+    <PublicLayout footerContent={homeSections?.cta}>
       {isLoading ? (
-        <Spinner fullHeight text="Loading stories..." />
+        <Spinner fullHeight text="Loading editorial platform..." />
       ) : (
-        <>
-          {/* New CMS Hero Section */}
-          <section className="bg-white pt-12 pb-20 sm:pt-20 sm:pb-32 overflow-hidden">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
+        <div className="w-full flex flex-col overflow-x-hidden">
+          {/* 1. Home / Hero Section (id="home") */}
+          <HeroSection content={homeSections?.hero} />
 
-                {/* Left Side Content */}
-                <div className="w-full lg:w-[35%] flex flex-col justify-center pt-8 lg:pt-0 lg:mt-12">
-                  <h1 className="text-[32px] sm:text-[38px] lg:text-[54px] font-bold text-zinc-900 tracking-tight leading-[1.1] mb-5">
-                    Discover insights that <span className="text-[#FCD06B]">spark curiosity</span>.
-                  </h1>
+          {/* 2. About Section (id="about") */}
+          <AboutSection content={aboutSections} />
 
-                  <p className="text-[15px] sm:text-[16px] text-zinc-500 font-medium leading-[1.6] max-w-[480px] mb-8">
-                    Explore our curated collection of expert articles, deep dives, and daily news covering technology, design, and business.
-                  </p>
+          {/* 3. Services Section (id="services") */}
+          <ServicesSection content={homeSections?.services} />
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      onClick={() => navigate('/blog')}
-                      className="inline-flex items-center justify-center bg-[#FCD06B] hover:bg-[#f0be4d] text-zinc-950 text-[15px] font-bold px-7 py-3.5 rounded-full transition-all shadow-[0_4px_14px_rgba(252,208,107,0.35)] hover:shadow-[0_6px_20px_rgba(252,208,107,0.45)] hover:-translate-y-0.5"
-                    >
-                      Explore Articles
-                    </button>
-                    <button
-                      onClick={() => navigate('/about')}
-                      className="inline-flex items-center justify-center bg-white hover:bg-zinc-50 text-zinc-900 text-[15px] font-semibold px-7 py-3.5 rounded-full border border-zinc-200 transition-all"
-                    >
-                      Learn More
-                    </button>
-                  </div>
-                </div>
+          {/* 4. Why Choose Us Section */}
+          <WhyUsSection content={homeSections?.whyUs} />
 
-                {/* Right Side Illustration */}
-                <div className="w-full lg:w-[65%] relative flex items-center justify-center lg:justify-end mt-8 lg:mt-0">
-                  <div className="w-full max-w-[1100px] relative lg:-mr-16 xl:-mr-32">
-                    <img
-                      src="/banner/banner.png"
-                      alt="CMS Content Studio"
-                      className="w-full h-auto object-contain scale-[1.05] lg:scale-110 origin-right"
-                    />
-                  </div>
-                </div>
+          {/* 5. Interactive Case Studies Showcase */}
+          <CaseStudiesSection posts={posts} />
 
-              </div>
-            </div>
-          </section>
+          {/* 6. Dynamic Blog & News Section (id="blog") */}
+          <BlogSection posts={posts} />
 
-          {/* Latest Posts & News - Grid */}
-          {displayPosts.length > 0 && (
-            <section className="bg-zinc-50 border-t border-zinc-200/60 py-16 sm:py-24">
-              <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-end justify-between mb-10">
-                  <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Latest Posts & News</h2>
-                  <button
-                    onClick={() => navigate('/blog')}
-                    className="text-[15px] font-medium text-zinc-900 hover:text-zinc-700 transition-colors"
-                  >
-                    View all posts →
-                  </button>
-                </div>
+          {/* 7. How We Do (3-Step Methodology) */}
+          <ProcessSection content={homeSections?.process} />
 
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6 lg:gap-10">
-                  {displayPosts.map((story) => (
-                    <ArticleCard
-                      key={story._id || story.id}
-                      post={story}
-                      onClick={() => navigate(`/blog/${story._id || story.id}`)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
+          {/* 8. Reader & Editor Testimonials */}
+          <TestimonialsSection content={homeSections?.testimonials} />
 
-          {!posts.length && (
-            <div className="text-center py-24 bg-white">
-              <p className="text-zinc-500 text-lg">No content published yet.</p>
-            </div>
-          )}
-        </>
+          {/* 9. Partner & Publication Logo Cloud */}
+          <LogoCloudSection />
+        </div>
       )}
     </PublicLayout>
   );
 }
+

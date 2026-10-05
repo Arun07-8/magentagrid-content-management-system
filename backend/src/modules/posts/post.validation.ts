@@ -1,19 +1,34 @@
 import { z } from 'zod';
 
+function countWords(str: string): number {
+  const trimmed = str.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).filter(Boolean).length;
+}
+
 export const createPostSchema = z.object({
   title: z
     .string()
-    .trim()
-    .min(1, 'Title is required')
-    .max(200, 'Title cannot exceed 200 characters'),
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, { message: 'Title is required' })
+    .refine((val) => val.length >= 5, { message: 'Title must be at least 5 characters' })
+    .refine((val) => val.length <= 100, { message: 'Title cannot exceed 100 characters' }),
   description: z
     .string()
-    .trim()
-    .min(1, 'Short description is required')
-    .max(500, 'Description cannot exceed 500 characters'),
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, { message: 'Short description is required' })
+    .refine((val) => val.length >= 20, { message: 'Short description must be at least 20 characters' })
+    .refine((val) => val.length <= 300, { message: 'Short description cannot exceed 300 characters' }),
   content: z
     .string()
-    .min(1, 'Main content is required'),
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, { message: 'Main content is required' })
+    .refine((val) => countWords(val) >= 150, {
+      message: 'Main content must be at least 150 words',
+    })
+    .refine((val) => countWords(val) <= 500, {
+      message: 'Main content cannot exceed 500 words',
+    }),
   imageUrl: z
     .string()
     .nullable()
@@ -22,21 +37,32 @@ export const createPostSchema = z.object({
   status: z.enum(['Draft', 'Published']).optional().default('Draft'),
 });
 
-
 export const updatePostSchema = z.object({
   title: z
     .string()
-    .trim()
-    .min(1, 'Title cannot be empty')
-    .max(200, 'Title cannot exceed 200 characters')
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, { message: 'Title is required' })
+    .refine((val) => val.length >= 5, { message: 'Title must be at least 5 characters' })
+    .refine((val) => val.length <= 100, { message: 'Title cannot exceed 100 characters' })
     .optional(),
   description: z
     .string()
-    .trim()
-    .min(1, 'Short description cannot be empty')
-    .max(500, 'Description cannot exceed 500 characters')
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, { message: 'Short description is required' })
+    .refine((val) => val.length >= 20, { message: 'Short description must be at least 20 characters' })
+    .refine((val) => val.length <= 300, { message: 'Short description cannot exceed 300 characters' })
     .optional(),
-  content: z.string().min(1, 'Main content cannot be empty').optional(),
+  content: z
+    .string()
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, { message: 'Main content is required' })
+    .refine((val) => countWords(val) >= 150, {
+      message: 'Main content must be at least 150 words',
+    })
+    .refine((val) => countWords(val) <= 500, {
+      message: 'Main content cannot exceed 500 words',
+    })
+    .optional(),
   imageUrl: z
     .string()
     .nullable()
