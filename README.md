@@ -123,7 +123,7 @@ The application provides default seeded accounts with distinct role capabilities
 - **Password**: `editor@123`
 - **Allowed Actions**: Limited access — View, Create, and Edit draft content. Cannot Publish, Unpublish, or Delete pages.
 
-> ⚠️ **Security Warning**: When committing code to a public GitHub repository, ensure real production credentials or production database URIs are never exposed in public documentation.
+
 
 ---
 
