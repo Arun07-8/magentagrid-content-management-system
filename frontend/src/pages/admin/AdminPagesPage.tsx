@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Monitor,
   Tablet,
@@ -22,16 +22,27 @@ import {
   Check,
   Home,
   Info,
-  BookOpen,
   Mail,
   PanelBottom,
   AlertTriangle,
   FilePlus,
   LayoutTemplate,
   GripVertical,
+  Layers,
+  ShieldCheck,
+  ListOrdered,
+  Quote,
+  RotateCcw,
 } from 'lucide-react';
 import { AdminLayout } from '../../widgets';
-import { Badge, Spinner } from '../../shared/ui';
+import {
+  Badge,
+  Spinner,
+  ImageCropModal,
+  FormField,
+  FormTextarea,
+  ImagePickerField,
+} from '../../shared/ui';
 import {
   useCmsPages,
   useCmsPage,
@@ -53,27 +64,25 @@ import {
   type INavigationItem,
   type ISiteLogo,
 } from '../../entities/settings';
-import { useUserStore } from '../../entities/user';
-import { usePublicPosts } from '../../entities/post';
-import { ImageCropModal } from '../../features/post-management/ui/ImageCropModal';
+import { useAuth } from '../../app/context/AuthContext';
 import { HeroSection } from '../public/components/HeroSection';
 import { AboutSection } from '../public/components/AboutSection';
 import { ServicesSection } from '../public/components/ServicesSection';
 import { WhyUsSection } from '../public/components/WhyUsSection';
-import { BlogSection } from '../public/components/BlogSection';
+import { ProcessSection } from '../public/components/ProcessSection';
+import { TestimonialsSection } from '../public/components/TestimonialsSection';
 import { NotFoundContent } from '../public/components/NotFoundContent';
 import { DynamicSectionsRenderer } from '../public/components/DynamicSectionsRenderer';
 import { Footer } from '../../widgets/Footer';
 
 type ViewMode = 'list' | 'editor';
-type SectionKey = 'navbar' | 'home' | 'about' | 'blog' | 'contact' | 'footer' | '404' | string;
+type SectionKey = 'navbar' | 'home' | 'about' | 'contact' | 'footer' | '404' | string;
 type DeviceMode = 'desktop' | 'tablet' | 'mobile';
 
 interface CmsSectionItem {
   key: SectionKey;
   title: string;
   badge: string;
-  targetAnchor: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
   isCustomPage?: boolean;
@@ -83,56 +92,70 @@ const STATIC_CMS_SECTIONS: CmsSectionItem[] = [
   {
     key: 'navbar',
     title: 'Navbar Section',
-    badge: '',
-    targetAnchor: '#navbar',
+    badge: 'GLOBAL NAVIGATION',
     description: 'Logo, navigation items, ordering and navbar configuration across the entire public website.',
     icon: Compass,
   },
   {
     key: 'home',
-    title: 'Home Section',
-    badge: 'HERO & CAPABILITIES',
-    targetAnchor: '#home',
-    description: 'Hero headline, highlight word, description copy, action buttons, featured cards, and capability overview.',
+    title: 'Hero Header Section',
+    badge: 'HERO BANNER',
+    description: 'Hero headline, highlight word, description copy, action buttons, active reader metrics, and featured cards.',
     icon: Home,
   },
   {
+    key: 'services',
+    title: 'Services & Capabilities',
+    badge: 'SOLUTIONS GRID',
+    description: 'Service capability showcase cards, custom feature descriptions, and staggered solutions overview.',
+    icon: Layers,
+  },
+  {
+    key: 'whyUs',
+    title: 'Why Choose Us Section',
+    badge: 'ADVANTAGE & VALUES',
+    description: 'Studio differentiators, security highlights, editorial advantages, and visual feature graphic.',
+    icon: ShieldCheck,
+  },
+  {
     key: 'about',
-    title: 'About Section',
+    title: 'About & Philosophy Section',
     badge: 'PHILOSOPHY & PILLARS',
-    targetAnchor: '#about',
-    description: 'Studio philosophy essay, core pillars, agency capabilities, mission/vision, and guiding values.',
+    description: 'Studio philosophy essay, core pillars, platform capabilities, mission/vision, and guiding values.',
     icon: Info,
   },
   {
-    key: 'blog',
-    title: 'Blog Section',
-    badge: 'PUBLICATIONS FEED',
-    targetAnchor: '#blog',
-    description: 'Dynamic editorial publication feed, category filters, and published stories management via Posts CMS.',
-    icon: BookOpen,
+    key: 'process',
+    title: 'Process & Methodology',
+    badge: '3-STEP WORKFLOW',
+    description: 'Methodology timeline, execution phases (Ideate, Design, Publish), and milestone deliverables.',
+    icon: ListOrdered,
+  },
+  {
+    key: 'testimonials',
+    title: 'Testimonials Section',
+    badge: 'READER STATEMENTS',
+    description: 'Reader and editor endorsements, quote statements, author roles, and portrait photo management.',
+    icon: Quote,
   },
   {
     key: 'contact',
-    title: 'Contact Section',
+    title: 'Contact Desk Section',
     badge: 'EDITORIAL DESK & INQUIRIES',
-    targetAnchor: '#contact',
     description: 'Contact email, working hours, location address, desk response time, and conversation CTA.',
     icon: Mail,
   },
   {
     key: 'footer',
-    title: 'Footer Section',
+    title: 'Footer & Branding Section',
     badge: 'GLOBAL BRANDING & FOOTER',
-    targetAnchor: '#footer',
     description: 'Brand summary description, brand logo graphic, navigation menu links, social links, and copyright text.',
     icon: PanelBottom,
   },
   {
     key: '404',
-    title: '404 Section',
+    title: '404 Fallback Section',
     badge: 'INVALID ROUTE FALLBACK',
-    targetAnchor: '/404',
     description: 'Page not found error code, missing route guidance instructions, and return home CTA button.',
     icon: AlertTriangle,
   },
@@ -149,15 +172,31 @@ const SECTION_TEMPLATES = [
   { type: 'cta', name: 'Footer / CTA Block', description: 'Contact email, hours, location & connect prompt' },
 ];
 
+const SECTION_ELEMENT_ID_MAP: Record<string, string> = {
+  home: 'home',
+  hero: 'home',
+  navbar: 'home',
+  about: 'about',
+  services: 'services',
+  whyUs: 'why-us',
+  'why-us': 'why-us',
+  process: 'process',
+  testimonials: 'testimonials',
+  contact: 'contact',
+  cta: 'contact',
+  footer: 'footer',
+};
+
 export default function AdminPagesPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useUserStore();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   // Navigation workflow state
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [activeSectionKey, setActiveSectionKey] = useState<SectionKey>('navbar');
+  const previewScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const sec = searchParams.get('section');
@@ -171,18 +210,52 @@ export default function AdminPagesPage() {
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
+  // Automatically close simulator mobile drawer when section or device changes or on scroll
+  useEffect(() => {
+    setMobileDrawerOpen(false);
+  }, [activeSectionKey, viewMode, deviceMode]);
+
+  // Auto-scroll the live preview simulator when activeSectionKey changes
+  useEffect(() => {
+    if (viewMode !== 'editor') return;
+    const targetId = SECTION_ELEMENT_ID_MAP[activeSectionKey] || activeSectionKey;
+    const timer = setTimeout(() => {
+      if (previewScrollRef.current) {
+        if (activeSectionKey === 'navbar' || activeSectionKey === 'home') {
+          previewScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const el = previewScrollRef.current.querySelector(`#${targetId}`) as HTMLElement | null;
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [activeSectionKey, viewMode, deviceMode]);
+
+  useEffect(() => {
+    if (!mobileDrawerOpen) return;
+    const handleGlobalScroll = () => {
+      setMobileDrawerOpen(false);
+    };
+    window.addEventListener('scroll', handleGlobalScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleGlobalScroll);
+    };
+  }, [mobileDrawerOpen]);
+
   // Queries
   const { data: pages = [], isLoading: isPagesLoading } = useCmsPages();
   const { data: homePageData } = useCmsPage('home');
   const { data: aboutPageData } = useCmsPage('about');
   const { data: notFoundPageData } = useCmsPage('404');
   const { data: activeCustomPageData } = useCmsPage(
-    !['navbar', 'home', 'about', 'blog', 'contact', 'footer', '404'].includes(activeSectionKey)
+    !['navbar', 'home', 'about', 'contact', 'footer', '404'].includes(activeSectionKey)
       ? activeSectionKey
       : 'home'
   );
   const { data: siteSettings } = useSiteSettings();
-  const { data: posts = [] } = usePublicPosts();
 
   // Mutations
   const createPageMutation = useCreatePage();
@@ -203,7 +276,7 @@ export default function AdminPagesPage() {
     badgeText: 'SAY HI TO US',
     heading: "LET'S CONNECT",
     description: 'Have a question, feedback on an editorial piece, or a proposal for our publishing platform? Reach out directly.',
-    contactEmail: 'contact@editorial.io',
+    contactEmail: 'contact@grido.io',
     workingHours: 'Monday – Friday : 08 AM – 06 PM',
     location: 'London · New York · San Francisco',
   });
@@ -211,14 +284,14 @@ export default function AdminPagesPage() {
   // Working state for Footer & Brand Logo
   const [footerData, setFooterData] = useState({
     description: 'A modern publishing platform and digital publication engineered for high-impact content, bold ideas, and seamless storytelling.',
-    copyright: '© 2026 Editorial Publishing Platform. All rights reserved.',
+    copyright: '© 2026 Grido Publishing Platform. All rights reserved.',
     twitterUrl: 'https://twitter.com',
     instagramUrl: 'https://instagram.com',
     linkedinUrl: 'https://linkedin.com',
     githubUrl: 'https://github.com',
   });
   const [settingsNavItems, setSettingsNavItems] = useState<INavigationItem[]>([]);
-  const [settingsLogo, setSettingsLogo] = useState<ISiteLogo>({ url: '/logo/logo.png', link: '/', text: 'Editorial' });
+  const [settingsLogo, setSettingsLogo] = useState<ISiteLogo>({ url: '/logo/logo.png', link: '/', text: 'Grido' });
 
   // Working state for 404 page
   const [notFoundSections, setNotFoundSections] = useState<NotFoundPageSections>(DEFAULT_NOT_FOUND_SECTIONS);
@@ -268,26 +341,78 @@ export default function AdminPagesPage() {
   useEffect(() => {
     if (homePageData) {
       if (homePageData.sections && Object.keys(homePageData.sections).length > 0) {
-        setHomeSections(homePageData.sections as HomePageSections);
+        const sec = homePageData.sections as any;
+        setHomeSections({
+          ...DEFAULT_HOME_SECTIONS,
+          ...sec,
+          hero: {
+            ...DEFAULT_HOME_SECTIONS.hero,
+            ...sec.hero,
+            readersBadgeText: sec.hero?.readersBadgeText ?? DEFAULT_HOME_SECTIONS.hero.readersBadgeText,
+            readersAvatars: sec.hero?.readersAvatars || DEFAULT_HOME_SECTIONS.hero.readersAvatars,
+            showReadersStats: sec.hero?.showReadersStats !== undefined ? sec.hero.showReadersStats : DEFAULT_HOME_SECTIONS.hero.showReadersStats,
+            card1Image: sec.hero?.card1Image || DEFAULT_HOME_SECTIONS.hero.card1Image,
+            card2Image: sec.hero?.card2Image || DEFAULT_HOME_SECTIONS.hero.card2Image,
+          },
+          whyUs: {
+            ...DEFAULT_HOME_SECTIONS.whyUs,
+            ...sec.whyUs,
+            image: sec.whyUs?.image || DEFAULT_HOME_SECTIONS.whyUs.image,
+          },
+        });
         if (homePageData.sections.cta) {
           setContactData({
             badgeText: homePageData.sections.cta.badgeText || 'SAY HI TO US',
             heading: homePageData.sections.cta.heading || "LET'S CONNECT",
             description: homePageData.sections.cta.description || '',
-            contactEmail: homePageData.sections.cta.contactEmail || 'contact@editorial.io',
+            contactEmail: homePageData.sections.cta.contactEmail || 'contact@grido.io',
             workingHours: homePageData.sections.cta.workingHours || 'Monday – Friday : 08 AM – 06 PM',
             location: homePageData.sections.cta.location || 'London · New York · San Francisco',
           });
         }
+        const heroData = (homePageData.sections as any)?.hero;
+        if (heroData) {
+          const heroIsDraft = heroData.isPublished === false || heroData.status === 'Draft';
+          setHomeStatus(heroIsDraft ? 'Draft' : 'Published');
+        } else {
+          setHomeStatus(homePageData.status || 'Published');
+        }
+      } else {
+        setHomeStatus(homePageData.status || 'Published');
       }
-      setHomeStatus(homePageData.status || 'Published');
     }
   }, [homePageData]);
 
   useEffect(() => {
     if (aboutPageData) {
       if (aboutPageData.sections && Object.keys(aboutPageData.sections).length > 0) {
-        setAboutSections(aboutPageData.sections as AboutPageSections);
+        const sec = aboutPageData.sections as any;
+        setAboutSections({
+          ...DEFAULT_ABOUT_SECTIONS,
+          ...sec,
+          header: {
+            ...DEFAULT_ABOUT_SECTIONS.header,
+            ...sec?.header,
+            image: sec?.header?.image || DEFAULT_ABOUT_SECTIONS.header.image,
+          },
+          philosophy: {
+            ...DEFAULT_ABOUT_SECTIONS.philosophy,
+            ...sec?.philosophy,
+            image: sec?.philosophy?.image || DEFAULT_ABOUT_SECTIONS.philosophy.image,
+          },
+          capabilities: {
+            ...DEFAULT_ABOUT_SECTIONS.capabilities,
+            ...sec?.capabilities,
+          },
+          missionVision: {
+            ...DEFAULT_ABOUT_SECTIONS.missionVision,
+            ...sec?.missionVision,
+          },
+          values: {
+            ...DEFAULT_ABOUT_SECTIONS.values,
+            ...sec?.values,
+          },
+        });
       }
       setAboutStatus(aboutPageData.status || 'Published');
     }
@@ -304,8 +429,25 @@ export default function AdminPagesPage() {
 
   useEffect(() => {
     if (siteSettings) {
-      if (siteSettings.navigationItems) setSettingsNavItems(siteSettings.navigationItems);
-      if (siteSettings.logo) setSettingsLogo(siteSettings.logo);
+      if (siteSettings.navigationItems) {
+        setSettingsNavItems(
+          siteSettings.navigationItems.map((item) => ({
+            id: item.id,
+            label: item.label,
+            url: item.url,
+            isEnabled: item.isEnabled !== false,
+            isExternal: Boolean(item.isExternal),
+          }))
+        );
+      }
+      if (siteSettings.logo) {
+        setSettingsLogo({
+          url: siteSettings.logo.url || '/logo/logo.png',
+          link: siteSettings.logo.link || '/',
+          text: siteSettings.logo.text || 'Grido',
+          height: siteSettings.logo.height || 32,
+        });
+      }
       if (siteSettings.footer) {
         setFooterData((prev) => ({
           ...prev,
@@ -319,22 +461,104 @@ export default function AdminPagesPage() {
   useEffect(() => {
     if (
       activeCustomPageData &&
-      !['navbar', 'home', 'about', 'blog', 'contact', 'footer', '404'].includes(activeSectionKey)
+      !['navbar', 'home', 'about', 'contact', 'footer', '404'].includes(activeSectionKey)
     ) {
       setCustomPageTitle(activeCustomPageData.title || 'Custom Page');
       setCustomPageSlug(activeCustomPageData.slug || activeSectionKey);
       setCustomPageStatus(activeCustomPageData.status || 'Published');
-      
+
       const order = activeCustomPageData.sectionOrder && activeCustomPageData.sectionOrder.length > 0
         ? activeCustomPageData.sectionOrder
         : [
-            { id: 'hero', type: 'hero', name: 'Hero Section', isEnabled: true },
-            { id: 'services', type: 'services', name: 'Services Grid', isEnabled: true },
-            { id: 'cta', type: 'cta', name: 'CTA Banner', isEnabled: true },
-          ];
+          { id: 'hero', type: 'hero', name: 'Hero Section', isEnabled: true },
+          { id: 'services', type: 'services', name: 'Services Grid', isEnabled: true },
+          { id: 'cta', type: 'cta', name: 'CTA Banner', isEnabled: true },
+        ];
       setCustomSectionOrder(order);
       setCustomSectionsData(activeCustomPageData.sections || DEFAULT_HOME_SECTIONS);
       if (order.length > 0) setSelectedCustomSecId(order[0].id);
+    }
+  }, [activeCustomPageData, activeSectionKey]);
+
+  // Baseline data snapshots for detecting unsaved changes per section
+  const [initialSnapshots, setInitialSnapshots] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (homePageData) {
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        home: JSON.stringify((homePageData.sections as any)?.hero || DEFAULT_HOME_SECTIONS.hero),
+        services: JSON.stringify((homePageData.sections as any)?.services || DEFAULT_HOME_SECTIONS.services),
+        whyUs: JSON.stringify((homePageData.sections as any)?.whyUs || DEFAULT_HOME_SECTIONS.whyUs),
+        process: JSON.stringify((homePageData.sections as any)?.process || DEFAULT_HOME_SECTIONS.process),
+        testimonials: JSON.stringify((homePageData.sections as any)?.testimonials || DEFAULT_HOME_SECTIONS.testimonials),
+        contact: JSON.stringify({
+          badgeText: homePageData.sections?.cta?.badgeText || 'SAY HI TO US',
+          heading: homePageData.sections?.cta?.heading || "LET'S CONNECT",
+          description: homePageData.sections?.cta?.description || '',
+          contactEmail: homePageData.sections?.cta?.contactEmail || 'contact@grido.io',
+          workingHours: homePageData.sections?.cta?.workingHours || 'Monday – Friday : 08 AM – 06 PM',
+          location: homePageData.sections?.cta?.location || 'London · New York · San Francisco',
+        }),
+      }));
+    }
+  }, [homePageData]);
+
+  useEffect(() => {
+    if (aboutPageData) {
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        about: JSON.stringify(aboutPageData.sections || DEFAULT_ABOUT_SECTIONS),
+      }));
+    }
+  }, [aboutPageData]);
+
+  useEffect(() => {
+    if (notFoundPageData) {
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        '404': JSON.stringify(notFoundPageData.sections || DEFAULT_NOT_FOUND_SECTIONS),
+      }));
+    }
+  }, [notFoundPageData]);
+
+  useEffect(() => {
+    if (siteSettings) {
+      const normalizedLogo = {
+        url: siteSettings.logo?.url || '/logo/logo.png',
+        link: siteSettings.logo?.link || '/',
+        text: siteSettings.logo?.text || 'Grido',
+        height: siteSettings.logo?.height || 32,
+      };
+      const normalizedNav = (siteSettings.navigationItems || []).map((item) => ({
+        id: item.id,
+        label: item.label,
+        url: item.url,
+        isEnabled: item.isEnabled !== false,
+        isExternal: Boolean(item.isExternal),
+      }));
+
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        navbar: JSON.stringify({
+          logo: normalizedLogo,
+          nav: normalizedNav,
+        }),
+        footer: JSON.stringify(siteSettings.footer || footerData),
+      }));
+    }
+  }, [siteSettings]);
+
+  useEffect(() => {
+    if (activeCustomPageData && !['navbar', 'home', 'about', 'contact', 'footer', '404'].includes(activeSectionKey)) {
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        [activeSectionKey]: JSON.stringify({
+          title: activeCustomPageData.title || 'Custom Page',
+          order: activeCustomPageData.sectionOrder || [],
+          sections: activeCustomPageData.sections || {},
+        }),
+      }));
     }
   }, [activeCustomPageData, activeSectionKey]);
 
@@ -345,7 +569,6 @@ export default function AdminPagesPage() {
       key: p.slug,
       title: `${p.title} Page`,
       badge: `CUSTOM PAGE (/${p.slug})`,
-      targetAnchor: `/${p.slug}`,
       description: p.seo?.metaDescription || `Custom website page /${p.slug} with dynamic modular sections.`,
       icon: LayoutTemplate,
       isCustomPage: true,
@@ -363,11 +586,31 @@ export default function AdminPagesPage() {
   // Save Navbar Settings
   const handleSaveNavbar = async () => {
     try {
+      const normalizedNav = settingsNavItems.map((item) => ({
+        id: item.id,
+        label: item.label,
+        url: item.url,
+        isEnabled: item.isEnabled !== false,
+        isExternal: Boolean(item.isExternal),
+      }));
+
       await updateSettingsMutation.mutateAsync({
         logo: settingsLogo,
-        navigationItems: settingsNavItems,
+        navigationItems: normalizedNav,
         footer: footerData,
       });
+
+      const savedSnapshot = JSON.stringify({
+        logo: settingsLogo,
+        nav: normalizedNav,
+      });
+
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        navbar: savedSnapshot,
+        footer: JSON.stringify(footerData),
+      }));
+
       showNotification('Navbar settings & branding saved and published live!');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Navbar settings.', 'error');
@@ -414,22 +657,164 @@ export default function AdminPagesPage() {
   const handleSaveHome = async (targetStatus?: 'Draft' | 'Published') => {
     const nextStatus = targetStatus || homeStatus;
     try {
+      const updatedHero = {
+        ...homeSections.hero,
+        isPublished: nextStatus === 'Published',
+        status: nextStatus,
+      };
+      const updatedHomeSections = {
+        ...homeSections,
+        hero: updatedHero,
+        cta: {
+          ...homeSections.cta,
+          ...contactData,
+        },
+      };
+      setHomeSections(updatedHomeSections);
+      setHomeStatus(nextStatus);
+
       await updatePageMutation.mutateAsync({
         slug: 'home',
         title: 'Home Page',
-        status: nextStatus,
-        sections: {
-          ...homeSections,
-          cta: {
-            ...homeSections.cta,
-            ...contactData,
-          },
-        },
+        status: 'Published',
+        sections: updatedHomeSections,
       });
-      setHomeStatus(nextStatus);
-      showNotification(`Home section saved as ${nextStatus}!`);
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        home: JSON.stringify(updatedHero),
+        contact: JSON.stringify(contactData),
+      }));
+      showNotification(`Hero section saved as ${nextStatus}!`);
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Home section.', 'error');
+    }
+  };
+
+  // Save Services Section
+  const handleSaveServices = async (targetStatus?: 'Draft' | 'Published') => {
+    const currentStatus = (homeSections?.services as any)?.isPublished === false || (homeSections?.services as any)?.status === 'Draft' ? 'Draft' : 'Published';
+    const nextStatus = targetStatus || currentStatus;
+    try {
+      const updatedServices = {
+        ...homeSections.services,
+        isPublished: nextStatus === 'Published',
+        status: nextStatus,
+      };
+      const updatedHomeSections = {
+        ...homeSections,
+        services: updatedServices,
+      };
+      setHomeSections(updatedHomeSections);
+
+      await updatePageMutation.mutateAsync({
+        slug: 'home',
+        title: 'Home Page',
+        status: 'Published',
+        sections: updatedHomeSections,
+      });
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        services: JSON.stringify(updatedServices),
+      }));
+      showNotification(`Services section saved as ${nextStatus}!`);
+    } catch (err: any) {
+      showNotification(err?.message || 'Failed to save Services section.', 'error');
+    }
+  };
+
+  // Save Why Choose Us Section
+  const handleSaveWhyUs = async (targetStatus?: 'Draft' | 'Published') => {
+    const currentStatus = (homeSections?.whyUs as any)?.isPublished === false || (homeSections?.whyUs as any)?.status === 'Draft' ? 'Draft' : 'Published';
+    const nextStatus = targetStatus || currentStatus;
+    try {
+      const updatedWhyUs = {
+        ...homeSections.whyUs,
+        isPublished: nextStatus === 'Published',
+        status: nextStatus,
+      };
+      const updatedHomeSections = {
+        ...homeSections,
+        whyUs: updatedWhyUs,
+      };
+      setHomeSections(updatedHomeSections);
+
+      await updatePageMutation.mutateAsync({
+        slug: 'home',
+        title: 'Home Page',
+        status: 'Published',
+        sections: updatedHomeSections,
+      });
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        whyUs: JSON.stringify(updatedWhyUs),
+      }));
+      showNotification(`Why Choose Us section saved as ${nextStatus}!`);
+    } catch (err: any) {
+      showNotification(err?.message || 'Failed to save Why Choose Us section.', 'error');
+    }
+  };
+
+  // Save Process & Methodology Section
+  const handleSaveProcess = async (targetStatus?: 'Draft' | 'Published') => {
+    const currentStatus = (homeSections?.process as any)?.isPublished === false || (homeSections?.process as any)?.status === 'Draft' ? 'Draft' : 'Published';
+    const nextStatus = targetStatus || currentStatus;
+    try {
+      const updatedProcess = {
+        ...homeSections.process,
+        isPublished: nextStatus === 'Published',
+        status: nextStatus,
+      };
+      const updatedHomeSections = {
+        ...homeSections,
+        process: updatedProcess,
+      };
+      setHomeSections(updatedHomeSections);
+
+      await updatePageMutation.mutateAsync({
+        slug: 'home',
+        title: 'Home Page',
+        status: 'Published',
+        sections: updatedHomeSections,
+      });
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        process: JSON.stringify(updatedProcess),
+      }));
+      showNotification(`Process section saved as ${nextStatus}!`);
+    } catch (err: any) {
+      showNotification(err?.message || 'Failed to save Process section.', 'error');
+    }
+  };
+
+  // Save Testimonials Section
+  const handleSaveTestimonials = async (targetStatus?: 'Draft' | 'Published') => {
+    const currentStatus = (homeSections?.testimonials as any)?.isPublished === false || (homeSections?.testimonials as any)?.status === 'Draft' ? 'Draft' : 'Published';
+    const nextStatus = targetStatus || currentStatus;
+    try {
+      const updatedTestimonials = {
+        ...homeSections.testimonials,
+        isPublished: nextStatus === 'Published',
+        status: nextStatus,
+      };
+      const updatedHomeSections = {
+        ...homeSections,
+        testimonials: updatedTestimonials,
+      };
+      setHomeSections(updatedHomeSections);
+
+      await updatePageMutation.mutateAsync({
+        slug: 'home',
+        title: 'Home Page',
+        status: 'Published',
+        sections: updatedHomeSections,
+      });
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        testimonials: JSON.stringify(updatedTestimonials),
+      }));
+      showNotification(`Testimonials section saved as ${nextStatus}!`);
+    } catch (err: any) {
+      showNotification(err?.message || 'Failed to save Testimonials section.', 'error');
     }
   };
 
@@ -444,6 +829,10 @@ export default function AdminPagesPage() {
         sections: aboutSections,
       });
       setAboutStatus(nextStatus);
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        about: JSON.stringify(aboutSections),
+      }));
       showNotification(`About section saved as ${nextStatus}!`);
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save About section.', 'error');
@@ -468,6 +857,10 @@ export default function AdminPagesPage() {
         status: homeStatus,
         sections: updatedHomeSections,
       });
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        contact: JSON.stringify(contactData),
+      }));
       showNotification('Contact section saved & published live!');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Contact section.', 'error');
@@ -482,6 +875,10 @@ export default function AdminPagesPage() {
         navigationItems: settingsNavItems,
         footer: footerData,
       });
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        footer: JSON.stringify(footerData),
+      }));
       showNotification('Footer content & branding saved and published live!');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Footer settings.', 'error');
@@ -499,6 +896,10 @@ export default function AdminPagesPage() {
         sections: notFoundSections,
       });
       setNotFoundStatus(nextStatus);
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        '404': JSON.stringify(notFoundSections),
+      }));
       showNotification(`404 page saved as ${nextStatus}!`);
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save 404 page.', 'error');
@@ -520,8 +921,8 @@ export default function AdminPagesPage() {
         slug: cleanSlug,
         status: newPageStatus,
         seo: {
-          metaTitle: `${newPageTitle.trim()} | Editorial`,
-          metaDescription: `Discover ${newPageTitle.trim()} on Editorial publishing platform.`,
+          metaTitle: `${newPageTitle.trim()} | Grido`,
+          metaDescription: `Discover ${newPageTitle.trim()} on Grido publishing platform.`,
         },
         sectionOrder: [
           { id: 'hero', type: 'hero', name: 'Hero Banner', isEnabled: true },
@@ -584,11 +985,149 @@ export default function AdminPagesPage() {
         sections: customSectionsData,
       });
       setCustomPageStatus(nextStatus);
+      setInitialSnapshots((prev) => ({
+        ...prev,
+        [activeSectionKey]: JSON.stringify({
+          title: customPageTitle.trim(),
+          order: customSectionOrder,
+          sections: customSectionsData,
+        }),
+      }));
       showNotification(`Page "${customPageTitle}" saved as ${nextStatus}!`);
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save page.', 'error');
     }
   };
+
+  // Unified Save / Publish current active section or page
+  const handlePublishCurrentSection = async () => {
+    if (activeSectionKey === 'navbar') {
+      await handleSaveNavbar();
+    } else if (activeSectionKey === 'home') {
+      await handleSaveHome('Published');
+    } else if (activeSectionKey === 'services') {
+      await handleSaveServices('Published');
+    } else if (activeSectionKey === 'whyUs') {
+      await handleSaveWhyUs('Published');
+    } else if (activeSectionKey === 'process') {
+      await handleSaveProcess('Published');
+    } else if (activeSectionKey === 'testimonials') {
+      await handleSaveTestimonials('Published');
+    } else if (activeSectionKey === 'about') {
+      await handleSaveAbout('Published');
+    } else if (activeSectionKey === 'contact') {
+      await handleSaveContact();
+    } else if (activeSectionKey === 'footer') {
+      await handleSaveFooter();
+    } else if (activeSectionKey === '404') {
+      await handleSaveNotFound('Published');
+    } else {
+      // Custom page
+      await handleSaveCustomPage('Published');
+    }
+  };
+
+  const handleSaveDraftCurrentSection = async () => {
+    if (activeSectionKey === 'navbar') {
+      await handleSaveNavbar();
+    } else if (activeSectionKey === 'home') {
+      await handleSaveHome('Draft');
+    } else if (activeSectionKey === 'services') {
+      await handleSaveServices('Draft');
+    } else if (activeSectionKey === 'whyUs') {
+      await handleSaveWhyUs('Draft');
+    } else if (activeSectionKey === 'process') {
+      await handleSaveProcess('Draft');
+    } else if (activeSectionKey === 'testimonials') {
+      await handleSaveTestimonials('Draft');
+    } else if (activeSectionKey === 'about') {
+      await handleSaveAbout('Draft');
+    } else if (activeSectionKey === 'contact') {
+      await handleSaveContact();
+    } else if (activeSectionKey === 'footer') {
+      await handleSaveFooter();
+    } else if (activeSectionKey === '404') {
+      await handleSaveNotFound('Draft');
+    } else {
+      // Custom page
+      await handleSaveCustomPage('Draft');
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    try {
+      if (activeSectionKey === 'navbar') {
+        if (siteSettings) {
+          if (siteSettings.navigationItems) {
+            setSettingsNavItems(
+              siteSettings.navigationItems.map((item) => ({
+                id: item.id,
+                label: item.label,
+                url: item.url,
+                isEnabled: item.isEnabled !== false,
+                isExternal: Boolean(item.isExternal),
+              }))
+            );
+          }
+          if (siteSettings.logo) {
+            setSettingsLogo({
+              url: siteSettings.logo.url || '/logo/logo.png',
+              link: siteSettings.logo.link || '/',
+              text: siteSettings.logo.text || 'Grido',
+              height: siteSettings.logo.height || 32,
+            });
+          }
+        }
+      } else if (activeSectionKey === 'home') {
+        const heroData = (homePageData?.sections as any)?.hero || DEFAULT_HOME_SECTIONS.hero;
+        setHomeSections((prev) => ({ ...prev, hero: heroData }));
+      } else if (activeSectionKey === 'services') {
+        const sec = (homePageData?.sections as any)?.services || DEFAULT_HOME_SECTIONS.services;
+        setHomeSections((prev) => ({ ...prev, services: sec }));
+      } else if (activeSectionKey === 'whyUs') {
+        const sec = (homePageData?.sections as any)?.whyUs || DEFAULT_HOME_SECTIONS.whyUs;
+        setHomeSections((prev) => ({ ...prev, whyUs: sec }));
+      } else if (activeSectionKey === 'process') {
+        const sec = (homePageData?.sections as any)?.process || DEFAULT_HOME_SECTIONS.process;
+        setHomeSections((prev) => ({ ...prev, process: sec }));
+      } else if (activeSectionKey === 'testimonials') {
+        const sec = (homePageData?.sections as any)?.testimonials || DEFAULT_HOME_SECTIONS.testimonials;
+        setHomeSections((prev) => ({ ...prev, testimonials: sec }));
+      } else if (activeSectionKey === 'contact') {
+        if (homePageData?.sections?.cta) {
+          setContactData({
+            badgeText: homePageData.sections.cta.badgeText || 'SAY HI TO US',
+            heading: homePageData.sections.cta.heading || "LET'S CONNECT",
+            description: homePageData.sections.cta.description || '',
+            contactEmail: homePageData.sections.cta.contactEmail || 'contact@grido.io',
+            workingHours: homePageData.sections.cta.workingHours || 'Monday – Friday : 08 AM – 06 PM',
+            location: homePageData.sections.cta.location || 'London · New York · San Francisco',
+          });
+        }
+      } else if (activeSectionKey === 'about') {
+        if (aboutPageData?.sections) {
+          setAboutSections({ ...DEFAULT_ABOUT_SECTIONS, ...(aboutPageData.sections as any) });
+        }
+      } else if (activeSectionKey === 'footer') {
+        if (siteSettings?.footer) {
+          setFooterData((prev) => ({ ...prev, ...siteSettings.footer }));
+        }
+      } else if (activeSectionKey === '404') {
+        if (notFoundPageData?.sections) {
+          setNotFoundSections(notFoundPageData.sections as NotFoundPageSections);
+        }
+      } else if (activeCustomPageData) {
+        setCustomPageTitle(activeCustomPageData.title || 'Custom Page');
+        setCustomSectionOrder(activeCustomPageData.sectionOrder || []);
+        setCustomSectionsData(activeCustomPageData.sections || {});
+      }
+      showNotification('Unsaved changes discarded. Restored saved version.');
+    } catch {
+      showNotification('Failed to reset changes.', 'error');
+    }
+  };
+
+  const isPendingSave = updatePageMutation.isPending || updateSettingsMutation.isPending;
 
   // Delete Custom Page
   const handleDeleteCustomPage = async () => {
@@ -659,34 +1198,167 @@ export default function AdminPagesPage() {
 
   // Confirm Cropped Image
   const handleCropConfirm = (croppedFile: File) => {
-    const previewUrl = URL.createObjectURL(croppedFile);
-
-    if (cropFieldPath === 'settings.logo') {
-      setSettingsLogo((prev) => ({ ...prev, url: previewUrl }));
-    } else if (cropFieldPath === 'home.hero.card1Image') {
-      setHomeSections((prev) => ({
-        ...prev,
-        hero: { ...prev.hero, card1Image: previewUrl },
-      }));
-    } else if (cropFieldPath === 'home.hero.card2Image') {
-      setHomeSections((prev) => ({
-        ...prev,
-        hero: { ...prev.hero, card2Image: previewUrl },
-      }));
-    } else if (cropFieldPath === 'home.whyUs.image') {
-      setHomeSections((prev) => ({
-        ...prev,
-        whyUs: { ...prev.whyUs, image: previewUrl },
-      }));
-    }
-
-    setCropSrc(null);
-    setCropFieldPath(null);
-    showNotification('Image updated.');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      if (cropFieldPath === 'settings.logo') {
+        setSettingsLogo((prev) => ({ ...prev, url: dataUrl }));
+      } else if (cropFieldPath === 'home.hero.card1Image') {
+        setHomeSections((prev) => ({
+          ...prev,
+          hero: { ...prev.hero, card1Image: dataUrl },
+        }));
+      } else if (cropFieldPath === 'home.hero.card2Image') {
+        setHomeSections((prev) => ({
+          ...prev,
+          hero: { ...prev.hero, card2Image: dataUrl },
+        }));
+      } else if (cropFieldPath === 'home.whyUs.image') {
+        setHomeSections((prev) => ({
+          ...prev,
+          whyUs: { ...prev.whyUs, image: dataUrl },
+        }));
+      } else if (cropFieldPath?.startsWith('home.hero.readersAvatars.')) {
+        const idx = parseInt(cropFieldPath.replace('home.hero.readersAvatars.', ''), 10);
+        setHomeSections((prev) => {
+          const nextAvatars = [
+            ...(prev.hero?.readersAvatars || DEFAULT_HOME_SECTIONS.hero.readersAvatars || []),
+          ];
+          if (nextAvatars[idx] !== undefined) {
+            nextAvatars[idx] = dataUrl;
+          }
+          return {
+            ...prev,
+            hero: {
+              ...prev.hero,
+              readersAvatars: nextAvatars,
+            },
+          };
+        });
+      } else if (cropFieldPath === 'about.header.image') {
+        setAboutSections((prev) => ({
+          ...prev,
+          header: { ...prev.header, image: dataUrl },
+        }));
+      } else if (cropFieldPath === 'about.philosophy.image') {
+        setAboutSections((prev) => ({
+          ...prev,
+          philosophy: { ...prev.philosophy, image: dataUrl },
+        }));
+      } else if (cropFieldPath?.startsWith('home.testimonials.')) {
+        const idx = parseInt(cropFieldPath.replace('home.testimonials.', ''), 10);
+        setHomeSections((prev) => {
+          const nextItems = [...(prev.testimonials?.items || DEFAULT_HOME_SECTIONS.testimonials.items)];
+          if (nextItems[idx]) {
+            nextItems[idx] = { ...nextItems[idx], image: dataUrl };
+          }
+          return {
+            ...prev,
+            testimonials: {
+              ...prev.testimonials,
+              items: nextItems,
+            },
+          };
+        });
+      }
+      setCropSrc(null);
+      setCropFieldPath(null);
+      showNotification('Image updated.');
+    };
+    reader.readAsDataURL(croppedFile);
   };
 
   const currentSectionItem = allCmsSections.find((s) => s.key === activeSectionKey) || allCmsSections[0];
-  const isCustomPageActive = !['navbar', 'home', 'about', 'blog', 'contact', 'footer', '404'].includes(activeSectionKey);
+  const isCustomPageActive = !['navbar', 'home', 'services', 'whyUs', 'about', 'process', 'testimonials', 'contact', 'footer', '404'].includes(activeSectionKey);
+  const activeCustomSecMeta = customSectionOrder.find((s) => s.id === selectedCustomSecId);
+
+  const hasCurrentSectionChanges = React.useMemo(() => {
+    try {
+      if (activeSectionKey === 'navbar') {
+        const normalizedNav = settingsNavItems.map((item) => ({
+          id: item.id,
+          label: item.label,
+          url: item.url,
+          isEnabled: item.isEnabled !== false,
+          isExternal: Boolean(item.isExternal),
+        }));
+        const current = JSON.stringify({ logo: settingsLogo, nav: normalizedNav });
+        const baseline = initialSnapshots['navbar'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === 'home') {
+        const current = JSON.stringify(homeSections?.hero);
+        const baseline = initialSnapshots['home'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === 'services') {
+        const current = JSON.stringify(homeSections?.services);
+        const baseline = initialSnapshots['services'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === 'whyUs') {
+        const current = JSON.stringify(homeSections?.whyUs);
+        const baseline = initialSnapshots['whyUs'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === 'process') {
+        const current = JSON.stringify(homeSections?.process);
+        const baseline = initialSnapshots['process'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === 'testimonials') {
+        const current = JSON.stringify(homeSections?.testimonials);
+        const baseline = initialSnapshots['testimonials'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === 'about') {
+        const current = JSON.stringify(aboutSections);
+        const baseline = initialSnapshots['about'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === 'contact') {
+        const current = JSON.stringify(contactData);
+        const baseline = initialSnapshots['contact'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === 'footer') {
+        const current = JSON.stringify(footerData);
+        const baseline = initialSnapshots['footer'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (activeSectionKey === '404') {
+        const current = JSON.stringify(notFoundSections);
+        const baseline = initialSnapshots['404'];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      if (isCustomPageActive) {
+        const current = JSON.stringify({
+          title: customPageTitle,
+          order: customSectionOrder,
+          sections: customSectionsData,
+        });
+        const baseline = initialSnapshots[activeSectionKey];
+        return baseline !== undefined ? current !== baseline : false;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }, [
+    activeSectionKey,
+    initialSnapshots,
+    settingsLogo,
+    settingsNavItems,
+    homeSections,
+    aboutSections,
+    contactData,
+    footerData,
+    notFoundSections,
+    isCustomPageActive,
+    customPageTitle,
+    customSectionOrder,
+    customSectionsData,
+  ]);
 
   return (
     <AdminLayout currentTab="pages" showSearch={false}>
@@ -701,10 +1373,10 @@ export default function AdminPagesPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-200">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-zinc-950 font-['Plus_Jakarta_Sans'] tracking-tight">
-                  Website Pages &amp; Sections CMS
+                  Website Pages
                 </h1>
                 <p className="text-xs sm:text-sm text-zinc-500 mt-1">
-                  Manage the sections of your public website: Navbar, Home, About, Blog, Contact, Footer, 404 Fallback, and custom pages.
+                  Manage the sections of your public website: Navbar, Home, About, Contact, Footer, 404 Fallback, and custom pages.
                 </p>
               </div>
 
@@ -741,14 +1413,22 @@ export default function AdminPagesPage() {
                     const IconComponent = section.icon;
                     const isPublished =
                       section.key === 'home'
-                        ? homeStatus === 'Published'
-                        : section.key === 'about'
-                        ? aboutStatus === 'Published'
-                        : section.key === '404'
-                        ? notFoundStatus === 'Published'
-                        : section.isCustomPage
-                        ? (pages.find((p: Page) => p.slug === section.key)?.status || 'Published') === 'Published'
-                        : true;
+                        ? (homeSections?.hero as any)?.isPublished !== false && (homeSections?.hero as any)?.status !== 'Draft' && homeStatus === 'Published'
+                        : section.key === 'services'
+                          ? (homeSections?.services as any)?.isPublished !== false && (homeSections?.services as any)?.status !== 'Draft'
+                          : section.key === 'whyUs'
+                            ? (homeSections?.whyUs as any)?.isPublished !== false && (homeSections?.whyUs as any)?.status !== 'Draft'
+                            : section.key === 'process'
+                              ? (homeSections?.process as any)?.isPublished !== false && (homeSections?.process as any)?.status !== 'Draft'
+                              : section.key === 'testimonials'
+                                ? (homeSections?.testimonials as any)?.isPublished !== false && (homeSections?.testimonials as any)?.status !== 'Draft'
+                                : section.key === 'about'
+                                  ? aboutStatus === 'Published'
+                                  : section.key === '404'
+                                    ? notFoundStatus === 'Published'
+                                    : section.isCustomPage
+                                      ? (pages.find((p: Page) => p.slug === section.key)?.status || 'Published') === 'Published'
+                                      : true;
 
                     return (
                       <div
@@ -774,9 +1454,6 @@ export default function AdminPagesPage() {
                               ) : null}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs font-mono text-zinc-400 font-semibold">
-                                {section.targetAnchor}
-                              </span>
                               <Badge variant={isPublished ? 'success' : 'neutral'}>
                                 {isPublished ? 'Published' : 'Draft'}
                               </Badge>
@@ -802,8 +1479,6 @@ export default function AdminPagesPage() {
                             <span>Edit Section</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
-
-
 
                           {section.isCustomPage && isAdmin && (
                             <button
@@ -852,170 +1527,65 @@ export default function AdminPagesPage() {
                   <span className="text-xs font-bold text-zinc-950 font-['Plus_Jakarta_Sans']">
                     {currentSectionItem.title}
                   </span>
-                  <span className="text-[10px] font-mono text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md">
-                    {currentSectionItem.targetAnchor}
-                  </span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
+              {/* Unified Action Buttons */}
               <div className="flex items-center gap-2">
-                {activeSectionKey === 'navbar' && (
-                  <button
-                    type="button"
-                    onClick={handleSaveNavbar}
-                    disabled={updateSettingsMutation.isPending}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition shadow-2xs cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5 text-[#FCD06B]" />
-                    <span>Save &amp; Publish Navbar</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => navigate(`/admin/pages/preview/home?section=${activeSectionKey}`)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 text-xs font-bold transition cursor-pointer"
+                  title="Open full public website preview scrolled to this section"
+                >
+                  <Eye className="w-3.5 h-3.5 text-zinc-600" />
+                  <span>Full Preview</span>
+                </button>
 
-                {activeSectionKey === 'home' && (
+                {hasCurrentSectionChanges ? (
                   <>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200/90 text-amber-800 text-[11px] font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      Unsaved Changes
+                    </span>
+
                     <button
                       type="button"
-                      disabled={updatePageMutation.isPending}
-                      onClick={() => handleSaveHome('Draft')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 text-xs font-bold transition cursor-pointer"
+                      disabled={isPendingSave}
+                      onClick={handleDiscardChanges}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100/80 text-rose-700 text-xs font-semibold transition cursor-pointer disabled:opacity-60"
+                      title="Discard unsaved edits and restore saved content"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Reset</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isPendingSave}
+                      onClick={handleSaveDraftCurrentSection}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 text-xs font-bold transition cursor-pointer disabled:opacity-60"
                     >
                       <Save className="w-3.5 h-3.5" />
                       <span>Save Draft</span>
                     </button>
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        disabled={updatePageMutation.isPending}
-                        onClick={() => handleSaveHome(homeStatus === 'Published' ? 'Draft' : 'Published')}
-                        className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer ${
-                          homeStatus === 'Published'
-                            ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
-                            : 'bg-[#52B788] text-white hover:bg-emerald-600'
-                        }`}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{homeStatus === 'Published' ? 'Unpublish' : 'Publish Section'}</span>
-                      </button>
-                    )}
-                  </>
-                )}
 
-                {activeSectionKey === 'about' && (
-                  <>
                     <button
                       type="button"
-                      disabled={updatePageMutation.isPending}
-                      onClick={() => handleSaveAbout('Draft')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 text-xs font-bold transition cursor-pointer"
+                      disabled={isPendingSave}
+                      onClick={handlePublishCurrentSection}
+                      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#52B788] hover:bg-emerald-600 text-white text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-60"
                     >
-                      <Save className="w-3.5 h-3.5" />
-                      <span>Save Draft</span>
+                      {isPendingSave ? <Spinner size="sm" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                      <span>Publish Changes</span>
                     </button>
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        disabled={updatePageMutation.isPending}
-                        onClick={() => handleSaveAbout(aboutStatus === 'Published' ? 'Draft' : 'Published')}
-                        className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer ${
-                          aboutStatus === 'Published'
-                            ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
-                            : 'bg-[#52B788] text-white hover:bg-emerald-600'
-                        }`}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{aboutStatus === 'Published' ? 'Unpublish' : 'Publish Section'}</span>
-                      </button>
-                    )}
                   </>
-                )}
-
-                {activeSectionKey === 'blog' && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => navigate('/admin/posts/create')}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition shadow-2xs cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5 text-[#FCD06B]" />
-                      <span>+ New Article</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/admin/posts')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 text-xs font-bold transition cursor-pointer"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>Manage All Posts</span>
-                    </button>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200/80 text-zinc-500 text-xs font-medium">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Up to date</span>
                   </div>
                 )}
-
-                {activeSectionKey === 'contact' && (
-                  <button
-                    type="button"
-                    onClick={handleSaveContact}
-                    disabled={updatePageMutation.isPending}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition shadow-2xs cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5 text-[#FCD06B]" />
-                    <span>Save &amp; Publish Contact</span>
-                  </button>
-                )}
-
-                {activeSectionKey === 'footer' && (
-                  <button
-                    type="button"
-                    onClick={handleSaveFooter}
-                    disabled={updateSettingsMutation.isPending}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition shadow-2xs cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5 text-[#FCD06B]" />
-                    <span>Save &amp; Publish Footer</span>
-                  </button>
-                )}
-
-                {activeSectionKey === '404' && (
-                  <button
-                    type="button"
-                    onClick={() => handleSaveNotFound(notFoundStatus === 'Published' ? 'Draft' : 'Published')}
-                    disabled={updatePageMutation.isPending}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition shadow-2xs cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5 text-[#FCD06B]" />
-                    <span>Save &amp; Publish 404 Page</span>
-                  </button>
-                )}
-
-                {isCustomPageActive && (
-                  <>
-                    <button
-                      type="button"
-                      disabled={updatePageMutation.isPending}
-                      onClick={() => handleSaveCustomPage('Draft')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 text-xs font-bold transition cursor-pointer"
-                    >
-                      <Save className="w-3.5 h-3.5" />
-                      <span>Save Draft</span>
-                    </button>
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        disabled={updatePageMutation.isPending}
-                        onClick={() => handleSaveCustomPage(customPageStatus === 'Published' ? 'Draft' : 'Published')}
-                        className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer ${
-                          customPageStatus === 'Published'
-                            ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
-                            : 'bg-[#52B788] text-white hover:bg-emerald-600'
-                        }`}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{customPageStatus === 'Published' ? 'Unpublish' : 'Publish Page'}</span>
-                      </button>
-                    )}
-                  </>
-                )}
-
               </div>
             </div>
 
@@ -1030,9 +1600,6 @@ export default function AdminPagesPage() {
                       EDITING {currentSectionItem.badge || currentSectionItem.title}
                     </span>
                   </div>
-                  <span className="text-[11px] font-bold text-zinc-800 font-mono">
-                    {currentSectionItem.targetAnchor}
-                  </span>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-5">
@@ -1049,15 +1616,17 @@ export default function AdminPagesPage() {
 
                         <div className="flex items-center gap-3.5">
                           <div className="w-20 h-14 bg-white rounded-xl border border-zinc-200 flex items-center justify-center p-2 shrink-0">
-                            {settingsLogo.url ? (
-                              <img
-                                src={settingsLogo.url}
-                                alt={settingsLogo.text || 'Brand Logo'}
-                                className="max-h-full max-w-full object-contain"
-                              />
-                            ) : (
-                              <span className="text-[10px] font-mono text-zinc-400">No logo</span>
-                            )}
+                            <img
+                              src={settingsLogo.url?.trim() ? settingsLogo.url : '/logo/logo.png'}
+                              alt={settingsLogo.text || 'Brand Logo'}
+                              className="max-h-full max-w-full object-contain"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                if (!target.src.endsWith('/logo/logo.png')) {
+                                  target.src = '/logo/logo.png';
+                                }
+                              }}
+                            />
                           </div>
 
                           <div className="flex-1 flex flex-wrap gap-2">
@@ -1072,13 +1641,22 @@ export default function AdminPagesPage() {
                               />
                             </label>
 
-                            {settingsLogo.url && (
+                            {settingsLogo.url && settingsLogo.url !== '/logo/logo.png' ? (
+                              <button
+                                type="button"
+                                onClick={() => setSettingsLogo((prev) => ({ ...prev, url: '/logo/logo.png' }))}
+                                className="px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-zinc-600 text-xs font-semibold transition cursor-pointer"
+                              >
+                                Reset Logo
+                              </button>
+                            ) : (
                               <button
                                 type="button"
                                 onClick={() => setSettingsLogo((prev) => ({ ...prev, url: '' }))}
-                                className="px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-zinc-600 text-xs font-semibold transition"
+                                className="px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-rose-50 hover:text-rose-600 text-zinc-500 text-xs font-semibold transition cursor-pointer"
+                                title="Remove logo"
                               >
-                                Remove Logo
+                                Remove
                               </button>
                             )}
                           </div>
@@ -1089,7 +1667,7 @@ export default function AdminPagesPage() {
                             label="Brand / Alt Text"
                             value={settingsLogo.text || ''}
                             onChange={(val) => setSettingsLogo((prev) => ({ ...prev, text: val }))}
-                            placeholder="e.g. Editorial"
+                            placeholder="e.g. Grido"
                           />
                           <FormField
                             label="Logo Link URL"
@@ -1097,6 +1675,59 @@ export default function AdminPagesPage() {
                             onChange={(val) => setSettingsLogo((prev) => ({ ...prev, link: val }))}
                             placeholder="/"
                           />
+                        </div>
+
+                        {/* Logo Display Size Adjustment (Height Slider & Quick Presets) */}
+                        <div className="pt-2 border-t border-zinc-200/60 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider font-mono">
+                              Logo Display Size (Height)
+                            </label>
+                            <span className="text-xs font-mono font-bold text-zinc-800 bg-white px-2 py-0.5 rounded border border-zinc-200">
+                              {settingsLogo.height || 32}px
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="range"
+                              min={20}
+                              max={56}
+                              step={2}
+                              value={settingsLogo.height || 32}
+                              onChange={(e) =>
+                                setSettingsLogo((prev) => ({
+                                  ...prev,
+                                  height: parseInt(e.target.value, 10),
+                                }))
+                              }
+                              className="flex-1 h-1.5 bg-zinc-200 rounded-full appearance-none cursor-pointer accent-zinc-900"
+                            />
+                            <div className="flex items-center gap-1">
+                              {[
+                                { label: 'S', size: 26 },
+                                { label: 'M', size: 32 },
+                                { label: 'L', size: 42 },
+                                { label: 'XL', size: 50 },
+                              ].map((preset) => (
+                                <button
+                                  key={preset.label}
+                                  type="button"
+                                  onClick={() =>
+                                    setSettingsLogo((prev) => ({
+                                      ...prev,
+                                      height: preset.size,
+                                    }))
+                                  }
+                                  className={`px-2 py-0.5 rounded-md text-[11px] font-bold font-mono transition cursor-pointer ${(settingsLogo.height || 32) === preset.size
+                                    ? 'bg-zinc-900 text-white shadow-2xs'
+                                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                                    }`}
+                                >
+                                  {preset.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
 
@@ -1276,7 +1907,7 @@ export default function AdminPagesPage() {
                               hero: { ...prev.hero, primaryButtonText: val },
                             }))
                           }
-                          placeholder="Explore Stories"
+                          placeholder="Our Services"
                         />
                         <FormField
                           label="Primary Button Link"
@@ -1287,7 +1918,7 @@ export default function AdminPagesPage() {
                               hero: { ...prev.hero, primaryButtonLink: val },
                             }))
                           }
-                          placeholder="#blog"
+                          placeholder="#services"
                         />
                       </div>
 
@@ -1316,11 +1947,245 @@ export default function AdminPagesPage() {
                         />
                       </div>
 
+                      {/* Readers Statistics & Avatar Showcase Management */}
+                      <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-zinc-200/60">
+                          <div>
+                            <h4 className="text-xs font-bold text-zinc-900 font-['Plus_Jakarta_Sans']">
+                              Readers & Statistics Counter
+                            </h4>
+                            <p className="text-[11px] text-zinc-500">
+                              Manage the large statistic number, supporting label, final count badge, and avatars.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setHomeSections((prev) => ({
+                                ...prev,
+                                hero: {
+                                  ...prev.hero,
+                                  showReadersStats: prev.hero.showReadersStats === false ? true : false,
+                                },
+                              }))
+                            }
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                              homeSections.hero.showReadersStats !== false
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-zinc-200 text-zinc-600'
+                            }`}
+                          >
+                            {homeSections.hero.showReadersStats !== false ? (
+                              <>
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Visible</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3.5 h-3.5" />
+                                <span>Hidden</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <FormField
+                            label="Main Statistic Number"
+                            value={homeSections.hero.readersCount || ''}
+                            onChange={(val) =>
+                              setHomeSections((prev) => ({
+                                ...prev,
+                                hero: { ...prev.hero, readersCount: val },
+                              }))
+                            }
+                            placeholder="e.g. 2.5M+ or 5.8M+"
+                          />
+                          <FormField
+                            label="Statistic Label"
+                            value={homeSections.hero.readersLabel || ''}
+                            onChange={(val) =>
+                              setHomeSections((prev) => ({
+                                ...prev,
+                                hero: { ...prev.hero, readersLabel: val },
+                              }))
+                            }
+                            placeholder="e.g. ACTIVE READERS"
+                          />
+                          <FormField
+                            label="Final Badge Count"
+                            value={homeSections.hero.readersBadgeText ?? '+10k'}
+                            onChange={(val) =>
+                              setHomeSections((prev) => ({
+                                ...prev,
+                                hero: { ...prev.hero, readersBadgeText: val },
+                              }))
+                            }
+                            placeholder="e.g. +10k or +25k"
+                          />
+                        </div>
+
+                        {/* Profile / Avatar Images List */}
+                        <div className="space-y-3 pt-2 border-t border-zinc-200/60">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider font-mono">
+                              Avatar Profiles ({(homeSections.hero.readersAvatars || DEFAULT_HOME_SECTIONS.hero.readersAvatars || []).length})
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentAvatars = [
+                                  ...(homeSections.hero.readersAvatars ||
+                                    DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                    []),
+                                ];
+                                currentAvatars.push(
+                                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+                                );
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  hero: { ...prev.hero, readersAvatars: currentAvatars },
+                                }));
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-bold cursor-pointer transition"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Add Avatar</span>
+                            </button>
+                          </div>
+
+                          <div className="space-y-2.5">
+                            {(
+                              homeSections.hero.readersAvatars ||
+                              DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                              []
+                            ).map((avatarUrl, aIdx) => (
+                              <div
+                                key={aIdx}
+                                className="flex items-center gap-2 p-2 bg-white rounded-xl border border-zinc-200/80 shadow-2xs"
+                              >
+                                <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-100 ring-2 ring-zinc-200 shrink-0">
+                                  <img
+                                    src={avatarUrl}
+                                    alt={`Avatar ${aIdx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.src =
+                                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80';
+                                    }}
+                                  />
+                                </div>
+                                <input
+                                  type="text"
+                                  value={avatarUrl}
+                                  onChange={(e) => {
+                                    const next = [
+                                      ...(homeSections.hero.readersAvatars ||
+                                        DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                        []),
+                                    ];
+                                    next[aIdx] = e.target.value;
+                                    setHomeSections((prev) => ({
+                                      ...prev,
+                                      hero: { ...prev.hero, readersAvatars: next },
+                                    }));
+                                  }}
+                                  placeholder="Avatar Image URL"
+                                  className="flex-1 px-2.5 py-1.5 text-xs text-zinc-900 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-950 font-medium"
+                                />
+                                <label
+                                  className="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold cursor-pointer transition shrink-0"
+                                  title="Upload & Crop Avatar"
+                                >
+                                  Upload
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                      handleImageFileSelect(e, `home.hero.readersAvatars.${aIdx}`)
+                                    }
+                                    className="hidden"
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  disabled={aIdx === 0}
+                                  onClick={() => {
+                                    const next = [
+                                      ...(homeSections.hero.readersAvatars ||
+                                        DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                        []),
+                                    ];
+                                    const temp = next[aIdx - 1];
+                                    next[aIdx - 1] = next[aIdx];
+                                    next[aIdx] = temp;
+                                    setHomeSections((prev) => ({
+                                      ...prev,
+                                      hero: { ...prev.hero, readersAvatars: next },
+                                    }));
+                                  }}
+                                  className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
+                                  title="Move Up"
+                                >
+                                  <ArrowUp className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={
+                                    aIdx ===
+                                    (homeSections.hero.readersAvatars ||
+                                      DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                      []).length -
+                                      1
+                                  }
+                                  onClick={() => {
+                                    const next = [
+                                      ...(homeSections.hero.readersAvatars ||
+                                        DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                        []),
+                                    ];
+                                    const temp = next[aIdx + 1];
+                                    next[aIdx + 1] = next[aIdx];
+                                    next[aIdx] = temp;
+                                    setHomeSections((prev) => ({
+                                      ...prev,
+                                      hero: { ...prev.hero, readersAvatars: next },
+                                    }));
+                                  }}
+                                  className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
+                                  title="Move Down"
+                                >
+                                  <ArrowDown className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const next = (
+                                      homeSections.hero.readersAvatars ||
+                                      DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                      []
+                                    ).filter((_, i) => i !== aIdx);
+                                    setHomeSections((prev) => ({
+                                      ...prev,
+                                      hero: { ...prev.hero, readersAvatars: next },
+                                    }));
+                                  }}
+                                  className="p-1 rounded-md text-zinc-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                  title="Remove Avatar"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Featured Card Images */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-zinc-100">
                         <ImagePickerField
                           label="Hero Card 1 Image"
-                          value={homeSections.hero.card1Image || ''}
+                          value={homeSections.hero?.card1Image || ''}
                           onChange={(url) =>
                             setHomeSections((prev) => ({
                               ...prev,
@@ -1328,10 +2193,16 @@ export default function AdminPagesPage() {
                             }))
                           }
                           onUploadClick={(e) => handleImageFileSelect(e, 'home.hero.card1Image')}
+                          onRemove={() =>
+                            setHomeSections((prev) => ({
+                              ...prev,
+                              hero: { ...prev.hero, card1Image: '' },
+                            }))
+                          }
                         />
                         <ImagePickerField
                           label="Hero Card 2 Image"
-                          value={homeSections.hero.card2Image || ''}
+                          value={homeSections.hero?.card2Image || ''}
                           onChange={(url) =>
                             setHomeSections((prev) => ({
                               ...prev,
@@ -1339,32 +2210,440 @@ export default function AdminPagesPage() {
                             }))
                           }
                           onUploadClick={(e) => handleImageFileSelect(e, 'home.hero.card2Image')}
+                          onRemove={() =>
+                            setHomeSections((prev) => ({
+                              ...prev,
+                              hero: { ...prev.hero, card2Image: '' },
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2b. SERVICES SECTION FORM */}
+                  {activeSectionKey === 'services' && (
+                    <div className="space-y-4">
+                      <FormField
+                        label="Services Headline"
+                        value={homeSections.services?.heading || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            services: { ...prev.services, heading: val },
+                          }))
+                        }
+                        placeholder="The Services We Provide"
+                      />
+
+                      <FormField
+                        label="Badge Text"
+                        value={homeSections.services?.badgeText || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            services: { ...prev.services, badgeText: val },
+                          }))
+                        }
+                        placeholder="WHAT WE OFFER"
+                      />
+
+                      <FormTextarea
+                        label="Services Description"
+                        rows={3}
+                        value={homeSections.services?.description || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            services: { ...prev.services, description: val },
+                          }))
+                        }
+                        placeholder="From creative concept to final publication..."
+                      />
+
+                      {/* 3 Service Cards */}
+                      <div className="pt-2 border-t border-zinc-100 space-y-3">
+                        <span className="text-xs font-bold text-zinc-900 block">Service Capability Cards</span>
+                        {(homeSections.services?.items || DEFAULT_HOME_SECTIONS.services.items).map((item, idx) => (
+                          <div key={idx} className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200/80 space-y-2">
+                            <span className="text-[11px] font-bold font-mono text-zinc-700">Card #{idx + 1}</span>
+                            <FormField
+                              label="Service Title"
+                              value={item.title}
+                              onChange={(val) => {
+                                const next = [...(homeSections.services?.items || DEFAULT_HOME_SECTIONS.services.items)];
+                                next[idx] = { ...next[idx], title: val };
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  services: { ...prev.services, items: next },
+                                }));
+                              }}
+                              placeholder="e.g. Digital Publishing"
+                            />
+                            <FormTextarea
+                              label="Service Description"
+                              rows={2}
+                              value={item.description}
+                              onChange={(val) => {
+                                const next = [...(homeSections.services?.items || DEFAULT_HOME_SECTIONS.services.items)];
+                                next[idx] = { ...next[idx], description: val };
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  services: { ...prev.services, items: next },
+                                }));
+                              }}
+                              placeholder="Describe this service capability..."
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2c. WHY CHOOSE US SECTION FORM */}
+                  {activeSectionKey === 'whyUs' && (
+                    <div className="space-y-4">
+                      <FormField
+                        label="Why Us Headline"
+                        value={homeSections.whyUs?.heading || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            whyUs: { ...prev.whyUs, heading: val },
+                          }))
+                        }
+                        placeholder="Why You Choose Us?"
+                      />
+
+                      <FormField
+                        label="Badge Text"
+                        value={homeSections.whyUs?.badgeText || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            whyUs: { ...prev.whyUs, badgeText: val },
+                          }))
+                        }
+                        placeholder="OUR ADVANTAGE"
+                      />
+
+                      <FormTextarea
+                        label="Why Us Description"
+                        rows={3}
+                        value={homeSections.whyUs?.description || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            whyUs: { ...prev.whyUs, description: val },
+                          }))
+                        }
+                        placeholder="We eliminate technical friction from digital content management..."
+                      />
+
+                      {/* Graphic Image */}
+                      <div className="pt-2 border-t border-zinc-100">
+                        <ImagePickerField
+                          label="Advantage Feature Graphic"
+                          value={homeSections.whyUs?.image || ''}
+                          onChange={(url) =>
+                            setHomeSections((prev) => ({
+                              ...prev,
+                              whyUs: { ...prev.whyUs, image: url },
+                            }))
+                          }
+                          onUploadClick={(e) => handleImageFileSelect(e, 'home.whyUs.image')}
+                          onRemove={() =>
+                            setHomeSections((prev) => ({
+                              ...prev,
+                              whyUs: { ...prev.whyUs, image: '' },
+                            }))
+                          }
                         />
                       </div>
 
-                      {/* Service Overview fields */}
-                      <div className="pt-3 border-t border-zinc-100 space-y-3">
-                        <span className="text-xs font-bold text-zinc-900 block">Capabilities &amp; Services Block</span>
-                        <FormField
-                          label="Services Heading"
-                          value={homeSections.services.heading || ''}
-                          onChange={(val) =>
-                            setHomeSections((prev) => ({
-                              ...prev,
-                              services: { ...prev.services, heading: val },
-                            }))
-                          }
-                        />
-                        <FormTextarea
-                          label="Services Description"
-                          value={homeSections.services.description || ''}
-                          onChange={(val) =>
-                            setHomeSections((prev) => ({
-                              ...prev,
-                              services: { ...prev.services, description: val },
-                            }))
-                          }
-                        />
+                      {/* 3 Advantage Features */}
+                      <div className="pt-2 border-t border-zinc-100 space-y-3">
+                        <span className="text-xs font-bold text-zinc-900 block">Advantage Features</span>
+                        {(homeSections.whyUs?.features || DEFAULT_HOME_SECTIONS.whyUs.features).map((feat, idx) => (
+                          <div key={idx} className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200/80 space-y-2">
+                            <span className="text-[11px] font-bold font-mono text-zinc-700">Feature #{idx + 1}</span>
+                            <FormField
+                              label="Feature Title"
+                              value={feat.title}
+                              onChange={(val) => {
+                                const next = [...(homeSections.whyUs?.features || DEFAULT_HOME_SECTIONS.whyUs.features)];
+                                next[idx] = { ...next[idx], title: val };
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  whyUs: { ...prev.whyUs, features: next },
+                                }));
+                              }}
+                              placeholder="e.g. Fully Secured"
+                            />
+                            <FormTextarea
+                              label="Feature Description"
+                              rows={2}
+                              value={feat.description}
+                              onChange={(val) => {
+                                const next = [...(homeSections.whyUs?.features || DEFAULT_HOME_SECTIONS.whyUs.features)];
+                                next[idx] = { ...next[idx], description: val };
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  whyUs: { ...prev.whyUs, features: next },
+                                }));
+                              }}
+                              placeholder="Describe this feature..."
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2d. PROCESS & METHODOLOGY SECTION FORM */}
+                  {activeSectionKey === 'process' && (
+                    <div className="space-y-4">
+                      <FormField
+                        label="Process Headline"
+                        value={homeSections.process?.heading || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            process: { ...prev.process, heading: val },
+                          }))
+                        }
+                        placeholder="How We Do"
+                      />
+
+                      <FormField
+                        label="Badge Text"
+                        value={homeSections.process?.badgeText || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            process: { ...prev.process, badgeText: val },
+                          }))
+                        }
+                        placeholder="OUR METHODOLOGY"
+                      />
+
+                      <FormTextarea
+                        label="Process Description"
+                        rows={3}
+                        value={homeSections.process?.description || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            process: { ...prev.process, description: val },
+                          }))
+                        }
+                        placeholder="A structured, repeatable approach..."
+                      />
+
+                      {/* 3 Steps */}
+                      <div className="pt-2 border-t border-zinc-100 space-y-3">
+                        <span className="text-xs font-bold text-zinc-900 block">Methodology Steps</span>
+                        {(homeSections.process?.steps || DEFAULT_HOME_SECTIONS.process.steps).map((step, idx) => (
+                          <div key={idx} className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200/80 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold font-mono text-zinc-700">Step {step.num || `0${idx + 1}`}</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <FormField
+                                label="Number"
+                                value={step.num}
+                                onChange={(val) => {
+                                  const next = [...(homeSections.process?.steps || DEFAULT_HOME_SECTIONS.process.steps)];
+                                  next[idx] = { ...next[idx], num: val };
+                                  setHomeSections((prev) => ({
+                                    ...prev,
+                                    process: { ...prev.process, steps: next },
+                                  }));
+                                }}
+                                placeholder="01"
+                              />
+                              <div className="col-span-2">
+                                <FormField
+                                  label="Step Title"
+                                  value={step.title}
+                                  onChange={(val) => {
+                                    const next = [...(homeSections.process?.steps || DEFAULT_HOME_SECTIONS.process.steps)];
+                                    next[idx] = { ...next[idx], title: val };
+                                    setHomeSections((prev) => ({
+                                      ...prev,
+                                      process: { ...prev.process, steps: next },
+                                    }));
+                                  }}
+                                  placeholder="e.g. Ideate"
+                                />
+                              </div>
+                            </div>
+                            <FormTextarea
+                              label="Deliverable Items (one per line)"
+                              rows={3}
+                              value={(step.items || []).join('\n')}
+                              onChange={(val) => {
+                                const next = [...(homeSections.process?.steps || DEFAULT_HOME_SECTIONS.process.steps)];
+                                next[idx] = { ...next[idx], items: val.split('\n').filter(Boolean) };
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  process: { ...prev.process, steps: next },
+                                }));
+                              }}
+                              placeholder="Content Strategy&#10;Topic Research&#10;Editorial Planning"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2e. TESTIMONIALS SECTION FORM */}
+                  {activeSectionKey === 'testimonials' && (
+                    <div className="space-y-4">
+                      <FormField
+                        label="Testimonials Headline"
+                        value={homeSections.testimonials?.heading || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            testimonials: { ...prev.testimonials, heading: val },
+                          }))
+                        }
+                        placeholder="What Readers Are Saying"
+                      />
+
+                      <FormField
+                        label="Badge Text"
+                        value={homeSections.testimonials?.badgeText || ''}
+                        onChange={(val) =>
+                          setHomeSections((prev) => ({
+                            ...prev,
+                            testimonials: { ...prev.testimonials, badgeText: val },
+                          }))
+                        }
+                        placeholder="TESTIMONIALS"
+                      />
+
+                      {/* Testimonial Cards */}
+                      <div className="pt-2 border-t border-zinc-100 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-zinc-900 block">
+                            Reader Statements ({homeSections.testimonials?.items?.length || 0})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = [
+                                ...(homeSections.testimonials?.items || DEFAULT_HOME_SECTIONS.testimonials.items),
+                                {
+                                  quote: 'This platform transformed our digital publishing workflow. The reading experience is exceptionally clean.',
+                                  author: 'Elena Rostova',
+                                  role: 'Lead Editorial Director, Apex Media',
+                                  image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+                                },
+                              ];
+                              setHomeSections((prev) => ({
+                                ...prev,
+                                testimonials: { ...prev.testimonials, items: next },
+                              }));
+                            }}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-amber-800 hover:text-amber-950 cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>+ Add Testimonial</span>
+                          </button>
+                        </div>
+
+                        {(homeSections.testimonials?.items || DEFAULT_HOME_SECTIONS.testimonials.items).map((item, idx) => (
+                          <div key={idx} className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200/80 space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold font-mono text-zinc-700">Statement #{idx + 1}</span>
+                              {(homeSections.testimonials?.items || []).length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const next = (homeSections.testimonials?.items || []).filter((_, i) => i !== idx);
+                                    setHomeSections((prev) => ({
+                                      ...prev,
+                                      testimonials: { ...prev.testimonials, items: next },
+                                    }));
+                                  }}
+                                  className="p-1 text-zinc-400 hover:text-rose-600 transition cursor-pointer"
+                                  title="Delete Testimonial"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+
+                            <FormTextarea
+                              label="Quote Statement"
+                              rows={3}
+                              value={item.quote}
+                              onChange={(val) => {
+                                const next = [...(homeSections.testimonials?.items || DEFAULT_HOME_SECTIONS.testimonials.items)];
+                                next[idx] = { ...next[idx], quote: val };
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  testimonials: { ...prev.testimonials, items: next },
+                                }));
+                              }}
+                              placeholder="Write reader endorsement quote..."
+                            />
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <FormField
+                                label="Author Name"
+                                value={item.author}
+                                onChange={(val) => {
+                                  const next = [...(homeSections.testimonials?.items || DEFAULT_HOME_SECTIONS.testimonials.items)];
+                                  next[idx] = { ...next[idx], author: val };
+                                  setHomeSections((prev) => ({
+                                    ...prev,
+                                    testimonials: { ...prev.testimonials, items: next },
+                                  }));
+                                }}
+                                placeholder="e.g. Elena Rostova"
+                              />
+                              <FormField
+                                label="Author Role / Title"
+                                value={item.role}
+                                onChange={(val) => {
+                                  const next = [...(homeSections.testimonials?.items || DEFAULT_HOME_SECTIONS.testimonials.items)];
+                                  next[idx] = { ...next[idx], role: val };
+                                  setHomeSections((prev) => ({
+                                    ...prev,
+                                    testimonials: { ...prev.testimonials, items: next },
+                                  }));
+                                }}
+                                placeholder="e.g. Lead Editorial Director"
+                              />
+                            </div>
+
+                            <ImagePickerField
+                              label="Portrait Photo"
+                              value={item.image || ''}
+                              onChange={(url) => {
+                                const next = [...(homeSections.testimonials?.items || DEFAULT_HOME_SECTIONS.testimonials.items)];
+                                next[idx] = { ...next[idx], image: url };
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  testimonials: { ...prev.testimonials, items: next },
+                                }));
+                              }}
+                              onUploadClick={(e) => handleImageFileSelect(e, `home.testimonials.${idx}`)}
+                              onRemove={() => {
+                                const next = [...(homeSections.testimonials?.items || DEFAULT_HOME_SECTIONS.testimonials.items)];
+                                next[idx] = { ...next[idx], image: '' };
+                                setHomeSections((prev) => ({
+                                  ...prev,
+                                  testimonials: { ...prev.testimonials, items: next },
+                                }));
+                              }}
+                            />
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -1420,7 +2699,28 @@ export default function AdminPagesPage() {
                         }
                       />
 
-                      {/* Philosophy Essay */}
+                      {/* About Studio Feature Image */}
+                      <div className="pt-2 border-t border-zinc-100">
+                        <ImagePickerField
+                          label="About Studio Feature Image"
+                          value={aboutSections.header?.image || ''}
+                          onChange={(url) =>
+                            setAboutSections((prev) => ({
+                              ...prev,
+                              header: { ...prev.header, image: url },
+                            }))
+                          }
+                          onUploadClick={(e) => handleImageFileSelect(e, 'about.header.image')}
+                          onRemove={() =>
+                            setAboutSections((prev) => ({
+                              ...prev,
+                              header: { ...prev.header, image: '' },
+                            }))
+                          }
+                        />
+                      </div>
+
+                      {/* Philosophy Essay & Image */}
                       <div className="pt-3 border-t border-zinc-100 space-y-3">
                         <span className="text-xs font-bold text-zinc-900 block">Editorial Philosophy Essay</span>
                         <FormField
@@ -1446,100 +2746,27 @@ export default function AdminPagesPage() {
                             }));
                           }}
                         />
+                        <ImagePickerField
+                          label="Philosophy Workspace Image"
+                          value={aboutSections.philosophy?.image || ''}
+                          onChange={(url) =>
+                            setAboutSections((prev) => ({
+                              ...prev,
+                              philosophy: { ...prev.philosophy, image: url },
+                            }))
+                          }
+                          onUploadClick={(e) => handleImageFileSelect(e, 'about.philosophy.image')}
+                          onRemove={() =>
+                            setAboutSections((prev) => ({
+                              ...prev,
+                              philosophy: { ...prev.philosophy, image: '' },
+                            }))
+                          }
+                        />
                       </div>
                     </div>
                   )}
 
-                  {/* 4. BLOG SECTION MANAGEMENT */}
-                  {activeSectionKey === 'blog' && (
-                    <div className="space-y-4">
-                      {/* Action Header Card */}
-                      <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-200/80 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="text-xs font-bold text-zinc-900 block">Article Management</span>
-                            <span className="text-[11px] text-zinc-400">Create, edit and publish blog stories</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => navigate('/admin/posts/create')}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition shadow-2xs cursor-pointer"
-                          >
-                            <Plus className="w-3.5 h-3.5 text-[#FCD06B]" />
-                            <span>New Article</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Current Articles List */}
-                      <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-zinc-900">Articles in CMS</span>
-                          <span className="text-xs font-mono font-bold bg-zinc-200 px-2 py-0.5 rounded-md">
-                            {posts.length} Stories
-                          </span>
-                        </div>
-
-                        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                          {posts.map((post) => (
-                            <div
-                              key={post.id || post._id}
-                              className="p-3 bg-white rounded-xl border border-zinc-200/90 flex items-center justify-between gap-3 hover:border-zinc-400 transition"
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                {post.imageUrl ? (
-                                  <img
-                                    src={post.imageUrl}
-                                    alt=""
-                                    className="w-10 h-10 rounded-lg object-cover bg-zinc-100 shrink-0 border border-zinc-200"
-                                  />
-                                ) : (
-                                  <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-400 text-[10px] shrink-0 font-mono">
-                                    No img
-                                  </div>
-                                )}
-                                <div className="min-w-0">
-                                  <h5 className="text-xs font-bold text-zinc-900 truncate">{post.title}</h5>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-[10px] text-zinc-400 font-mono">
-                                      {post.category || 'Article'}
-                                    </span>
-                                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded font-mono ${
-                                      post.status === 'Published'
-                                        ? 'bg-emerald-50 text-emerald-700'
-                                        : 'bg-amber-50 text-amber-700'
-                                    }`}>
-                                      {post.status || 'Draft'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => navigate(`/admin/posts/edit/${post.id || post._id}`)}
-                                  className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-bold transition cursor-pointer"
-                                >
-                                  Edit
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Link to Full Posts CMS */}
-                      <button
-                        type="button"
-                        onClick={() => navigate('/admin/posts')}
-                        className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-800 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-                      >
-                        <BookOpen className="w-4 h-4 text-amber-700" />
-                        <span>Open Full Posts Manager</span>
-                      </button>
-                    </div>
-                  )}
 
                   {/* 5. CONTACT SECTION FORM */}
                   {activeSectionKey === 'contact' && (
@@ -1569,7 +2796,7 @@ export default function AdminPagesPage() {
                         label="Contact Email"
                         value={contactData.contactEmail}
                         onChange={(val) => setContactData((prev) => ({ ...prev, contactEmail: val }))}
-                        placeholder="contact@editorial.io"
+                        placeholder="contact@grido.io"
                       />
 
                       <FormField
@@ -1602,7 +2829,7 @@ export default function AdminPagesPage() {
                         label="Copyright Notice"
                         value={footerData.copyright}
                         onChange={(val) => setFooterData((prev) => ({ ...prev, copyright: val }))}
-                        placeholder="© 2026 Editorial. All rights reserved."
+                        placeholder="© 2026 Grido. All rights reserved."
                       />
 
                       {/* Social Links */}
@@ -1764,17 +2991,15 @@ export default function AdminPagesPage() {
                               <div
                                 key={sec.id}
                                 onClick={() => setSelectedCustomSecId(sec.id)}
-                                className={`p-3 rounded-xl border flex items-center justify-between gap-2 cursor-pointer transition ${
-                                  isSelected
-                                    ? 'bg-zinc-950 text-white border-zinc-950 shadow-xs'
-                                    : 'bg-zinc-50 text-zinc-800 border-zinc-200 hover:bg-zinc-100'
-                                }`}
+                                className={`p-3 rounded-xl border flex items-center justify-between gap-2 cursor-pointer transition ${isSelected
+                                  ? 'bg-zinc-950 text-white border-zinc-950 shadow-xs'
+                                  : 'bg-zinc-50 text-zinc-800 border-zinc-200 hover:bg-zinc-100'
+                                  }`}
                               >
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span
-                                    className={`w-1.5 h-1.5 rounded-full ${
-                                      isSelected ? 'bg-[#FCD06B]' : 'bg-emerald-500'
-                                    }`}
+                                    className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-[#FCD06B]' : 'bg-emerald-500'
+                                      }`}
                                   />
                                   <span className="text-xs font-bold truncate">{sec.name}</span>
                                 </div>
@@ -1791,7 +3016,7 @@ export default function AdminPagesPage() {
                                       next[secIdx - 1] = temp;
                                       setCustomSectionOrder(next);
                                     }}
-                                    className="p-1 disabled:opacity-20 hover:bg-white/20 rounded"
+                                    className="p-1 disabled:opacity-20 hover:bg-white/20 rounded cursor-pointer"
                                   >
                                     <ArrowUp className="w-3 h-3" />
                                   </button>
@@ -1806,7 +3031,7 @@ export default function AdminPagesPage() {
                                       next[secIdx + 1] = temp;
                                       setCustomSectionOrder(next);
                                     }}
-                                    className="p-1 disabled:opacity-20 hover:bg-white/20 rounded"
+                                    className="p-1 disabled:opacity-20 hover:bg-white/20 rounded cursor-pointer"
                                   >
                                     <ArrowDown className="w-3 h-3" />
                                   </button>
@@ -1818,7 +3043,7 @@ export default function AdminPagesPage() {
                                         prev.filter((s) => s.id !== sec.id)
                                       );
                                     }}
-                                    className="p-1 hover:bg-white/20 rounded text-rose-400"
+                                    className="p-1 hover:bg-white/20 rounded text-rose-400 cursor-pointer"
                                   >
                                     <Trash2 className="w-3 h-3" />
                                   </button>
@@ -1833,7 +3058,7 @@ export default function AdminPagesPage() {
                       {customSectionsData[selectedCustomSecId] && (
                         <div className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-200 space-y-3 pt-3">
                           <span className="text-[11px] font-bold uppercase font-mono text-amber-800 block">
-                            Edit Selected Section Content
+                            Edit Selected Section ({activeCustomSecMeta?.name || 'Section'})
                           </span>
                           <FormField
                             label="Headline / Title"
@@ -1850,7 +3075,7 @@ export default function AdminPagesPage() {
                           />
                           <FormTextarea
                             label="Description / Paragraph"
-                            rows={4}
+                            rows={3}
                             value={customSectionsData[selectedCustomSecId]?.content || customSectionsData[selectedCustomSecId]?.description || ''}
                             onChange={(val) =>
                               setCustomSectionsData((prev) => ({
@@ -1863,6 +3088,7 @@ export default function AdminPagesPage() {
                               }))
                             }
                           />
+
                         </div>
                       )}
 
@@ -1892,22 +3118,18 @@ export default function AdminPagesPage() {
                     <span className="text-xs font-bold text-zinc-900 truncate">
                       {currentSectionItem.title} Preview
                     </span>
-                    <span className="hidden xl:inline text-[10px] font-mono text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">
-                      Live Synced DOM
-                    </span>
                   </div>
 
-                  {/* Device mode switcher */}
-                  <div className="flex items-center bg-zinc-100 p-0.5 rounded-xl border border-zinc-200/80">
+                  {/* Device mode switcher (hidden on mobile screens) */}
+                  <div className="hidden sm:flex items-center bg-zinc-100 p-0.5 rounded-xl border border-zinc-200/80">
                     <button
                       type="button"
                       onClick={() => {
                         setDeviceMode('desktop');
                         setMobileDrawerOpen(false);
                       }}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
-                        deviceMode === 'desktop' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-                      }`}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${deviceMode === 'desktop' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                        }`}
                     >
                       <Monitor className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Desktop</span>
@@ -1919,9 +3141,8 @@ export default function AdminPagesPage() {
                         setDeviceMode('tablet');
                         setMobileDrawerOpen(false);
                       }}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
-                        deviceMode === 'tablet' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-                      }`}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${deviceMode === 'tablet' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                        }`}
                     >
                       <Tablet className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Tablet</span>
@@ -1930,9 +3151,8 @@ export default function AdminPagesPage() {
                     <button
                       type="button"
                       onClick={() => setDeviceMode('mobile')}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
-                        deviceMode === 'mobile' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-                      }`}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${deviceMode === 'mobile' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                        }`}
                     >
                       <Smartphone className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Mobile</span>
@@ -1941,217 +3161,217 @@ export default function AdminPagesPage() {
                 </div>
 
                 {/* Canvas Frame Container */}
-                <div className="flex-1 flex justify-center items-stretch overflow-y-auto overflow-x-hidden min-h-0 relative">
+                <div className="flex-1 flex justify-center items-center overflow-hidden min-h-0 relative p-1.5 sm:p-3 bg-zinc-100/80 select-none">
+                  {/* Device Viewport Preview Container */}
                   <div
-                    className={`bg-white rounded-2xl shadow-md border border-zinc-200/90 overflow-y-auto overflow-x-hidden transition-all duration-300 w-full flex flex-col relative ${
-                      deviceMode === 'tablet'
-                        ? 'max-w-[768px]'
-                        : deviceMode === 'mobile'
-                        ? 'max-w-[390px]'
-                        : 'max-w-full'
-                    }`}
+                    className={`bg-white transition-all duration-300 flex flex-col relative overflow-hidden ${deviceMode === 'tablet'
+                      ? 'preview-simulator-tablet w-[768px] max-w-full h-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg my-auto'
+                      : deviceMode === 'mobile'
+                        ? 'preview-simulator-mobile w-full max-w-[390px] h-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg my-auto'
+                        : 'preview-simulator-desktop w-full h-full max-w-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg'
+                      }`}
                   >
-                    {/* Live Navbar Header Simulation */}
-                    <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md border-b border-zinc-100 px-4 py-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {settingsLogo.url ? (
+                    {/* Internal Scrollable Screen Viewport */}
+                    <div
+                      ref={previewScrollRef}
+                      onScroll={() => {
+                        if (mobileDrawerOpen) setMobileDrawerOpen(false);
+                      }}
+                      className="flex-1 flex flex-col w-full h-full overflow-y-auto overflow-x-hidden relative scroll-smooth bg-white"
+                    >
+                      {/* Live Navbar Header Simulation */}
+                      <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur-xs border-b border-zinc-100 px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
                           <img
-                            src={settingsLogo.url}
+                            src={settingsLogo.url?.trim() ? settingsLogo.url : '/logo/logo.png'}
                             alt={settingsLogo.text || 'Logo'}
+                            style={{
+                              height: settingsLogo.height ? `${settingsLogo.height}px` : undefined,
+                              maxHeight: '48px',
+                            }}
                             className="h-6 sm:h-7 w-auto object-contain"
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              if (!target.src.endsWith('/logo/logo.png')) {
+                                target.src = '/logo/logo.png';
+                              }
+                            }}
                           />
-                        ) : (
-                          <span className="text-sm font-bold text-zinc-900 font-['Plus_Jakarta_Sans']">
-                            {settingsLogo.text || 'Editorial'}
-                          </span>
-                        )}
-                      </div>
+                        </div>
 
-                      {deviceMode !== 'mobile' ? (
-                        <nav className="flex items-center gap-5 text-xs font-semibold text-zinc-600">
-                          {settingsNavItems
-                            .filter((n) => n.isEnabled !== false)
-                            .map((navItem) => {
-                              const isNavActive =
-                                (navItem.url === '/' && activeSectionKey === 'home') ||
-                                navItem.url === `/#${activeSectionKey}` ||
-                                navItem.url === `/${activeSectionKey}` ||
-                                navItem.url === activeSectionKey;
+                        {deviceMode !== 'mobile' ? (
+                          <nav className="flex items-center gap-5 text-xs font-semibold text-zinc-600">
+                            {settingsNavItems
+                              .filter((n) => n.isEnabled !== false)
+                              .map((navItem) => {
+                                const isNavActive =
+                                  (navItem.url === '/' && activeSectionKey === 'home') ||
+                                  navItem.url === `/#${activeSectionKey}` ||
+                                  navItem.url === `/${activeSectionKey}` ||
+                                  navItem.url === activeSectionKey;
 
-                              return (
-                                <button
-                                  key={navItem.id}
-                                  type="button"
-                                  onClick={() => {
-                                    const targetKey = navItem.url.replace('/#', '').replace('/', '') || 'home';
-                                    handleOpenEditor(targetKey);
-                                  }}
-                                  className={`transition cursor-pointer ${
-                                    isNavActive
+                                return (
+                                  <button
+                                    key={navItem.id}
+                                    type="button"
+                                    onClick={() => {
+                                      const targetKey = navItem.url.replace('/#', '').replace('/', '') || 'home';
+                                      handleOpenEditor(targetKey);
+                                    }}
+                                    className={`transition cursor-pointer ${isNavActive
                                       ? 'text-zinc-950 font-bold border-b-2 border-zinc-950 pb-0.5'
                                       : 'hover:text-zinc-950'
-                                  }`}
-                                >
-                                  {navItem.label}
-                                </button>
-                              );
-                            })}
-                        </nav>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
-                          className="p-1.5 rounded-lg bg-zinc-100 text-zinc-800 cursor-pointer"
-                        >
-                          {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-                        </button>
-                      )}
-                    </header>
-
-                    {/* Mobile Slide-in Drawer in Simulator */}
-                    <AnimatePresence>
-                      {deviceMode === 'mobile' && mobileDrawerOpen && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="absolute inset-0 z-40 bg-black/40 backdrop-blur-xs flex"
-                          onClick={() => setMobileDrawerOpen(false)}
-                        >
-                          <motion.div
-                            initial={{ x: '-100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '-100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-[280px] h-full bg-white shadow-2xl p-5 flex flex-col justify-between"
+                                      }`}
+                                  >
+                                    {navItem.label}
+                                  </button>
+                                );
+                              })}
+                          </nav>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+                            className="p-1.5 rounded-lg bg-zinc-100 text-zinc-800 cursor-pointer"
                           >
-                            <div className="space-y-6">
-                              <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
-                                <span className="text-sm font-bold text-zinc-900">{settingsLogo.text || 'Editorial'}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setMobileDrawerOpen(false)}
-                                  className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-500"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
+                            {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                          </button>
+                        )}
+                      </header>
+
+                      {/* Mobile Slide-in Drawer in Simulator (Right to Left) */}
+                      <AnimatePresence>
+                        {deviceMode === 'mobile' && mobileDrawerOpen && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 z-40 bg-black/40 backdrop-blur-xs flex justify-end"
+                            onClick={() => setMobileDrawerOpen(false)}
+                          >
+                            <motion.div
+                              initial={{ x: '100%' }}
+                              animate={{ x: 0 }}
+                              exit={{ x: '100%' }}
+                              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-[260px] max-w-[80%] h-full bg-white shadow-2xl p-5 flex flex-col justify-between overflow-y-auto"
+                            >
+                              <div className="space-y-6">
+                                <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
+                                  <img
+                                    src={settingsLogo.url?.trim() ? settingsLogo.url : '/logo/logo.png'}
+                                    alt={settingsLogo.text || 'Logo'}
+                                    style={{
+                                      height: settingsLogo.height ? `${Math.min(32, settingsLogo.height)}px` : '26px',
+                                      maxHeight: '36px',
+                                    }}
+                                    className="h-6 sm:h-7 w-auto object-contain max-w-[130px]"
+                                    onError={(e) => {
+                                      const target = e.currentTarget;
+                                      if (!target.src.endsWith('/logo/logo.png')) {
+                                        target.src = '/logo/logo.png';
+                                      }
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setMobileDrawerOpen(false)}
+                                    className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-500 cursor-pointer"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <nav className="flex flex-col space-y-3 text-sm font-bold text-zinc-800">
+                                  {settingsNavItems
+                                    .filter((n) => n.isEnabled !== false)
+                                    .map((navItem) => (
+                                      <button
+                                        key={navItem.id}
+                                        type="button"
+                                        onClick={() => {
+                                          const targetKey = navItem.url.replace('/#', '').replace('/', '') || 'home';
+                                          handleOpenEditor(targetKey);
+                                          setMobileDrawerOpen(false);
+                                        }}
+                                        className="text-left py-1 hover:text-amber-600 transition cursor-pointer"
+                                      >
+                                        {navItem.label}
+                                      </button>
+                                    ))}
+                                </nav>
                               </div>
-                              <nav className="flex flex-col space-y-3 text-sm font-bold text-zinc-800">
-                                {settingsNavItems
-                                  .filter((n) => n.isEnabled !== false)
-                                  .map((navItem) => (
-                                    <button
-                                      key={navItem.id}
-                                      type="button"
-                                      onClick={() => {
-                                        const targetKey = navItem.url.replace('/#', '').replace('/', '') || 'home';
-                                        handleOpenEditor(targetKey);
-                                        setMobileDrawerOpen(false);
-                                      }}
-                                      className="text-left py-1 hover:text-amber-600 transition cursor-pointer"
-                                    >
-                                      {navItem.label}
-                                    </button>
-                                  ))}
-                              </nav>
-                            </div>
-                            <div className="pt-4 border-t border-zinc-100 text-[11px] text-zinc-400 font-mono">
-                              Responsive Mobile Preview
-                            </div>
+                              <div className="pt-4 border-t border-zinc-100 text-[11px] text-zinc-400 font-mono">
+                                Responsive Mobile Preview
+                              </div>
+                            </motion.div>
                           </motion.div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        )}
+                      </AnimatePresence>
 
-                    {/* Section Live Content */}
-                    <main className="flex-1 flex flex-col">
-                      {activeSectionKey === 'navbar' && (
-                        <div className="w-full flex flex-col">
-                          <HeroSection content={homeSections.hero} />
-                          <ServicesSection content={homeSections.services} />
-                          <WhyUsSection content={homeSections.whyUs} />
-                          <AboutSection content={aboutSections} />
-                          <BlogSection posts={posts} />
-                          <Footer
-                            content={{
-                              ...homeSections.cta,
-                              ...contactData,
-                            }}
-                            showContactSection={true}
-                          />
-                        </div>
-                      )}
-
-                      {activeSectionKey === 'home' && (
-                        <div className="w-full flex flex-col">
-                          <HeroSection content={homeSections.hero} />
-                          <ServicesSection content={homeSections.services} />
-                          <WhyUsSection content={homeSections.whyUs} />
-                        </div>
-                      )}
-
-                      {activeSectionKey === 'about' && (
-                        <div className="w-full flex flex-col">
-                          <AboutSection content={aboutSections} />
-                        </div>
-                      )}
-
-                      {activeSectionKey === 'blog' && (
-                        <div className="w-full flex flex-col">
-                          <BlogSection posts={posts} />
-                        </div>
-                      )}
-
-                      {activeSectionKey === 'contact' && (
-                        <div className="w-full flex flex-col">
-                          <Footer
-                            content={{
-                              ...homeSections.cta,
-                              ...contactData,
-                            }}
-                            showContactSection={true}
-                          />
-                        </div>
-                      )}
-
-                      {activeSectionKey === 'footer' && (
-                        <div className="w-full flex flex-col">
-                          <Footer
-                            content={{
-                              ...homeSections.cta,
-                              ...contactData,
-                            }}
-                            showContactSection={false}
-                          />
-                        </div>
-                      )}
-
-                      {activeSectionKey === '404' && (
-                        <div className="w-full flex flex-col">
-                          <NotFoundContent
-                            content={notFoundSections.general}
-                            isInsidePreview={true}
-                          />
-                        </div>
-                      )}
-
-                      {isCustomPageActive && (
-                        <div className="w-full flex flex-col">
-                          <DynamicSectionsRenderer
-                            sectionOrder={customSectionOrder}
-                            sections={customSectionsData}
-                            posts={posts}
-                            isInsidePreview={true}
-                          />
-                          <Footer content={DEFAULT_HOME_SECTIONS.cta} showContactSection={true} />
-                        </div>
-                      )}
-                    </main>
+                      {/* Section Live Content */}
+                      <main className="flex-1 flex flex-col">
+                        {['navbar', 'home', 'about', 'services', 'whyUs', 'process', 'testimonials', 'contact', 'footer'].includes(activeSectionKey) ? (
+                          <div className="w-full flex flex-col">
+                            <HeroSection content={homeSections.hero} deviceMode={deviceMode} />
+                            <AboutSection content={aboutSections} deviceMode={deviceMode} />
+                            <ServicesSection content={homeSections.services} deviceMode={deviceMode} />
+                            <WhyUsSection content={homeSections.whyUs} deviceMode={deviceMode} />
+                            <ProcessSection content={homeSections.process} />
+                            <TestimonialsSection content={homeSections.testimonials} />
+                            <Footer
+                              content={{
+                                ...homeSections.cta,
+                                ...contactData,
+                              }}
+                              deviceMode={deviceMode}
+                              showContactSection={true}
+                            />
+                          </div>
+                        ) : activeSectionKey === 'about' ? (
+                          <div className="w-full flex flex-col">
+                            <AboutSection content={aboutSections} deviceMode={deviceMode} />
+                            <Footer
+                              content={{
+                                ...homeSections.cta,
+                                ...contactData,
+                              }}
+                              deviceMode={deviceMode}
+                              showContactSection={true}
+                            />
+                          </div>
+                        ) : activeSectionKey === '404' ? (
+                          <div className="w-full flex flex-col">
+                            <NotFoundContent
+                              content={notFoundSections.general}
+                              isInsidePreview={true}
+                            />
+                            <Footer
+                              content={{
+                                ...homeSections.cta,
+                                ...contactData,
+                              }}
+                              deviceMode={deviceMode}
+                              showContactSection={false}
+                            />
+                          </div>
+                        ) : isCustomPageActive ? (
+                          <div className="w-full flex flex-col">
+                            <DynamicSectionsRenderer
+                              sectionOrder={customSectionOrder}
+                              sections={customSectionsData}
+                              deviceMode={deviceMode}
+                              isInsidePreview={true}
+                            />
+                            <Footer content={DEFAULT_HOME_SECTIONS.cta} deviceMode={deviceMode} showContactSection={true} />
+                          </div>
+                        ) : null}
+                      </main>
+                    </div>
                   </div>
                 </div>
-              </div>
 
+              </div>
             </div>
           </div>
         )}
@@ -2201,7 +3421,7 @@ export default function AdminPagesPage() {
                   id="navEnabled"
                   checked={newNavEnabled}
                   onChange={(e) => setNewNavEnabled(e.target.checked)}
-                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
                 />
                 <label htmlFor="navEnabled" className="text-xs font-semibold text-zinc-700 cursor-pointer">
                   Enabled (Visible in public header)
@@ -2290,7 +3510,7 @@ export default function AdminPagesPage() {
                   id="addNavCheck"
                   checked={addPageToNav}
                   onChange={(e) => setAddPageToNav(e.target.checked)}
-                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
                 />
                 <label htmlFor="addNavCheck" className="text-xs font-semibold text-zinc-700 cursor-pointer">
                   Automatically add this page to Navbar menu
@@ -2334,7 +3554,7 @@ export default function AdminPagesPage() {
               <button
                 type="button"
                 onClick={() => setShowAddSectionModal(false)}
-                className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-800"
+                className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-800 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2423,9 +3643,8 @@ export default function AdminPagesPage() {
             className="fixed bottom-6 right-6 z-50"
           >
             <div
-              className={`px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 text-white ${
-                notification.type === 'error' ? 'bg-rose-600' : 'bg-zinc-950 border border-zinc-800'
-              }`}
+              className={`px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 text-white ${notification.type === 'error' ? 'bg-rose-600' : 'bg-zinc-950 border border-zinc-800'
+                }`}
             >
               {notification.type === 'error' ? (
                 <X className="w-4 h-4 text-white" />
@@ -2441,111 +3660,3 @@ export default function AdminPagesPage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Reusable Form Components
-// ---------------------------------------------------------------------------
-
-function FormField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  disabled = false,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider font-mono">
-        {label}
-      </label>
-      <input
-        type="text"
-        disabled={disabled}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200/90 rounded-xl text-xs text-zinc-900 focus:outline-none focus:border-zinc-950 focus:bg-white transition disabled:opacity-50 font-medium shadow-2xs"
-      />
-    </div>
-  );
-}
-
-function FormTextarea({
-  label,
-  value,
-  onChange,
-  placeholder,
-  rows = 3,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  placeholder?: string;
-  rows?: number;
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider font-mono">
-        {label}
-      </label>
-      <textarea
-        rows={rows}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200/90 rounded-xl text-xs text-zinc-900 focus:outline-none focus:border-zinc-950 focus:bg-white transition font-medium shadow-2xs resize-none"
-      />
-    </div>
-  );
-}
-
-function ImagePickerField({
-  label,
-  value,
-  onChange,
-  onUploadClick,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  onUploadClick: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider font-mono">
-        {label}
-      </label>
-      <div className="flex items-center gap-3">
-        {value ? (
-          <div className="w-14 h-14 rounded-xl border border-zinc-200 overflow-hidden bg-zinc-100 shrink-0">
-            <img src={value} alt="Preview" className="w-full h-full object-cover" />
-          </div>
-        ) : (
-          <div className="w-14 h-14 rounded-xl border border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 text-[10px] shrink-0 font-mono">
-            No image
-          </div>
-        )}
-
-        <div className="flex-1 space-y-1.5">
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="/uploads/graphic.jpg or URL"
-            className="w-full px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-none focus:border-zinc-950"
-          />
-          <label className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-bold cursor-pointer transition">
-            <Upload className="w-3 h-3" />
-            <span>Upload Image</span>
-            <input type="file" accept="image/*" onChange={onUploadClick} className="hidden" />
-          </label>
-        </div>
-      </div>
-    </div>
-  );
-}

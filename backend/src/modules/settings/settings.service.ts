@@ -6,15 +6,15 @@ const DEFAULT_SETTINGS = {
   key: 'site-settings',
   logo: {
     url: '/logo/logo.png',
-    text: 'Editorial',
+    text: 'Grido',
     link: '/',
+    height: 32,
   },
   navigationItems: [
     { id: 'nav-1', label: 'Home', url: '/', isExternal: false, isEnabled: true },
     { id: 'nav-2', label: 'About', url: '/about', isExternal: false, isEnabled: true },
     { id: 'nav-3', label: 'Services', url: '/services', isExternal: false, isEnabled: true },
-    { id: 'nav-4', label: 'Blog / News', url: '/blog', isExternal: false, isEnabled: true },
-    { id: 'nav-5', label: 'Contact', url: '/contact', isExternal: false, isEnabled: true },
+    { id: 'nav-4', label: 'Contact', url: '/contact', isExternal: false, isEnabled: true },
   ],
   footer: {},
 };

@@ -2,14 +2,19 @@ import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { PageCtaSection } from '../entities/page';
 import { DEFAULT_HOME_SECTIONS } from '../entities/page';
+import { usePublicSettings } from '../entities/settings';
 
 interface FooterProps {
   content?: PageCtaSection;
   showContactSection?: boolean;
+  deviceMode?: 'desktop' | 'tablet' | 'mobile';
 }
 
-export function Footer({ content, showContactSection = true }: FooterProps) {
+export function Footer({ content, showContactSection = true, deviceMode = 'desktop' }: FooterProps) {
+  const { data: siteSettings } = usePublicSettings();
   const cta = content || DEFAULT_HOME_SECTIONS.cta;
+  const footer = siteSettings?.footer;
+  const isMobile = deviceMode === 'mobile';
 
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
@@ -23,8 +28,8 @@ export function Footer({ content, showContactSection = true }: FooterProps) {
     <footer id="contact" className="scroll-mt-20 w-full bg-white">
       {/* Upper Editorial Contact Block */}
       {showContactSection && (
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 lg:py-28 border-t border-zinc-200/80">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 sm:gap-10 lg:gap-16">
+        <div className={`max-w-[1320px] mx-auto ${isMobile ? 'px-3 sm:px-4 py-10' : 'px-4 sm:px-6 lg:px-8 py-14 sm:py-20 lg:py-28'} border-t border-zinc-200/80`}>
+          <div className={`flex flex-col ${isMobile ? 'gap-6' : 'lg:flex-row lg:items-end justify-between gap-8 sm:gap-10 lg:gap-16'}`}>
             <div className="max-w-3xl">
               <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2 sm:mb-3 font-mono">
                 {cta.badgeText || 'SAY HI TO US'}
@@ -39,7 +44,7 @@ export function Footer({ content, showContactSection = true }: FooterProps) {
 
             <div className="shrink-0">
               <a
-                href={`mailto:${cta.contactEmail || 'contact@editorial.io'}`}
+                href={`mailto:${cta.contactEmail || 'contact@grido.io'}`}
                 className="inline-flex items-center gap-2 text-base sm:text-lg lg:text-xl font-bold text-zinc-950 hover:text-amber-600 transition-colors pb-1 border-b-2 border-zinc-950 hover:border-amber-600 group break-all"
               >
                 <span>Start a conversation</span>
@@ -54,7 +59,7 @@ export function Footer({ content, showContactSection = true }: FooterProps) {
               <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-1 sm:mb-2">
                 Contact Email
               </span>
-              <p className="text-sm sm:text-base font-bold text-zinc-900 break-all">{cta.contactEmail || 'contact@editorial.io'}</p>
+              <p className="text-sm sm:text-base font-bold text-zinc-900 break-all">{cta.contactEmail || 'contact@grido.io'}</p>
               <p className="text-xs text-zinc-400 mt-0.5">Editorial desk response in &lt; 24h</p>
             </div>
 
@@ -78,26 +83,43 @@ export function Footer({ content, showContactSection = true }: FooterProps) {
       )}
 
       {/* Deep Black Editorial Footer Section */}
-      <div className="bg-[#0A0A0A] text-white pt-12 sm:pt-16 pb-10 sm:pb-12 border-t border-zinc-900">
+      <div id="footer" className="scroll-mt-20 bg-[#0A0A0A] text-white pt-12 sm:pt-16 pb-10 sm:pb-12 border-t border-zinc-900">
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 lg:gap-14 pb-10 sm:pb-14 border-b border-zinc-800">
             {/* Left Brand Col */}
             <div className="md:col-span-5 flex flex-col justify-between">
               <div>
                 <p className="text-xs sm:text-sm text-zinc-400 max-w-sm leading-relaxed font-normal">
-                  A modern publishing platform and digital publication engineered for high-impact content, bold ideas, and seamless storytelling.
+                  {footer?.description ||
+                    'A modern publishing platform and digital publication engineered for high-impact content, bold ideas, and seamless storytelling.'}
                 </p>
               </div>
 
               {/* Minimal social icons / marks */}
               <div className="flex items-center gap-3 sm:gap-4 mt-6 text-zinc-400 font-mono text-xs font-bold">
-                <a href="#twitter" aria-label="Twitter" className="hover:text-white transition-colors">TW</a>
+                {footer?.twitterUrl ? (
+                  <a href={footer.twitterUrl} target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="hover:text-white transition-colors">TW</a>
+                ) : (
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="hover:text-white transition-colors">TW</a>
+                )}
                 <span className="text-zinc-700">/</span>
-                <a href="#instagram" aria-label="Instagram" className="hover:text-white transition-colors">IG</a>
+                {footer?.instagramUrl ? (
+                  <a href={footer.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-white transition-colors">IG</a>
+                ) : (
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-white transition-colors">IG</a>
+                )}
                 <span className="text-zinc-700">/</span>
-                <a href="#linkedin" aria-label="LinkedIn" className="hover:text-white transition-colors">IN</a>
+                {footer?.linkedinUrl ? (
+                  <a href={footer.linkedinUrl} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-white transition-colors">IN</a>
+                ) : (
+                  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-white transition-colors">IN</a>
+                )}
                 <span className="text-zinc-700">/</span>
-                <a href="#github" aria-label="GitHub" className="hover:text-white transition-colors">GH</a>
+                {footer?.githubUrl ? (
+                  <a href={footer.githubUrl} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="hover:text-white transition-colors">GH</a>
+                ) : (
+                  <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="hover:text-white transition-colors">GH</a>
+                )}
               </div>
             </div>
 
@@ -129,13 +151,6 @@ export function Footer({ content, showContactSection = true }: FooterProps) {
               </button>
               <button
                 type="button"
-                onClick={() => scrollToSection('blog')}
-                className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors text-left cursor-pointer"
-              >
-                Stories &amp; News
-              </button>
-              <button
-                type="button"
                 onClick={() => scrollToSection('contact')}
                 className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors text-left cursor-pointer"
               >
@@ -151,8 +166,8 @@ export function Footer({ content, showContactSection = true }: FooterProps) {
               <Link to="/about" className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors w-fit">
                 Editorial Guidelines
               </Link>
-              <Link to="/blog" className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors w-fit">
-                Latest Dispatches
+              <Link to="/contact" className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors w-fit">
+                Contact &amp; Inquiries
               </Link>
               <span className="text-xs text-zinc-600 mt-1 sm:mt-2 font-mono">
                 v2.4 · Production Build
@@ -162,7 +177,7 @@ export function Footer({ content, showContactSection = true }: FooterProps) {
 
           {/* Bottom copyright */}
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-mono text-center sm:text-left">
-            <p>© {new Date().getFullYear()} All rights reserved.</p>
+            <p>{footer?.copyright || `© ${new Date().getFullYear()} Grido Publishing Platform. All rights reserved.`}</p>
             <div className="flex items-center gap-3 sm:gap-4">
               <span>READER-FIRST ARCHITECTURE</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />

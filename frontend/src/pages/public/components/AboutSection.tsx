@@ -4,7 +4,6 @@ import {
   ShieldCheck,
   Eye,
   Compass,
-  Sparkles,
   Award,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -13,74 +12,105 @@ import { DEFAULT_ABOUT_SECTIONS } from '../../../entities/page';
 
 interface AboutSectionProps {
   content?: AboutPageSections;
+  deviceMode?: 'desktop' | 'tablet' | 'mobile';
 }
 
-export function AboutSection({ content }: AboutSectionProps) {
+export function AboutSection({ content, deviceMode = 'desktop' }: AboutSectionProps) {
   const about = content || DEFAULT_ABOUT_SECTIONS;
   const header = about.header || DEFAULT_ABOUT_SECTIONS.header;
   const philosophy = about.philosophy || DEFAULT_ABOUT_SECTIONS.philosophy;
   const capabilities = about.capabilities || DEFAULT_ABOUT_SECTIONS.capabilities;
   const missionVision = about.missionVision || DEFAULT_ABOUT_SECTIONS.missionVision;
   const values = about.values || DEFAULT_ABOUT_SECTIONS.values;
+  const isMobile = deviceMode === 'mobile';
+
+  const headerImage =
+    header.image ||
+    'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80';
+  const philosophyImage =
+    philosophy.image ||
+    'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80';
 
   const capabilityIcons = [PenTool, Layers, ShieldCheck, Eye];
-  const pillarColors = ['bg-[#FCD06B]', 'bg-[#52B788]', 'bg-[#E76F51]', 'bg-[#9D4EDD]'];
 
   return (
-    <section id="about" className="scroll-mt-20 py-14 sm:py-20 lg:py-28 bg-white border-t border-zinc-200/80 relative">
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* 1. Header Overview */}
-        <div className="max-w-3xl mb-10 sm:mb-16">
-          {header.badgeText && (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 text-amber-900 text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-4 sm:mb-6 border border-amber-200">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span>{header.badgeText}</span>
-            </div>
-          )}
+    <section id="about" className={`scroll-mt-20 ${isMobile ? 'py-10' : 'py-14 sm:py-20 lg:py-28'} bg-white border-t border-zinc-200/80 relative`}>
+      <div className={`max-w-[1320px] mx-auto ${isMobile ? 'px-3 sm:px-4' : 'px-4 sm:px-6 lg:px-8'}`}>
 
-          <h2 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-zinc-950 tracking-tight leading-[1.15] mb-4 sm:mb-6 font-['Plus_Jakarta_Sans'] break-words">
-            {header.heading}{' '}
-            {header.highlightWord && (
-              <span className="relative inline-block px-2 py-0.5 rounded-xl bg-[#FCD06B] text-zinc-950 my-0.5">
-                {header.highlightWord}
-              </span>
-            )}
-          </h2>
+        {/* 1. Header Overview (Text + Large Feature Image) */}
+        <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center ${isMobile ? 'mb-8' : 'mb-14 sm:mb-20'}`}>
+          <div className="lg:col-span-7 flex flex-col justify-center">
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-zinc-950 tracking-tight leading-[1.12] mb-4 sm:mb-6 font-['Plus_Jakarta_Sans'] break-words">
+              {header.heading}{' '}
+              {header.highlightWord && (
+                <span className="relative inline-block px-2 py-0.5 rounded-xl bg-[#FCD06B] text-zinc-950 my-0.5">
+                  {header.highlightWord}
+                </span>
+              )}
+            </h2>
 
-          <p className="text-sm sm:text-lg lg:text-xl text-zinc-600 font-normal leading-relaxed">
-            {header.description}
-          </p>
+            <p className="text-sm sm:text-lg lg:text-xl text-zinc-600 font-normal leading-relaxed max-w-2xl">
+              {header.description}
+            </p>
+          </div>
+
+          {/* Right Editorial Header Visual */}
+          <div className="lg:col-span-5">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="relative aspect-[4/3.2] rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-md group"
+            >
+              <img
+                src={headerImage}
+                alt="Studio Overview"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80';
+                }}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+            </motion.div>
+          </div>
         </div>
 
-        {/* Quick Pillars Strip */}
-        {header.pillars && header.pillars.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pb-10 sm:pb-16 border-b border-zinc-200/70 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-600">
-            {header.pillars.map((pillar, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full shrink-0 ${pillarColors[i % pillarColors.length]}`} />
-                <span className="truncate">{pillar}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* 2. Philosophy Split Section */}
+        {/* 2. Philosophy Split Section (Image + Text Narrative) */}
         {philosophy && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start py-12 sm:py-16 lg:py-20 border-b border-zinc-100">
-            <div className="lg:col-span-5">
-              <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2 sm:mb-3">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center py-12 sm:py-16 lg:py-20 border-t border-b border-zinc-200/80">
+            <div className="lg:col-span-5 order-2 lg:order-1">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="aspect-[4/3] rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-md group"
+              >
+                <img
+                  src={philosophyImage}
+                  alt="Philosophy Workspace"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80';
+                  }}
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+              </motion.div>
+            </div>
+
+            <div className="lg:col-span-7 order-1 lg:order-2 space-y-4">
+              <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 block font-mono">
                 {philosophy.badgeText || 'OUR PHILOSOPHY'}
               </span>
               <h3 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black text-zinc-950 tracking-tight leading-snug font-['Plus_Jakarta_Sans'] break-words">
                 {philosophy.heading}
               </h3>
-            </div>
-
-            <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-sm sm:text-base lg:text-lg text-zinc-600 leading-relaxed font-normal">
-              {philosophy.paragraphs && philosophy.paragraphs.map((p, idx) => (
-                <p key={idx}>{p}</p>
-              ))}
+              <div className="space-y-3.5 text-sm sm:text-base lg:text-lg text-zinc-600 leading-relaxed font-normal pt-2">
+                {philosophy.paragraphs && philosophy.paragraphs.map((p, idx) => (
+                  <p key={idx}>{p}</p>
+                ))}
+              </div>
             </div>
           </div>
         )}

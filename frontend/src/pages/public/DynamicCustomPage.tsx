@@ -2,7 +2,6 @@ import { useParams } from 'react-router-dom';
 import { PublicLayout } from '../../widgets';
 import { usePublicPage, useRealtimePages, usePublicHomePage } from '../../entities/page';
 import type { Page } from '../../entities/page';
-import { usePublicPosts } from '../../entities/post';
 import { DynamicSectionsRenderer } from './components/DynamicSectionsRenderer';
 import { Spinner } from '../../shared/ui';
 import NotFoundPage from './NotFoundPage';
@@ -12,8 +11,7 @@ export default function DynamicCustomPage() {
   useRealtimePages();
 
   const { data: homeData } = usePublicHomePage();
-  const { data: pageData, isLoading, isError } = usePublicPage<Page | null>(slug, null);
-  const { data: posts = [] } = usePublicPosts();
+  const { data: pageData, isLoading, isError } = usePublicPage<Page | null>(slug);
 
   if (isLoading) {
     return (
@@ -34,7 +32,6 @@ export default function DynamicCustomPage() {
       <DynamicSectionsRenderer
         sectionOrder={pageData.sectionOrder}
         sections={pageData.sections}
-        posts={posts}
       />
     </PublicLayout>
   );

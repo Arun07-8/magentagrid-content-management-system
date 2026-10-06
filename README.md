@@ -1,6 +1,6 @@
 # Content Management System (CMS) Platform
 
-A full-stack, responsive Content Management System (CMS) built with **React + TypeScript** on the frontend and **Node.js/Express + MongoDB** on the backend. Designed with role-based access control (Admin & Editor), secure JWT authentication via HttpOnly cookies with automatic token refresh, real-time cross-client data synchronization via Socket.IO, and a Feature-Sliced Design (FSD) architecture.
+A full-stack, responsive Content Management System (CMS) built with **React + TypeScript** on the frontend and **Node.js/Express + MongoDB** on the backend. Designed with role-based access control (Admin & Editor), secure JWT authentication via HttpOnly cookies with automatic token refresh, real-time cross-client data synchronization via Socket.IO, multi-device preview simulation, and a Feature-Sliced Design (FSD) architecture.
 
 ---
 
@@ -17,8 +17,8 @@ The application provides seeded accounts with distinct role capabilities:
 
 | Role | Email | Password | Allowed Actions |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `arunadmin@gmail.com` | `Admin123!` | Full access: View, Create, Edit, Publish, Unpublish, Delete |
-| **Editor** | `aruneditor@gmail.com` | `Admin123!` | Limited access: View, Create, Edit (Cannot Publish, Unpublish, or Delete) |
+| **Admin** | `arunadmin@gmail.com` | `Admin123!` | Full access: View, Create, Edit, Publish, Unpublish, Delete pages and update settings |
+| **Editor** | `aruneditor@gmail.com` | `Admin123!` | Limited access: View, Edit pages (Cannot Publish, Unpublish, or Delete) |
 
 *Alternative seeded test accounts*:
 - Admin: `adminarun@gmail.com` / `Admin123!`
@@ -129,17 +129,18 @@ npm run dev
 ## 🌟 Main Features
 
 ### Public Website
-- **Home (`/`)**: Hero banner, call-to-action buttons, and latest published article grid.
-- **About (`/about`)**: Structured, content-focused overview of who we are, what we do, purpose, vision, and core values.
-- **Blog / News (`/blog` & `/news`)**: Published articles listing with category tags, date formatting, 2-column mobile card grid, and pagination.
-- **Article Details (`/blog/:id` & `/news/:id`)**: Full article reader with author metadata, read time, formatted paragraphs, and compact "More to Read" related articles section.
-- **404 Page (`*`)**: Clean fallback page for invalid routes.
+- **Home (`/`)**: Hero banner, services capabilities, why choose us features, 3-step process methodology, testimonials, and contact section.
+- **About (`/about`)**: Structured overview of philosophy, pillars, capabilities, mission/vision, and guiding principles.
+- **Services (`/services`)**: Single-page smooth anchor routing to capabilities & solutions.
+- **Contact (`/contact`)**: Editorial desk inquiries, contact details, and response commitment.
+- **Dynamic Pages (`/page/:slug` & `/p/:slug`)**: Bespoke CMS-managed modular pages.
+- **404 Fallback (`*`)**: Custom configurable not found page.
 
 ### Protected Admin CMS
-- **Articles Directory (`/admin/posts`)**: Data table on desktop/tablet viewports; converts to a responsive card list on mobile screens. Includes full-width search bar, status filter pills (`All`, `Published`, `Draft`), per-page pagination, and inline actions.
-- **Create Post (`/admin/posts/create`)**: Form for creating new articles with title, short description, content, category selection, image upload/preview, and draft/publish status options.
-- **Edit Post (`/admin/posts/edit/:id`)**: Edit existing posts with pre-filled form fields.
-- **Device Simulator Preview (`/admin/posts/preview/:id`)**: Real-time article preview with device width toggles (**Desktop ~1280px**, **Tablet ~768px**, **Mobile ~390px**).
+- **Pages Management (`/admin/pages`)**: Centralized dashboard to configure global Navbar, Home page, About page, Contact desk, Footer, 404 Fallback, and custom dynamic pages.
+- **Page Editor (`/admin/pages/edit/:slug`)**: Modular block-level builder with drag-and-drop section ordering, image cropping, and section enable/disable controls.
+- **Responsive Simulator Preview (`/admin/pages/preview/:slug`)**: Real-time page preview with device width toggles (**Desktop ~1280px**, **Tablet ~768px**, **Mobile ~390px**).
+- **Draft & Publish Lifecycle**: Instant toggle between draft staging and live broadcast.
 
 ### Authentication & Session Management
 - **Dual JWT + HttpOnly Cookie Flow**: Short-lived access token (`15m` TTL) and refresh token (`7d` TTL) stored in HttpOnly cookies (`cms_token`, `cms_refresh_token`).
@@ -151,15 +152,14 @@ npm run dev
 - **Editor**: Limited permissions (Create, View, Edit). Protected actions (Publish, Unpublish, Delete) are disabled in the UI and enforced at the backend middleware level (`requireRole('admin')` returning `403 Forbidden`).
 
 ### Real-Time Synchronization
-- Socket.IO broadcasts `posts:changed` events on mutations.
-- TanStack Query automatically invalidates `['posts']` and `['public-posts']` query caches in open browser windows without requiring manual page reloads.
+- Socket.IO broadcasts `pages:changed` and `settings:changed` events on mutations.
+- TanStack Query automatically invalidates query caches in open browser windows without requiring manual page reloads.
 
 ---
 
 ### Responsive Design
 - Optimized across all breakpoints: **Desktop (1920px/1440px)**, **Laptop (1366px)**, **Tablet (1024px/768px)**, **Mobile (430px/390px)**, and **Small Mobile (320px)**.
 - Slide-over mobile navigation drawer on public header (`Navbar.tsx`) and admin layout (`AdminSidebar.tsx`).
-- 2-column post card grid on mobile viewports for public feed.
 
 ---
 
@@ -187,7 +187,8 @@ backend/
 │   │   └── error.middleware.ts    # Centralized error middleware
 │   ├── modules/               # Domain business modules
 │   │   ├── auth/              # Auth module (User model, Controller, Service, Routes)
-│   │   └── posts/             # Posts module (Post model, Controller, Service, Routes)
+│   │   ├── pages/             # Pages module (Page model, Controller, Service, Routes, Defaults)
+│   │   └── settings/          # Settings module (Settings model, Controller, Service, Routes)
 │   ├── utils/
 │   │   └── logger.ts          # Winston logger
 │   ├── app.ts                 # Express application setup & CORS configuration
@@ -202,22 +203,22 @@ frontend/
 ├── src/
 │   ├── app/                   # App setup, providers & router
 │   │   ├── App.tsx            # App root
-│   │   ├── providers/         # QueryProvider & Socket listener
+│   │   ├── providers/         # QueryProvider & auth check
 │   │   └── router/            # AppRoutes & ProtectedRoute
 │   ├── pages/                 # Full page components
-│   │   ├── public/            # HomePage, AboutPage, BlogPage, BlogDetailPage, NotFoundPage
-│   │   └── admin/             # AdminLoginPage, AdminPostsPage, PostCreatePage, PostEditPage, PostPreviewPage
-│   ├── widgets/               # Layout components (Navbar, AdminSidebar, AdminHeader, AdminLayout, PublicLayout)
+│   │   ├── public/            # HomePage, AboutPage, DynamicCustomPage, NotFoundPage
+│   │   └── admin/             # AdminLoginPage, AdminPagesPage, PageEditPage, PagePreviewPage, PagePreviewFrame
+│   ├── widgets/               # Layout components (Navbar, Footer, AdminSidebar, AdminHeader, AdminLayout, PublicLayout)
 │   ├── features/              # Use-case modules
-│   │   ├── auth/              # LoginForm, useAuth, authApi
-│   │   └── post-management/   # PostForm, DeleteModal
+│   │   └── auth/              # LoginForm, useAuth, authApi
 │   ├── entities/              # Core business entities
 │   │   ├── user/              # userStore (Zustand) & session check
-│   │   └── post/              # PostView, ArticleCard, usePosts, postApi
+│   │   ├── page/              # pageApi, usePages, defaultPageContent
+│   │   └── settings/          # settingsApi, useSettings, types
 │   └── shared/                # Primitives & utilities
 │       ├── api/               # apiClient (fetch wrapper with auto-refresh interceptor)
-│       ├── lib/               # Date formatters & helpers
-│       ├── ui/                # Logo, Spinner, Button, Badge, Toast
+│       ├── lib/               # Utility formatters & helpers
+│       ├── ui/                # Logo, Spinner, Button, Badge, Toast, ImageCropModal
 │       └── types/             # Shared TypeScript types
 ```
 
@@ -231,7 +232,7 @@ frontend/
 - **TanStack Query (React Query) v5**: Asynchronous server-state management, query caching, and cache invalidation.
 - **Zustand v5**: Lightweight client authentication & session store.
 - **Tailwind CSS v4**: Responsive utility-first styling.
-- **Socket.IO Client v4**: WebSockets for real-time `posts:changed` listeners.
+- **Socket.IO Client v4**: WebSockets for real-time `pages:changed` and `settings:changed` listeners.
 - **Lucide React**: Modern icon primitives.
 - **Vite v8**: Development server & production bundler.
 
@@ -245,41 +246,3 @@ frontend/
 - **Zod 4**: Schema validation for request payloads and environment variables.
 - **Winston**: Structured HTTP request & application logging.
 - **tsx**: TypeScript execution engine for dev server and CLI scripts.
-
----
-
-## 🧪 Automated Testing
-
-The backend includes automated integration & unit tests:
-```bash
-cd backend
-npm test
-```
-
-**Automated Test Coverage**:
-- Request payload Zod validation
-- Password hashing & verification
-- Admin & Editor authentication
-- Role permission enforcement (`requireRole` middleware blocking Editors from publishing/deleting)
-- Full post lifecycle (Draft -> Published -> Unpublish -> Delete)
-
----
-
-## 🤖 AI Assistance Disclosure
-
-In compliance with technical test submission guidelines:
-- **AI Tool Used**: **Google Antigravity AI Assistant** (Powered by Gemini 3.6 Flash & Gemini 3.8 Flash).
-- **How AI Helped**:
-  - Assisted in designing the Modular Monolith backend and FSD frontend structures.
-  - Implemented the automatic token refresh & retry interceptor in `apiClient.ts` to solve session drop on page refresh.
-  - Configured responsive grid scaling, mobile slide-over navigation drawers, and mobile admin card views.
-  - Formatted automated integration test specifications and CLI user creation scripts.
-  - All code generated was manually reviewed, verified via TypeScript compilation (`tsc`), and tested across browser and API execution flows.
-
----
-
-## 📋 Assumptions
-
-1. **Routing Aliases**: `/blog` and `/news` route to the same responsive blog listing and article detail pages.
-2. **Device Simulator**: The CMS post preview (`/admin/posts/preview/:id`) uses the shared `PostView` component to match public render fidelity.
-3. **Draft Privacy**: Public API endpoints (`/api/posts/public`) filter for `status: 'Published'`. Drafts are strictly accessible within the protected admin CMS.

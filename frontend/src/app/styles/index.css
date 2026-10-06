@@ -88,3 +88,187 @@
   font-weight: 900 !important;
   letter-spacing: -0.04em !important;
 }
+
+/* =========================================================================
+   Responsive Preview Simulator Engine (Mobile, Tablet, Desktop)
+   Guarantees pixel-perfect, viewport-accurate responsive layouts inside
+   the admin simulator frame regardless of the user's monitor resolution.
+   ========================================================================= */
+
+/* --- 1. MOBILE SIMULATOR ENGINE (390px viewport simulation) --- */
+.preview-simulator-mobile {
+  font-size: 14px;
+}
+
+.preview-simulator-mobile * {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Force all grids and grid columns to full-width block/flex stack on mobile */
+.preview-simulator-mobile .grid,
+.preview-simulator-mobile [class*="grid-cols-"],
+.preview-simulator-mobile [class*="lg:grid-cols-"],
+.preview-simulator-mobile [class*="md:grid-cols-"],
+.preview-simulator-mobile [class*="sm:grid-cols-"] {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: 1fr !important;
+  gap: 1.5rem !important;
+  width: 100% !important;
+}
+
+.preview-simulator-mobile [class*="col-span-"],
+.preview-simulator-mobile [class*="lg:col-span-"],
+.preview-simulator-mobile [class*="md:col-span-"],
+.preview-simulator-mobile [class*="sm:col-span-"],
+.preview-simulator-mobile [class*="col-start-"],
+.preview-simulator-mobile [class*="col-end-"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  grid-column: auto !important;
+}
+
+/* Force all flex containers that split on desktop to stack vertically */
+.preview-simulator-mobile .flex.lg\:flex-row,
+.preview-simulator-mobile .flex.md\:flex-row,
+.preview-simulator-mobile .flex.sm\:flex-row,
+.preview-simulator-mobile [class*="lg:flex-row"],
+.preview-simulator-mobile [class*="md:flex-row"],
+.preview-simulator-mobile [class*="sm:flex-row"] {
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+/* Fix text wrapping and prevent single-character vertical breaking */
+.preview-simulator-mobile h1,
+.preview-simulator-mobile h2,
+.preview-simulator-mobile h3,
+.preview-simulator-mobile h4,
+.preview-simulator-mobile h5,
+.preview-simulator-mobile h6,
+.preview-simulator-mobile p,
+.preview-simulator-mobile span,
+.preview-simulator-mobile a,
+.preview-simulator-mobile button,
+.preview-simulator-mobile div {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+}
+
+/* Scale typography cleanly for mobile */
+.preview-simulator-mobile h1 {
+  font-size: 1.85rem !important;
+  line-height: 1.2 !important;
+}
+
+.preview-simulator-mobile h2 {
+  font-size: 1.55rem !important;
+  line-height: 1.25 !important;
+}
+
+.preview-simulator-mobile h3 {
+  font-size: 1.2rem !important;
+  line-height: 1.3 !important;
+}
+
+.preview-simulator-mobile p {
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Section paddings on mobile */
+.preview-simulator-mobile section {
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
+}
+
+.preview-simulator-mobile .max-w-\[1320px\] {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* Post and Article Cards in Mobile Simulator */
+.preview-simulator-mobile article {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 1rem !important;
+  border-radius: 1.25rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.preview-simulator-mobile article .w-full.lg\:w-3\/5,
+.preview-simulator-mobile article .w-full.lg\:w-2\/5 {
+  width: 100% !important;
+}
+
+.preview-simulator-mobile article h3 {
+  font-size: 1.1rem !important;
+  line-height: 1.3 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.preview-simulator-mobile article p {
+  font-size: 0.8rem !important;
+  line-height: 1.45 !important;
+}
+
+.preview-simulator-mobile article .aspect-\[16\/10\],
+.preview-simulator-mobile article img {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* --- 2. TABLET SIMULATOR ENGINE (768px viewport simulation) --- */
+.preview-simulator-tablet {
+  font-size: 15px;
+}
+
+.preview-simulator-tablet .grid {
+  gap: 1.5rem !important;
+}
+
+.preview-simulator-tablet #blog .grid,
+.preview-simulator-tablet [id="blog"] .grid,
+.preview-simulator-tablet .articles-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.preview-simulator-tablet #services .grid,
+.preview-simulator-tablet [id="services"] .grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.preview-simulator-tablet #about .grid,
+.preview-simulator-tablet [id="about"] .grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.preview-simulator-tablet section {
+  padding-top: 3.5rem !important;
+  padding-bottom: 3.5rem !important;
+}
+
+/* Custom modern scrollbars inside preview simulator devices */
+.preview-simulator-mobile *::-webkit-scrollbar,
+.preview-simulator-tablet *::-webkit-scrollbar,
+.preview-simulator-desktop *::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.preview-simulator-mobile *::-webkit-scrollbar-thumb,
+.preview-simulator-tablet *::-webkit-scrollbar-thumb,
+.preview-simulator-desktop *::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 9999px;
+}
+
+.preview-simulator-mobile *::-webkit-scrollbar-track,
+.preview-simulator-tablet *::-webkit-scrollbar-track,
+.preview-simulator-desktop *::-webkit-scrollbar-track {
+  background: transparent;
+}

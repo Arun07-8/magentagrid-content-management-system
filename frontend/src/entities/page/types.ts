@@ -11,6 +11,9 @@ export interface PageHeroSection {
   secondaryButtonLink: string;
   readersCount: string;
   readersLabel: string;
+  readersBadgeText?: string;
+  readersAvatars?: string[];
+  showReadersStats?: boolean;
   card1Image?: string;
   card2Image?: string;
 }
@@ -90,12 +93,14 @@ export interface AboutHeaderSection {
   highlightWord: string;
   description: string;
   pillars: string[];
+  image?: string;
 }
 
 export interface AboutPhilosophySection {
   badgeText: string;
   heading: string;
   paragraphs: string[];
+  image?: string;
 }
 
 export interface AboutCapabilityItem {

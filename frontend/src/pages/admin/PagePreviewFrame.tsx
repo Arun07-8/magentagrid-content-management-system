@@ -1,4 +1,5 @@
-import { useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
   useCmsPage,
   DEFAULT_HOME_SECTIONS,
@@ -18,8 +19,24 @@ import { TestimonialsSection } from '../public/components/TestimonialsSection';
 import { NotFoundContent } from '../public/components/NotFoundContent';
 import { Spinner } from '../../shared/ui';
 
+const SECTION_ELEMENT_ID_MAP: Record<string, string> = {
+  home: 'home',
+  hero: 'home',
+  navbar: 'home',
+  about: 'about',
+  services: 'services',
+  whyUs: 'why-us',
+  'why-us': 'why-us',
+  process: 'process',
+  testimonials: 'testimonials',
+  contact: 'contact',
+  cta: 'contact',
+  footer: 'footer',
+};
+
 export default function PagePreviewFrame() {
   const { slug = 'home' } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
   const { data: page, isLoading } = useCmsPage(slug);
 
   const isHomePage = slug === 'home';
@@ -39,6 +56,37 @@ export default function PagePreviewFrame() {
     is404Page && page?.sections
       ? { ...DEFAULT_NOT_FOUND_SECTIONS, ...(page.sections as NotFoundPageSections) }
       : DEFAULT_NOT_FOUND_SECTIONS;
+
+  // Auto-scroll on initial mount or when searchParams change
+  useEffect(() => {
+    if (isLoading) return;
+    const targetSection = searchParams.get('section') || (window.location.hash ? window.location.hash.replace('#', '') : null);
+    if (targetSection) {
+      const targetId = SECTION_ELEMENT_ID_MAP[targetSection] || targetSection;
+      const timeout = setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 200);
+      return () => clearTimeout(timeout);
+    }
+  }, [isLoading, searchParams]);
+
+  // Listen for live postMessage scroll commands from parent preview controller
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'SCROLL_TO_SECTION' && e.data.section) {
+        const targetId = SECTION_ELEMENT_ID_MAP[e.data.section] || e.data.section;
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   if (isLoading) {
     return (
@@ -74,4 +122,5 @@ export default function PagePreviewFrame() {
     </div>
   );
 }
+
 

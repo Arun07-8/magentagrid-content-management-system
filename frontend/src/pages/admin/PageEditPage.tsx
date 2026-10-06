@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Check,
-  ChevronDown,
-  ChevronRight,
   Plus,
   Trash2,
-  Upload,
+  ArrowUp,
+  ArrowDown,
   Sparkles,
   AlertTriangle,
   Layers,
@@ -15,6 +14,7 @@ import {
   Tablet,
   Smartphone,
   Eye,
+  EyeOff,
   Columns,
   ListOrdered,
   Save,
@@ -22,7 +22,15 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { AdminLayout } from '../../widgets';
-import { Badge, Spinner } from '../../shared/ui';
+import {
+  Badge,
+  Spinner,
+  ImageCropModal,
+  FormInput as FormField,
+  FormTextarea,
+  ImagePickerField,
+  SectionAccordion,
+} from '../../shared/ui';
 import {
   useCmsPage,
   useUpdatePage,
@@ -35,8 +43,7 @@ import {
   type AboutPageSections,
   type NotFoundPageSections,
 } from '../../entities/page';
-import { useUserStore } from '../../entities/user';
-import { ImageCropModal } from '../../features/post-management/ui/ImageCropModal';
+import { useAuth } from '../../app/context/AuthContext';
 import { HeroSection } from '../public/components/HeroSection';
 import { AboutSection } from '../public/components/AboutSection';
 import { ServicesSection } from '../public/components/ServicesSection';
@@ -53,7 +60,7 @@ export default function PageEditPage() {
   const { slug = 'home' } = useParams<{ slug: string }>();
   const is404 = slug === '404' || slug === 'not-found';
   const navigate = useNavigate();
-  const { user } = useUserStore();
+  const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   const { data: page, isLoading } = useCmsPage(slug);
@@ -70,6 +77,39 @@ export default function PageEditPage() {
   const [notFoundState, setNotFoundState] = useState<NotFoundPageSections>(DEFAULT_NOT_FOUND_SECTIONS);
   const [pageStatus, setPageStatus] = useState<'Draft' | 'Published'>('Published');
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const editPreviewScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll the live preview in PageEditPage
+  useEffect(() => {
+    if (!activeSection) return;
+    const SECTION_ID_MAP: Record<string, string> = {
+      hero: 'home',
+      about: 'about',
+      services: 'services',
+      whyUs: 'why-us',
+      process: 'process',
+      testimonials: 'testimonials',
+      cta: 'contact',
+      header: 'about',
+      philosophy: 'about',
+      values: 'about',
+      team: 'about',
+    };
+    const targetId = SECTION_ID_MAP[activeSection] || activeSection;
+    const timer = setTimeout(() => {
+      if (editPreviewScrollRef.current) {
+        if (activeSection === 'hero') {
+          editPreviewScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const el = editPreviewScrollRef.current.querySelector(`#${targetId}`) as HTMLElement | null;
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [activeSection, viewMode, deviceMode]);
 
   // Crop modal state
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -84,7 +124,21 @@ export default function PageEditPage() {
       if (slug === 'home') {
         setHomeState({ ...DEFAULT_HOME_SECTIONS, ...(page.sections as HomePageSections) });
       } else if (slug === 'about') {
-        setAboutState({ ...DEFAULT_ABOUT_SECTIONS, ...(page.sections as AboutPageSections) });
+        const sec = page.sections as any;
+        setAboutState({
+          ...DEFAULT_ABOUT_SECTIONS,
+          ...sec,
+          header: {
+            ...DEFAULT_ABOUT_SECTIONS.header,
+            ...sec?.header,
+            image: sec?.header?.image || DEFAULT_ABOUT_SECTIONS.header.image,
+          },
+          philosophy: {
+            ...DEFAULT_ABOUT_SECTIONS.philosophy,
+            ...sec?.philosophy,
+            image: sec?.philosophy?.image || DEFAULT_ABOUT_SECTIONS.philosophy.image,
+          },
+        });
       } else if (is404) {
         setNotFoundState({ ...DEFAULT_NOT_FOUND_SECTIONS, ...(page.sections as NotFoundPageSections) });
       }
@@ -150,20 +204,41 @@ export default function PageEditPage() {
 
   // Image cropping confirmation
   const handleCropConfirm = (croppedFile: File) => {
-    const objectUrl = URL.createObjectURL(croppedFile);
-    if (cropFieldPath) {
-      if (slug === 'home') {
-        setHomeState((prev) => {
-          const next = { ...prev };
-          if (cropFieldPath === 'hero.card1Image') next.hero.card1Image = objectUrl;
-          if (cropFieldPath === 'hero.card2Image') next.hero.card2Image = objectUrl;
-          if (cropFieldPath === 'whyUs.image') next.whyUs.image = objectUrl;
-          return next;
-        });
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      if (cropFieldPath) {
+        if (slug === 'home') {
+          setHomeState((prev) => {
+            const next = { ...prev };
+            if (cropFieldPath === 'hero.card1Image') next.hero.card1Image = dataUrl;
+            if (cropFieldPath === 'hero.card2Image') next.hero.card2Image = dataUrl;
+            if (cropFieldPath === 'whyUs.image') next.whyUs.image = dataUrl;
+            if (cropFieldPath.startsWith('hero.readersAvatars.')) {
+              const idx = parseInt(cropFieldPath.replace('hero.readersAvatars.', ''), 10);
+              const avatars = [...(next.hero.readersAvatars || DEFAULT_HOME_SECTIONS.hero.readersAvatars || [])];
+              avatars[idx] = dataUrl;
+              next.hero.readersAvatars = avatars;
+            }
+            return next;
+          });
+        } else if (slug === 'about') {
+          setAboutState((prev) => {
+            const next = { ...prev };
+            if (cropFieldPath === 'about.header.image') {
+              next.header = { ...next.header, image: dataUrl };
+            }
+            if (cropFieldPath === 'about.philosophy.image') {
+              next.philosophy = { ...next.philosophy, image: dataUrl };
+            }
+            return next;
+          });
+        }
       }
-    }
-    setCropSrc(null);
-    setCropFieldPath(null);
+      setCropSrc(null);
+      setCropFieldPath(null);
+    };
+    reader.readAsDataURL(croppedFile);
   };
 
   const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>, fieldPath: string) => {
@@ -194,10 +269,10 @@ export default function PageEditPage() {
   return (
     <AdminLayout currentTab="pages-edit" showSearch={false}>
       <div className="w-full h-full flex flex-col min-h-0 gap-4">
-        
+
         {/* Top Sticky Header & Control Bar */}
         <div className="bg-white p-4 sm:p-5 rounded-[28px] border-2 border-zinc-200 shadow-[0_12px_40px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
-          
+
           {/* Left: Back + Title + Status */}
           <div className="flex items-center gap-3">
             <button
@@ -230,9 +305,8 @@ export default function PageEditPage() {
               <button
                 type="button"
                 onClick={() => setViewMode('tree')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                  viewMode === 'tree' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${viewMode === 'tree' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                  }`}
                 title="Structured Content Tree View"
               >
                 <ListOrdered className="w-3.5 h-3.5" />
@@ -241,9 +315,8 @@ export default function PageEditPage() {
               <button
                 type="button"
                 onClick={() => setViewMode('split')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                  viewMode === 'split' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${viewMode === 'split' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                  }`}
                 title="Split Editor & Live Preview"
               >
                 <Columns className="w-3.5 h-3.5" />
@@ -252,9 +325,8 @@ export default function PageEditPage() {
               <button
                 type="button"
                 onClick={() => setViewMode('preview')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                  viewMode === 'preview' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${viewMode === 'preview' ? 'bg-white text-zinc-950 shadow-2xs' : 'text-zinc-500 hover:text-zinc-900'
+                  }`}
                 title="Full Live Public Preview"
               >
                 <Eye className="w-3.5 h-3.5" />
@@ -268,9 +340,8 @@ export default function PageEditPage() {
                 <button
                   type="button"
                   onClick={() => setDeviceMode('desktop')}
-                  className={`p-1.5 rounded-xl text-xs transition cursor-pointer ${
-                    deviceMode === 'desktop' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-400 hover:text-zinc-800'
-                  }`}
+                  className={`p-1.5 rounded-xl text-xs transition cursor-pointer ${deviceMode === 'desktop' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-400 hover:text-zinc-800'
+                    }`}
                   title="Desktop View (~1280px)"
                 >
                   <Monitor className="w-3.5 h-3.5" />
@@ -278,9 +349,8 @@ export default function PageEditPage() {
                 <button
                   type="button"
                   onClick={() => setDeviceMode('tablet')}
-                  className={`p-1.5 rounded-xl text-xs transition cursor-pointer ${
-                    deviceMode === 'tablet' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-400 hover:text-zinc-800'
-                  }`}
+                  className={`p-1.5 rounded-xl text-xs transition cursor-pointer ${deviceMode === 'tablet' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-400 hover:text-zinc-800'
+                    }`}
                   title="Tablet View (~768px)"
                 >
                   <Tablet className="w-3.5 h-3.5" />
@@ -288,9 +358,8 @@ export default function PageEditPage() {
                 <button
                   type="button"
                   onClick={() => setDeviceMode('mobile')}
-                  className={`p-1.5 rounded-xl text-xs transition cursor-pointer ${
-                    deviceMode === 'mobile' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-400 hover:text-zinc-800'
-                  }`}
+                  className={`p-1.5 rounded-xl text-xs transition cursor-pointer ${deviceMode === 'mobile' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-400 hover:text-zinc-800'
+                    }`}
                   title="Mobile View (~390px)"
                 >
                   <Smartphone className="w-3.5 h-3.5" />
@@ -316,11 +385,10 @@ export default function PageEditPage() {
                 type="button"
                 disabled={updateMutation.isPending || publishMutation.isPending}
                 onClick={handleTogglePublish}
-                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold transition shadow-sm cursor-pointer ${
-                  pageStatus === 'Published'
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold transition shadow-sm cursor-pointer ${pageStatus === 'Published'
                     ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
                     : 'bg-[#52B788] text-white hover:bg-emerald-600'
-                }`}
+                  }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>{pageStatus === 'Published' ? 'Unpublish' : 'Publish Changes'}</span>
@@ -351,11 +419,10 @@ export default function PageEditPage() {
         {/* Toast Notification */}
         {notification && (
           <div
-            className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl border text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 ${
-              notification.type === 'success'
+            className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl border text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 ${notification.type === 'success'
                 ? 'bg-zinc-950 text-white border-zinc-800'
                 : 'bg-rose-600 text-white border-rose-700'
-            }`}
+              }`}
           >
             <Sparkles className="w-4 h-4 text-[#FCD06B]" />
             <span>{notification.message}</span>
@@ -364,13 +431,12 @@ export default function PageEditPage() {
 
         {/* MAIN CONTENT AREA: Render based on viewMode */}
         <div className="flex-1 flex gap-5 min-h-0 overflow-hidden">
-          
+
           {/* 1. Hierarchical Structured Tree Editor */}
           {(viewMode === 'tree' || viewMode === 'split') && (
             <div
-              className={`flex-1 flex flex-col bg-white rounded-[28px] border-2 border-zinc-200 shadow-[0_12px_40px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] overflow-y-auto p-5 sm:p-6 min-h-0 ${
-                viewMode === 'split' ? 'lg:max-w-[48%] xl:max-w-[45%]' : 'w-full'
-              }`}
+              className={`flex-1 flex flex-col bg-white rounded-[28px] border-2 border-zinc-200 shadow-[0_12px_40px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] overflow-y-auto p-5 sm:p-6 min-h-0 ${viewMode === 'split' ? 'lg:max-w-[48%] xl:max-w-[45%]' : 'w-full'
+                }`}
             >
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-100">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-500 font-mono">
@@ -451,19 +517,238 @@ export default function PageEditPage() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <FormField
-                            label="Readers Counter"
-                            value={homeState.hero.readersCount}
-                            onChange={(val) => setHomeState({ ...homeState, hero: { ...homeState.hero, readersCount: val } })}
-                            placeholder="2.5M+"
-                          />
-                          <FormField
-                            label="Readers Label"
-                            value={homeState.hero.readersLabel}
-                            onChange={(val) => setHomeState({ ...homeState, hero: { ...homeState.hero, readersLabel: val } })}
-                            placeholder="Active Readers"
-                          />
+                        {/* Readers Statistics & Avatar Showcase Management */}
+                        <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-4">
+                          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/60">
+                            <div>
+                              <h4 className="text-xs font-bold text-zinc-900 font-['Plus_Jakarta_Sans']">
+                                Readers & Statistics Counter
+                              </h4>
+                              <p className="text-[11px] text-zinc-500">
+                                Manage the large statistic number, supporting label, final count badge, and avatars.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setHomeState((prev) => ({
+                                  ...prev,
+                                  hero: {
+                                    ...prev.hero,
+                                    showReadersStats: prev.hero.showReadersStats === false ? true : false,
+                                  },
+                                }))
+                              }
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                                homeState.hero.showReadersStats !== false
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-zinc-200 text-zinc-600'
+                              }`}
+                            >
+                              {homeState.hero.showReadersStats !== false ? (
+                                <>
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span>Visible</span>
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="w-3.5 h-3.5" />
+                                  <span>Hidden</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <FormField
+                              label="Main Statistic Number"
+                              value={homeState.hero.readersCount || ''}
+                              onChange={(val) =>
+                                setHomeState({
+                                  ...homeState,
+                                  hero: { ...homeState.hero, readersCount: val },
+                                })
+                              }
+                              placeholder="e.g. 2.5M+ or 5.8M+"
+                            />
+                            <FormField
+                              label="Statistic Label"
+                              value={homeState.hero.readersLabel || ''}
+                              onChange={(val) =>
+                                setHomeState({
+                                  ...homeState,
+                                  hero: { ...homeState.hero, readersLabel: val },
+                                })
+                              }
+                              placeholder="e.g. ACTIVE READERS"
+                            />
+                            <FormField
+                              label="Final Badge Count"
+                              value={homeState.hero.readersBadgeText ?? '+10k'}
+                              onChange={(val) =>
+                                setHomeState({
+                                  ...homeState,
+                                  hero: { ...homeState.hero, readersBadgeText: val },
+                                })
+                              }
+                              placeholder="e.g. +10k or +25k"
+                            />
+                          </div>
+
+                          {/* Profile / Avatar Images List */}
+                          <div className="space-y-3 pt-2 border-t border-zinc-200/60">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider font-mono">
+                                Avatar Profiles ({(homeState.hero.readersAvatars || DEFAULT_HOME_SECTIONS.hero.readersAvatars || []).length})
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const currentAvatars = [
+                                    ...(homeState.hero.readersAvatars ||
+                                      DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                      []),
+                                  ];
+                                  currentAvatars.push(
+                                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+                                  );
+                                  setHomeState({
+                                    ...homeState,
+                                    hero: { ...homeState.hero, readersAvatars: currentAvatars },
+                                  });
+                                }}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-bold cursor-pointer transition"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Add Avatar</span>
+                              </button>
+                            </div>
+
+                            <div className="space-y-2.5">
+                              {(
+                                homeState.hero.readersAvatars ||
+                                DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                []
+                              ).map((avatarUrl, aIdx) => (
+                                <div
+                                  key={aIdx}
+                                  className="flex items-center gap-2 p-2 bg-white rounded-xl border border-zinc-200/80 shadow-2xs"
+                                >
+                                  <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-100 ring-2 ring-zinc-200 shrink-0">
+                                    <img
+                                      src={avatarUrl}
+                                      alt={`Avatar ${aIdx + 1}`}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.src =
+                                          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80';
+                                      }}
+                                    />
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={avatarUrl}
+                                    onChange={(e) => {
+                                      const next = [
+                                        ...(homeState.hero.readersAvatars ||
+                                          DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                          []),
+                                      ];
+                                      next[aIdx] = e.target.value;
+                                      setHomeState({
+                                        ...homeState,
+                                        hero: { ...homeState.hero, readersAvatars: next },
+                                      });
+                                    }}
+                                    placeholder="Avatar Image URL"
+                                    className="flex-1 px-2.5 py-1.5 text-xs text-zinc-900 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-950 font-medium"
+                                  />
+                                  <label
+                                    className="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold cursor-pointer transition shrink-0"
+                                    title="Upload & Crop Avatar"
+                                  >
+                                    Upload
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) =>
+                                        handleImageFileSelect(e, `hero.readersAvatars.${aIdx}`)
+                                      }
+                                      className="hidden"
+                                    />
+                                  </label>
+                                  <button
+                                    type="button"
+                                    disabled={aIdx === 0}
+                                    onClick={() => {
+                                      const next = [
+                                        ...(homeState.hero.readersAvatars ||
+                                          DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                          []),
+                                      ];
+                                      const temp = next[aIdx - 1];
+                                      next[aIdx - 1] = next[aIdx];
+                                      next[aIdx] = temp;
+                                      setHomeState({
+                                        ...homeState,
+                                        hero: { ...homeState.hero, readersAvatars: next },
+                                      });
+                                    }}
+                                    className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
+                                    title="Move Up"
+                                  >
+                                    <ArrowUp className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={
+                                      aIdx ===
+                                      (homeState.hero.readersAvatars ||
+                                        DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                        []).length -
+                                        1
+                                    }
+                                    onClick={() => {
+                                      const next = [
+                                        ...(homeState.hero.readersAvatars ||
+                                          DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                          []),
+                                      ];
+                                      const temp = next[aIdx + 1];
+                                      next[aIdx + 1] = next[aIdx];
+                                      next[aIdx] = temp;
+                                      setHomeState({
+                                        ...homeState,
+                                        hero: { ...homeState.hero, readersAvatars: next },
+                                      });
+                                    }}
+                                    className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
+                                    title="Move Down"
+                                  >
+                                    <ArrowDown className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const next = (
+                                        homeState.hero.readersAvatars ||
+                                        DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                        []
+                                      ).filter((_, i) => i !== aIdx);
+                                      setHomeState({
+                                        ...homeState,
+                                        hero: { ...homeState.hero, readersAvatars: next },
+                                      });
+                                    }}
+                                    className="p-1 rounded-md text-zinc-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                    title="Remove Avatar"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
 
                         {/* Card Images */}
@@ -473,12 +758,14 @@ export default function PageEditPage() {
                             value={homeState.hero.card1Image || ''}
                             onChange={(url) => setHomeState({ ...homeState, hero: { ...homeState.hero, card1Image: url } })}
                             onUploadClick={(e) => handleImageFileSelect(e, 'hero.card1Image')}
+                            onRemove={() => setHomeState({ ...homeState, hero: { ...homeState.hero, card1Image: '' } })}
                           />
                           <ImagePickerField
                             label="Card 2 Image (Orange backdrop)"
                             value={homeState.hero.card2Image || ''}
                             onChange={(url) => setHomeState({ ...homeState, hero: { ...homeState.hero, card2Image: url } })}
                             onUploadClick={(e) => handleImageFileSelect(e, 'hero.card2Image')}
+                            onRemove={() => setHomeState({ ...homeState, hero: { ...homeState.hero, card2Image: '' } })}
                           />
                         </div>
                       </div>
@@ -606,6 +893,7 @@ export default function PageEditPage() {
                           value={homeState.whyUs.image || ''}
                           onChange={(url) => setHomeState({ ...homeState, whyUs: { ...homeState.whyUs, image: url } })}
                           onUploadClick={(e) => handleImageFileSelect(e, 'whyUs.image')}
+                          onRemove={() => setHomeState({ ...homeState, whyUs: { ...homeState.whyUs, image: '' } })}
                         />
                       </div>
                     </SectionAccordion>
@@ -755,6 +1043,13 @@ export default function PageEditPage() {
                           value={aboutState.header.description}
                           onChange={(val) => setAboutState({ ...aboutState, header: { ...aboutState.header, description: val } })}
                         />
+                        <ImagePickerField
+                          label="About Studio Feature Image"
+                          value={aboutState.header.image || ''}
+                          onChange={(url) => setAboutState({ ...aboutState, header: { ...aboutState.header, image: url } })}
+                          onUploadClick={(e) => handleImageFileSelect(e, 'about.header.image')}
+                          onRemove={() => setAboutState({ ...aboutState, header: { ...aboutState.header, image: '' } })}
+                        />
                       </div>
                     </SectionAccordion>
 
@@ -782,6 +1077,13 @@ export default function PageEditPage() {
                             }}
                           />
                         ))}
+                        <ImagePickerField
+                          label="Philosophy Workspace Image"
+                          value={aboutState.philosophy.image || ''}
+                          onChange={(url) => setAboutState({ ...aboutState, philosophy: { ...aboutState.philosophy, image: url } })}
+                          onUploadClick={(e) => handleImageFileSelect(e, 'about.philosophy.image')}
+                          onRemove={() => setAboutState({ ...aboutState, philosophy: { ...aboutState.philosophy, image: '' } })}
+                        />
                       </div>
                     </SectionAccordion>
 
@@ -958,37 +1260,41 @@ export default function PageEditPage() {
               </div>
 
               {/* Device Frame Simulation Container */}
-              <div className="flex-1 flex justify-center overflow-y-auto overflow-x-hidden min-h-0">
+              <div className="flex-1 flex justify-center items-center overflow-hidden min-h-0 relative p-0 sm:p-3 bg-zinc-100/80 select-none">
                 <div
-                  className={`bg-white rounded-2xl shadow-md border border-zinc-200 overflow-y-auto overflow-x-hidden transition-all duration-300 w-full ${
-                    deviceMode === 'tablet'
-                      ? 'max-w-[768px]'
+                  className={`bg-white transition-all duration-300 flex flex-col relative overflow-hidden ${deviceMode === 'tablet'
+                      ? 'w-[768px] max-w-full h-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg my-auto'
                       : deviceMode === 'mobile'
-                      ? 'max-w-[390px]'
-                      : 'max-w-full'
-                  }`}
+                        ? 'w-[390px] max-w-full h-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg my-auto'
+                        : 'w-full h-full max-w-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg'
+                    }`}
                 >
-                  {slug === 'home' ? (
-                    <div className="w-full flex flex-col pointer-events-auto">
-                      <HeroSection content={homeState.hero} />
-                      <AboutSection content={aboutState} />
-                      <ServicesSection content={homeState.services} />
-                      <WhyUsSection content={homeState.whyUs} />
-                      <ProcessSection content={homeState.process} />
-                      <TestimonialsSection content={homeState.testimonials} />
-                      <Footer content={homeState.cta} />
-                    </div>
-                  ) : is404 ? (
-                    <div className="w-full flex flex-col pointer-events-auto">
-                      <NotFoundContent content={notFoundState.general} isInsidePreview={true} />
-                      <Footer content={homeState.cta} showContactSection={false} />
-                    </div>
-                  ) : (
-                    <div className="w-full flex flex-col pointer-events-auto">
-                      <AboutSection content={aboutState} />
-                      <Footer content={homeState.cta} />
-                    </div>
-                  )}
+                  <div
+                    ref={editPreviewScrollRef}
+                    className="flex-1 flex flex-col w-full h-full overflow-y-auto overflow-x-hidden relative scroll-smooth bg-white"
+                  >
+                    {slug === 'home' ? (
+                      <div className="w-full flex flex-col pointer-events-auto">
+                        <HeroSection content={homeState.hero} />
+                        <AboutSection content={aboutState} />
+                        <ServicesSection content={homeState.services} />
+                        <WhyUsSection content={homeState.whyUs} />
+                        <ProcessSection content={homeState.process} />
+                        <TestimonialsSection content={homeState.testimonials} />
+                        <Footer content={homeState.cta} />
+                      </div>
+                    ) : is404 ? (
+                      <div className="w-full flex flex-col pointer-events-auto">
+                        <NotFoundContent content={notFoundState.general} isInsidePreview={true} />
+                        <Footer content={homeState.cta} showContactSection={false} />
+                      </div>
+                    ) : (
+                      <div className="w-full flex flex-col pointer-events-auto">
+                        <AboutSection content={aboutState} />
+                        <Footer content={homeState.cta} />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1014,152 +1320,3 @@ export default function PageEditPage() {
   );
 }
 
-// Reusable Section Accordion Component (Matching Reference Hierarchy)
-function SectionAccordion({
-  title,
-  subtitle,
-  isOpen,
-  onToggle,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-zinc-200/90 overflow-hidden bg-white shadow-2xs transition-all">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-zinc-50/80 transition cursor-pointer"
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
-              isOpen ? 'bg-amber-100 text-amber-900' : 'bg-zinc-100 text-zinc-500'
-            }`}
-          >
-            {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-zinc-950 font-['Plus_Jakarta_Sans']">{title}</h3>
-            <p className="text-[11px] text-zinc-400 font-normal leading-tight">{subtitle}</p>
-          </div>
-        </div>
-
-        <span className="text-xs font-semibold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md">
-          {isOpen ? 'Collapse' : 'Configure'}
-        </span>
-      </button>
-
-      {isOpen && <div className="p-4 pt-2 border-t border-zinc-100 bg-white">{children}</div>}
-    </div>
-  );
-}
-
-// Reusable Form Inputs
-function FormField({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block">
-        {label}
-      </label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3.5 py-2 text-xs font-medium text-zinc-900 bg-[#F8F9FA] hover:bg-zinc-100/70 focus:bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900 transition"
-      />
-    </div>
-  );
-}
-
-function FormTextarea({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider block">
-        {label}
-      </label>
-      <textarea
-        rows={3}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3.5 py-2 text-xs font-medium text-zinc-900 bg-[#F8F9FA] hover:bg-zinc-100/70 focus:bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900 transition resize-y"
-      />
-    </div>
-  );
-}
-
-function ImagePickerField({
-  label,
-  value,
-  onChange,
-  onUploadClick,
-}: {
-  label: string;
-  value: string;
-  onChange: (url: string) => void;
-  onUploadClick: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}) {
-  return (
-    <div className="space-y-1.5 p-3 rounded-2xl bg-zinc-50 border border-zinc-200/70">
-      <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider block">
-        {label}
-      </label>
-
-      {value && (
-        <div className="relative w-full h-28 rounded-xl overflow-hidden bg-zinc-200 border border-zinc-300/70 mb-2">
-          <img src={value} alt="Preview" className="w-full h-full object-cover" />
-          <button
-            type="button"
-            onClick={() => onChange('')}
-            className="absolute top-2 right-2 p-1 rounded-lg bg-black/60 hover:bg-black text-white text-xs cursor-pointer"
-            title="Remove image"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
-
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Paste Image URL or upload..."
-          className="flex-1 px-3 py-1.5 text-xs font-medium text-zinc-900 bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900"
-        />
-
-        <label className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-200 hover:bg-zinc-300 text-zinc-800 text-xs font-bold transition cursor-pointer shrink-0">
-          <Upload className="w-3.5 h-3.5" />
-          <span>Upload</span>
-          <input type="file" accept="image/*" onChange={onUploadClick} className="hidden" />
-        </label>
-      </div>
-    </div>
-  );
-}

@@ -6,21 +6,23 @@ import { DEFAULT_HOME_SECTIONS } from '../../../entities/page';
 
 interface WhyUsSectionProps {
   content?: PageWhyUsSection;
+  deviceMode?: 'desktop' | 'tablet' | 'mobile';
 }
 
-export function WhyUsSection({ content }: WhyUsSectionProps) {
+export function WhyUsSection({ content, deviceMode = 'desktop' }: WhyUsSectionProps) {
   const navigate = useNavigate();
   const whyUs = content || DEFAULT_HOME_SECTIONS.whyUs;
   const features = whyUs.features && whyUs.features.length > 0 ? whyUs.features : DEFAULT_HOME_SECTIONS.whyUs.features;
+  const isMobile = deviceMode === 'mobile';
 
   const icons = [ShieldCheck, Edit3, Zap];
   const colors = ['bg-emerald-500 text-white', 'bg-amber-500 text-white', 'bg-rose-500 text-white'];
 
   return (
-    <section className="scroll-mt-20 py-14 sm:py-20 lg:py-28 bg-gradient-to-b from-white via-amber-50/20 to-white relative overflow-hidden">
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
-          
+    <section className={`scroll-mt-20 ${isMobile ? 'py-10' : 'py-14 sm:py-20 lg:py-28'} bg-gradient-to-b from-white via-amber-50/20 to-white relative overflow-hidden`}>
+      <div className={`max-w-[1320px] mx-auto ${isMobile ? 'px-3 sm:px-4' : 'px-4 sm:px-6 lg:px-8'}`}>
+        <div className={`grid ${isMobile ? 'grid-cols-1 gap-8' : 'grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16'} items-center`}>
+
           {/* Left Visual Card with Sunny Yellow Backdrop */}
           <div className="lg:col-span-6 flex items-center justify-center">
             <motion.div
@@ -37,6 +39,9 @@ export function WhyUsSection({ content }: WhyUsSectionProps) {
               <img
                 src={whyUs.image || "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80"}
                 alt="CMS Editorial Specialist"
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80";
+                }}
                 className="w-full h-auto object-cover rounded-xl sm:rounded-2xl shadow-md"
               />
             </motion.div>

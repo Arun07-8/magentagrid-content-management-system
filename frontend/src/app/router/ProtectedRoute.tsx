@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useUserStore } from '../../entities/user';
+import { useAuth } from '../context/AuthContext';
 import { Spinner } from '../../shared/ui';
 import type { UserRole } from '../../shared/types';
 
@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, role, isInitialized, isLoading } = useUserStore();
+  const { isAuthenticated, role, isInitialized, isLoading } = useAuth();
   const location = useLocation();
 
   // Wait until server session restoration completes before making any redirect decisions
@@ -26,7 +26,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {
-    return <Navigate to="/admin/posts" replace />;
+    return <Navigate to="/admin/pages" replace />;
   }
 
   return <>{children}</>;

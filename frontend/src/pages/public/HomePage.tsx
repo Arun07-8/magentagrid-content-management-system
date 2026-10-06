@@ -1,26 +1,52 @@
 import { PublicLayout } from '../../widgets';
-import { usePublicPosts } from '../../entities/post';
 import { usePublicHomePage, usePublicAboutPage, useRealtimePages } from '../../entities/page';
 import { Spinner } from '../../shared/ui';
 import { HeroSection } from './components/HeroSection';
 import { AboutSection } from './components/AboutSection';
 import { ServicesSection } from './components/ServicesSection';
 import { WhyUsSection } from './components/WhyUsSection';
-import { CaseStudiesSection } from './components/CaseStudiesSection';
-import { BlogSection } from './components/BlogSection';
 import { ProcessSection } from './components/ProcessSection';
 import { TestimonialsSection } from './components/TestimonialsSection';
-import { LogoCloudSection } from './components/LogoCloudSection';
 
 export default function HomePage() {
   // Listen to real-time socket events for pages
   useRealtimePages();
 
-  const { data: posts = [], isLoading: isPostsLoading } = usePublicPosts();
-  const { data: homeSections } = usePublicHomePage();
-  const { data: aboutSections } = usePublicAboutPage();
+  const { data: homeSections, isLoading: isHomeLoading } = usePublicHomePage();
+  const { data: aboutSections, isLoading: isAboutLoading } = usePublicAboutPage();
 
-  const isLoading = isPostsLoading && !homeSections;
+  const isLoading = isHomeLoading && isAboutLoading;
+
+  // Individual section-level publish checks
+  const isHeroPublished =
+    homeSections?.hero &&
+    (homeSections.hero as any).isPublished !== false &&
+    (homeSections.hero as any).status !== 'Draft';
+
+  const isServicesPublished =
+    homeSections?.services &&
+    (homeSections.services as any).isPublished !== false &&
+    (homeSections.services as any).status !== 'Draft';
+
+  const isWhyUsPublished =
+    homeSections?.whyUs &&
+    (homeSections.whyUs as any).isPublished !== false &&
+    (homeSections.whyUs as any).status !== 'Draft';
+
+  const isProcessPublished =
+    homeSections?.process &&
+    (homeSections.process as any).isPublished !== false &&
+    (homeSections.process as any).status !== 'Draft';
+
+  const isTestimonialsPublished =
+    homeSections?.testimonials &&
+    (homeSections.testimonials as any).isPublished !== false &&
+    (homeSections.testimonials as any).status !== 'Draft';
+
+  const isAboutPublished =
+    aboutSections &&
+    (aboutSections as any).isPublished !== false &&
+    (aboutSections as any).status !== 'Draft';
 
   return (
     <PublicLayout footerContent={homeSections?.cta}>
@@ -29,34 +55,24 @@ export default function HomePage() {
       ) : (
         <div className="w-full flex flex-col overflow-x-hidden">
           {/* 1. Home / Hero Section (id="home") */}
-          <HeroSection content={homeSections?.hero} />
+          {isHeroPublished && <HeroSection content={homeSections!.hero} />}
 
-          {/* 2. About Section (id="about") */}
-          <AboutSection content={aboutSections} />
+          {/* 2. About Section (id="about") - Only shows if About page is Published */}
+          {isAboutPublished && <AboutSection content={aboutSections!} />}
 
           {/* 3. Services Section (id="services") */}
-          <ServicesSection content={homeSections?.services} />
+          {isServicesPublished && <ServicesSection content={homeSections!.services} />}
 
           {/* 4. Why Choose Us Section */}
-          <WhyUsSection content={homeSections?.whyUs} />
+          {isWhyUsPublished && <WhyUsSection content={homeSections!.whyUs} />}
 
-          {/* 5. Interactive Case Studies Showcase */}
-          <CaseStudiesSection posts={posts} />
+          {/* 5. How We Do (3-Step Methodology) */}
+          {isProcessPublished && <ProcessSection content={homeSections!.process} />}
 
-          {/* 6. Dynamic Blog & News Section (id="blog") */}
-          <BlogSection posts={posts} />
-
-          {/* 7. How We Do (3-Step Methodology) */}
-          <ProcessSection content={homeSections?.process} />
-
-          {/* 8. Reader & Editor Testimonials */}
-          <TestimonialsSection content={homeSections?.testimonials} />
-
-          {/* 9. Partner & Publication Logo Cloud */}
-          <LogoCloudSection />
+          {/* 6. Reader & Editor Testimonials */}
+          {isTestimonialsPublished && <TestimonialsSection content={homeSections!.testimonials} />}
         </div>
       )}
     </PublicLayout>
   );
 }
-

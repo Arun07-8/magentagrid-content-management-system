@@ -13,7 +13,7 @@ export const DEFAULT_PAGE_DATA: Record<string, DefaultPageDefinition> = {
     title: 'Home Page',
     isSystem: true,
     seo: {
-      metaTitle: 'Home | Modern Editorial Digital Platform',
+      metaTitle: 'Home | Grido Publishing Platform',
       metaDescription: 'A purpose-built digital publishing platform and creative editorial studio crafting stories and content architectures.',
     },
     sectionOrder: [
@@ -21,26 +21,30 @@ export const DEFAULT_PAGE_DATA: Record<string, DefaultPageDefinition> = {
       { id: 'about', type: 'about', name: 'About Preview Section', isEnabled: true },
       { id: 'services', type: 'services', name: 'Services / Capabilities', isEnabled: true },
       { id: 'whyUs', type: 'whyUs', name: 'Why Choose Us / Features', isEnabled: true },
-      { id: 'caseStudies', type: 'caseStudies', name: 'Case Studies Showcase', isEnabled: true },
-      { id: 'blog', type: 'blog', name: 'Blog / News Feed', isEnabled: true },
       { id: 'process', type: 'process', name: 'Editorial Process Steps', isEnabled: true },
       { id: 'testimonials', type: 'testimonials', name: 'Reader Testimonials', isEnabled: true },
-      { id: 'logoCloud', type: 'logoCloud', name: 'Partner Logo Cloud', isEnabled: true },
       { id: 'cta', type: 'cta', name: 'Footer & CTA Section', isEnabled: true },
     ],
     sections: {
       hero: {
-        badgeText: 'Modern Editorial CMS',
+
         heading: 'We Solve',
         highlightWord: 'Problems',
         description:
           'A purpose-built digital publishing platform and creative editorial studio. We craft stories, ideas, and content architectures that elevate digital impact.',
-        primaryButtonText: 'Explore Stories',
-        primaryButtonLink: 'blog',
+        primaryButtonText: 'Our Services',
+        primaryButtonLink: 'services',
         secondaryButtonText: 'About Studio',
         secondaryButtonLink: 'about',
         readersCount: '2.5M+',
         readersLabel: 'Active Readers',
+        readersBadgeText: '+10k',
+        readersAvatars: [
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
+        ],
+        showReadersStats: true,
         card1Image:
           'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80',
         card2Image:
@@ -144,7 +148,7 @@ export const DEFAULT_PAGE_DATA: Record<string, DefaultPageDefinition> = {
         heading: "LET'S CONNECT",
         description:
           'Have a question, feedback on an editorial piece, or a proposal for our publishing platform? Reach out directly.',
-        contactEmail: 'contact@editorial.io',
+        contactEmail: 'contact@grido.io',
         workingHours: 'Mon - Fri: 09:00 - 18:00 UTC',
         location: 'London · New York · San Francisco',
       },
@@ -154,7 +158,7 @@ export const DEFAULT_PAGE_DATA: Record<string, DefaultPageDefinition> = {
     title: 'About Page',
     isSystem: true,
     seo: {
-      metaTitle: 'About Us | Editorial Studio & Philosophy',
+      metaTitle: 'About Us | Grido Studio & Philosophy',
       metaDescription: 'Learn about our editorial philosophy, agency capabilities, mission and values.',
     },
     sectionOrder: [
@@ -283,7 +287,7 @@ export const DEFAULT_PAGE_DATA: Record<string, DefaultPageDefinition> = {
     title: 'Contact Page',
     isSystem: true,
     seo: {
-      metaTitle: 'Contact Us | Editorial Studio',
+      metaTitle: 'Contact Us | Grido Studio',
       metaDescription: 'Get in touch with the editorial team, inquiries and collaboration.',
     },
     sectionOrder: [
@@ -295,7 +299,7 @@ export const DEFAULT_PAGE_DATA: Record<string, DefaultPageDefinition> = {
         heading: "LET'S CONNECT",
         description:
           'Have a question, feedback on an editorial piece, or a proposal for our publishing platform? Reach out directly.',
-        contactEmail: 'contact@editorial.io',
+        contactEmail: 'contact@grido.io',
         workingHours: 'Mon - Fri: 09:00 - 18:00 UTC',
         location: 'London · New York · San Francisco',
       },

@@ -51,39 +51,36 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
 
     const scaledW = img.naturalWidth * zoom;
     const scaledH = img.naturalHeight * zoom;
+
     ctx.drawImage(img, -scaledW / 2, -scaledH / 2, scaledW, scaledH);
     ctx.restore();
 
-    // Clear the crop rectangle to show image through it
-    const cx = (canvas.width - cropArea.width) / 2;
-    const cy = (canvas.height - cropArea.height) / 2;
+    // Clear crop area to reveal the image clearly
+    const canvasW = canvas.width;
+    const canvasH = canvas.height;
+    const cx = (canvasW - cropArea.width) / 2;
+    const cy = (canvasH - cropArea.height) / 2;
 
-    ctx.save();
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.fillRect(cx, cy, cropArea.width, cropArea.height);
-    ctx.restore();
-
-    // Re-draw image in the crop area (to make it visible)
     ctx.save();
     ctx.beginPath();
     ctx.rect(cx, cy, cropArea.width, cropArea.height);
     ctx.clip();
 
+    ctx.clearRect(cx, cy, cropArea.width, cropArea.height);
+
     ctx.translate(canvas.width / 2 + offset.x, canvas.height / 2 + offset.y);
     ctx.rotate((rotation * Math.PI) / 180);
-    const scaledW2 = img.naturalWidth * zoom;
-    const scaledH2 = img.naturalHeight * zoom;
-    ctx.drawImage(img, -scaledW2 / 2, -scaledH2 / 2, scaledW2, scaledH2);
+    ctx.drawImage(img, -scaledW / 2, -scaledH / 2, scaledW, scaledH);
     ctx.restore();
 
-    // Draw crop border
+    // Crop box outline
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.strokeRect(cx, cy, cropArea.width, cropArea.height);
 
-    // Grid lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 0.5;
+    // Rule of thirds grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1;
     for (let i = 1; i < 3; i++) {
       ctx.beginPath();
       ctx.moveTo(cx + (cropArea.width / 3) * i, cy);
@@ -99,8 +96,10 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
     // Corner handles
     ctx.fillStyle = '#fff';
     const corners = [
-      [cx, cy], [cx + cropArea.width, cy],
-      [cx, cy + cropArea.height], [cx + cropArea.width, cy + cropArea.height],
+      [cx, cy],
+      [cx + cropArea.width, cy],
+      [cx, cy + cropArea.height],
+      [cx + cropArea.width, cy + cropArea.height],
     ];
     for (const [hx, hy] of corners) {
       ctx.beginPath();
@@ -168,30 +167,46 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
     const cx = (canvasW - cropArea.width) / 2;
     const cy = (canvasH - cropArea.height) / 2;
 
-    // Scale factors from canvas crop area to output
+    // Scale factors from preview crop area to high-res output canvas
     const scaleX = outputSize / cropArea.width;
     const scaleY = cropCanvas.height / cropArea.height;
 
+    // Fill background with white if jpeg/jpg to prevent transparent pixels turning black
+    const isPng = fileName.toLowerCase().endsWith('.png') || fileName.toLowerCase().endsWith('.webp');
+    const mimeType = isPng ? 'image/png' : 'image/jpeg';
+
+    if (!isPng) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+    }
+
+    // Exact transform mapping from preview canvas to cropCanvas
     ctx.save();
-    ctx.translate(
-      (outputSize / 2) + (offset.x - cx - cropArea.width / 2 + canvasW / 2 - canvasW / 2) * scaleX,
-      (cropCanvas.height / 2) + (offset.y - cy - cropArea.height / 2 + canvasH / 2 - canvasH / 2) * scaleY
-    );
+    ctx.scale(scaleX, scaleY);
+    ctx.translate(-cx, -cy);
+    ctx.translate(canvasW / 2 + offset.x, canvasH / 2 + offset.y);
     ctx.rotate((rotation * Math.PI) / 180);
-    const scaledW = img.naturalWidth * zoom * scaleX;
-    const scaledH = img.naturalHeight * zoom * scaleY;
+    const scaledW = img.naturalWidth * zoom;
+    const scaledH = img.naturalHeight * zoom;
     ctx.drawImage(img, -scaledW / 2, -scaledH / 2, scaledW, scaledH);
     ctx.restore();
 
-    cropCanvas.toBlob((blob) => {
-      if (!blob) { setIsProcessing(false); return; }
-      const ext = fileName.split('.').pop() || 'jpg';
-      const croppedFile = new File([blob], `cropped-${Date.now()}.${ext}`, {
-        type: blob.type || 'image/jpeg',
-      });
-      setIsProcessing(false);
-      onConfirm(croppedFile);
-    }, 'image/jpeg', 0.92);
+    cropCanvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          setIsProcessing(false);
+          return;
+        }
+        const ext = isPng ? 'png' : 'jpg';
+        const croppedFile = new File([blob], `cropped-${Date.now()}.${ext}`, {
+          type: blob.type || mimeType,
+        });
+        setIsProcessing(false);
+        onConfirm(croppedFile);
+      },
+      mimeType,
+      0.92
+    );
   };
 
   return (
@@ -235,7 +250,7 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}
+              onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}
               className="p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 transition-colors cursor-pointer"
             >
               <ZoomOut className="w-3.5 h-3.5 text-zinc-600" />
@@ -247,13 +262,13 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
                 max="3"
                 step="0.05"
                 value={zoom}
-                onChange={e => setZoom(parseFloat(e.target.value))}
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-zinc-200 rounded-full appearance-none cursor-pointer accent-zinc-900"
               />
             </div>
             <button
               type="button"
-              onClick={() => setZoom(z => Math.min(3, z + 0.1))}
+              onClick={() => setZoom((z) => Math.min(3, z + 0.1))}
               className="p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 transition-colors cursor-pointer"
             >
               <ZoomIn className="w-3.5 h-3.5 text-zinc-600" />
@@ -269,12 +284,12 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
               max="180"
               step="1"
               value={rotation}
-              onChange={e => setRotation(parseInt(e.target.value))}
+              onChange={(e) => setRotation(parseInt(e.target.value))}
               className="flex-1 h-1.5 bg-zinc-200 rounded-full appearance-none cursor-pointer accent-zinc-900"
             />
             <button
               type="button"
-              onClick={() => setRotation(r => (r + 90) % 360)}
+              onClick={() => setRotation((r) => (r + 90) % 360)}
               className="p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 transition-colors cursor-pointer"
             >
               <RotateCw className="w-3.5 h-3.5 text-zinc-600" />
@@ -287,7 +302,11 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
         <div className="flex items-center justify-between px-5 py-4 border-t border-zinc-200 gap-3">
           <button
             type="button"
-            onClick={() => { setZoom(1); setRotation(0); setOffset({ x: 0, y: 0 }); }}
+            onClick={() => {
+              setZoom(1);
+              setRotation(0);
+              setOffset({ x: 0, y: 0 });
+            }}
             className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
           >
             Reset

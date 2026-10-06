@@ -19,7 +19,7 @@ export function TestimonialsSection({ content }: TestimonialsSectionProps) {
     <section className="scroll-mt-20 py-14 sm:py-20 lg:py-28 bg-white relative">
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
-          
+
           {/* Left Visual Card with Purple Backdrop */}
           <div className="lg:col-span-5 flex items-center justify-center">
             <motion.div
@@ -35,6 +35,9 @@ export function TestimonialsSection({ content }: TestimonialsSectionProps) {
               <img
                 src={item.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80"}
                 alt={item.author}
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80";
+                }}
                 className="w-full h-auto object-cover rounded-xl sm:rounded-2xl shadow-md"
               />
             </motion.div>

@@ -66,7 +66,7 @@ export class PageService {
       };
     }
 
-    if (page.status !== 'Published') {
+    if (page.status !== 'Published' && cleanSlug !== 'home') {
       throw new AppError('Page is currently in draft mode', 403);
     }
 

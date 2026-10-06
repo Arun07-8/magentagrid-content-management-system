@@ -2,16 +2,16 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LoginForm } from '../../features/auth';
 import { Spinner } from '../../shared/ui';
-import { useUserStore } from '../../entities/user';
+import { useAuth } from '../../app/context/AuthContext';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isInitialized, isLoading } = useUserStore();
+  const { isAuthenticated, isInitialized, isLoading } = useAuth();
 
   useEffect(() => {
     if (isInitialized && isAuthenticated) {
-      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/admin/posts';
+      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/admin/pages';
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, isInitialized, navigate, location]);

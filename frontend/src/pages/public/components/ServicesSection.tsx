@@ -5,11 +5,13 @@ import { DEFAULT_HOME_SECTIONS } from '../../../entities/page';
 
 interface ServicesSectionProps {
   content?: PageServicesSection;
+  deviceMode?: 'desktop' | 'tablet' | 'mobile';
 }
 
-export function ServicesSection({ content }: ServicesSectionProps) {
+export function ServicesSection({ content, deviceMode = 'desktop' }: ServicesSectionProps) {
   const srv = content || DEFAULT_HOME_SECTIONS.services;
   const items = srv.items && srv.items.length > 0 ? srv.items : DEFAULT_HOME_SECTIONS.services.items;
+  const isMobile = deviceMode === 'mobile';
 
   const icons = [PenTool, Layout, Terminal];
   const colorConfigs = [
@@ -19,12 +21,12 @@ export function ServicesSection({ content }: ServicesSectionProps) {
   ];
 
   return (
-    <section id="services" className="scroll-mt-20 py-14 sm:py-20 lg:py-28 bg-white relative">
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
-          
+    <section id="services" className={`scroll-mt-20 ${isMobile ? 'py-10' : 'py-14 sm:py-20 lg:py-28'} bg-white relative`}>
+      <div className={`max-w-[1320px] mx-auto ${isMobile ? 'px-3 sm:px-4' : 'px-4 sm:px-6 lg:px-8'}`}>
+        <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16'} items-center`}>
+
           {/* Staggered Services Cards (Left) */}
-          <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-start">
+          <div className={`${isMobile ? 'w-full' : 'lg:col-span-8'} grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'} items-start`}>
             {items.map((item, idx) => {
               const Icon = icons[idx % icons.length];
               const cfg = colorConfigs[idx % colorConfigs.length];
@@ -38,9 +40,8 @@ export function ServicesSection({ content }: ServicesSectionProps) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: idx * 0.12 }}
-                  className={`p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-white border ${cfg.borderColor} shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-md transition-all ${
-                    isStaggered ? 'sm:mt-6 md:mt-8' : ''
-                  } ${isWide ? 'sm:col-span-2' : ''}`}
+                  className={`p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-white border ${cfg.borderColor} shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-md transition-all ${isStaggered ? 'sm:mt-6 md:mt-8' : ''
+                    } ${isWide ? 'sm:col-span-2' : ''}`}
                 >
                   <div className={`w-10 h-10 rounded-2xl border ${cfg.badgeColor} flex items-center justify-center mb-4 sm:mb-6 shadow-2xs shrink-0`}>
                     <Icon className="w-5 h-5" />

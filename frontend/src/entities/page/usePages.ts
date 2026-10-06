@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { pageApi } from './pageApi';
 import type { HomePageSections, AboutPageSections, NotFoundPageSections, PageSectionMeta, PageSEO } from './types';
-import { DEFAULT_HOME_SECTIONS, DEFAULT_ABOUT_SECTIONS, DEFAULT_NOT_FOUND_SECTIONS } from './defaultPageContent';
 import { getSocket } from '../../shared/api/socket';
 
 export const PAGE_KEYS = {
@@ -11,32 +10,72 @@ export const PAGE_KEYS = {
   adminDetail: (slug: string) => ['admin-pages', slug] as const,
 };
 
-// 1. Hook for public pages with automatic fallbacks
-export function usePublicPage<T = any>(slug: string, defaultFallback: T) {
+// 1. Hook for public pages (strictly only returns data if published)
+export function usePublicPage<T = any>(slug: string) {
   return useQuery({
     queryKey: PAGE_KEYS.public(slug),
     queryFn: async () => {
       try {
-        const data = await pageApi.getPublicPage<T>(slug);
-        return data || defaultFallback;
+        const data = await pageApi.getPublicPage<any>(slug);
+        if (!data) return null;
+        if (data.status && data.status !== 'Published') {
+          return null;
+        }
+        return data as T;
       } catch (err) {
-        return defaultFallback;
+        return null;
       }
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    staleTime: 1000 * 30, // 30 seconds cache for immediate updates
   });
 }
 
 export function usePublicHomePage() {
-  return usePublicPage<HomePageSections>('home', DEFAULT_HOME_SECTIONS);
+  return useQuery({
+    queryKey: PAGE_KEYS.public('home'),
+    queryFn: async () => {
+      try {
+        const data = await pageApi.getPublicPage<any>('home');
+        if (!data) return null;
+        return (data.sections || data) as HomePageSections;
+      } catch (err) {
+        return null;
+      }
+    },
+    staleTime: 1000 * 30,
+  });
 }
 
 export function usePublicAboutPage() {
-  return usePublicPage<AboutPageSections>('about', DEFAULT_ABOUT_SECTIONS);
+  return useQuery({
+    queryKey: PAGE_KEYS.public('about'),
+    queryFn: async () => {
+      try {
+        const data = await pageApi.getPublicPage<any>('about');
+        if (!data || (data.status && data.status !== 'Published')) return null;
+        return (data.sections || data) as AboutPageSections;
+      } catch (err) {
+        return null;
+      }
+    },
+    staleTime: 1000 * 30,
+  });
 }
 
 export function usePublicNotFoundPage() {
-  return usePublicPage<NotFoundPageSections>('404', DEFAULT_NOT_FOUND_SECTIONS);
+  return useQuery({
+    queryKey: PAGE_KEYS.public('404'),
+    queryFn: async () => {
+      try {
+        const data = await pageApi.getPublicPage<any>('404');
+        if (!data || (data.status && data.status !== 'Published')) return null;
+        return (data.sections || data) as NotFoundPageSections;
+      } catch (err) {
+        return null;
+      }
+    },
+    staleTime: 1000 * 30,
+  });
 }
 
 // 2. Hooks for Admin CMS

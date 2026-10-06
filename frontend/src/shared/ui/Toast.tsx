@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useToast, type ToastItemData } from '../../store/toast';
+import { useToast, type ToastItemData } from '../../app/context/ToastContext';
 
 interface ToastItemProps {
   toast: ToastItemData;
@@ -58,73 +58,75 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
         borderRadius: 8,
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
         minWidth: 280,
-        maxWidth: 400,
+        maxWidth: 420,
+        gap: 12,
         opacity: show ? 1 : 0,
-        transform: show ? 'translateX(0)' : 'translateX(20px)',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: show ? 'translateY(0)' : 'translateY(-12px)',
+        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
         pointerEvents: 'auto',
       }}
     >
+      {/* Icon */}
       <div
         style={{
+          width: 28,
+          height: 28,
+          borderRadius: 6,
+          backgroundColor: iconBg,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          width: 24,
-          height: 24,
-          borderRadius: '50%',
-          backgroundColor: iconBg,
-          color: iconColor,
-          marginRight: 12,
         }}
       >
         {isSuccess ? (
-          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
-            <path
-              fillRule="evenodd"
-              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-              clipRule="evenodd"
-            />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
           </svg>
         ) : (
-          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
-            <path
-              fillRule="evenodd"
-              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd"
-            />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         )}
       </div>
-      <div style={{ flex: 1, color: textColor, fontSize: 14, fontWeight: 500 }}>
+
+      {/* Message */}
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: textColor,
+          flex: 1,
+          lineHeight: '1.4',
+        }}
+      >
         {toast.message}
-      </div>
+      </span>
+
+      {/* Close button */}
       <button
-        type="button"
         onClick={onClose}
         style={{
-          background: 'none',
+          background: 'transparent',
           border: 'none',
           padding: 4,
-          marginLeft: 12,
-          color: '#9ca3af',
           cursor: 'pointer',
+          color: '#9ca3af',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          borderRadius: 4,
+          transition: 'color 0.15s',
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = '#4b5563')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
       >
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-          <path
-            fillRule="evenodd"
-            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-            clipRule="evenodd"
-          />
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
     </div>
   );
 }
-
-export default Toast;

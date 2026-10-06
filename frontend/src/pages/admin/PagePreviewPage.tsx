@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Monitor,
@@ -15,21 +15,62 @@ type DeviceMode = 'desktop' | 'tablet' | 'mobile';
 
 const DEVICE_CONFIG: Record<
   DeviceMode,
-  { label: string; icon: React.ElementType; maxWidth: string; title: string }
+  { label: string; icon: React.ElementType; frameClass: string; title: string }
 > = {
-  desktop: { label: 'Desktop', icon: Monitor, maxWidth: 'max-w-full', title: 'Desktop (100%)' },
-  tablet: { label: 'Tablet', icon: Tablet, maxWidth: 'max-w-[768px]', title: 'Tablet (768px)' },
-  mobile: { label: 'Mobile', icon: Smartphone, maxWidth: 'max-w-[390px]', title: 'Mobile (390px)' },
+  desktop: {
+    label: 'Desktop',
+    icon: Monitor,
+    frameClass: 'w-full max-w-full h-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg',
+    title: 'Desktop (100% Full Viewport)',
+  },
+  tablet: {
+    label: 'Tablet',
+    icon: Tablet,
+    frameClass: 'w-[768px] max-w-full h-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg my-auto',
+    title: 'Tablet (768px Viewport)',
+  },
+  mobile: {
+    label: 'Mobile',
+    icon: Smartphone,
+    frameClass: 'w-[390px] max-w-full h-full border border-zinc-200 shadow-sm rounded-none sm:rounded-lg my-auto',
+    title: 'Mobile (390px Viewport)',
+  },
 };
 
 export default function PagePreviewPage() {
   const navigate = useNavigate();
   const { slug = 'home' } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const initialSection = searchParams.get('section') || 'home';
 
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
+  const [activeSection, setActiveSection] = useState<string>(initialSection);
   const device = DEVICE_CONFIG[deviceMode];
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const { data: page, isLoading } = useCmsPage(slug);
+
+  useEffect(() => {
+    const sec = searchParams.get('section');
+    if (sec && sec !== activeSection) {
+      setActiveSection(sec);
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'SCROLL_TO_SECTION', section: sec },
+        '*'
+      );
+    }
+  }, [searchParams]);
+
+  const handleIframeLoad = () => {
+    if (activeSection) {
+      setTimeout(() => {
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: 'SCROLL_TO_SECTION', section: activeSection },
+          '*'
+        );
+      }, 300);
+    }
+  };
 
   return (
     <AdminLayout currentTab="pages-preview" showSearch={false}>
@@ -62,7 +103,7 @@ export default function PagePreviewPage() {
 
           {/* Right: Device switchers + Edit button */}
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-2xl border border-zinc-200/60">
+            <div className="hidden sm:flex items-center gap-1 bg-zinc-100 p-1 rounded-2xl border border-zinc-200/60">
               {(
                 Object.entries(DEVICE_CONFIG) as [
                   DeviceMode,
@@ -76,11 +117,10 @@ export default function PagePreviewPage() {
                     key={mode}
                     onClick={() => setDeviceMode(mode)}
                     title={cfg.title}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                      isActive
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${isActive
                         ? 'bg-white text-zinc-900 shadow-2xs'
                         : 'text-zinc-500 hover:text-zinc-800'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     <span className="hidden md:inline">{cfg.label}</span>
@@ -101,9 +141,9 @@ export default function PagePreviewPage() {
         </div>
 
         {/* Device Frame Simulator Canvas */}
-        <div className="w-full flex justify-center items-center flex-1 min-h-0 bg-zinc-100/70 p-4 rounded-[28px] border-2 border-zinc-200 overflow-hidden">
+        <div className="w-full flex justify-center items-center flex-1 min-h-[500px] lg:min-h-0 bg-zinc-100/80 p-2 sm:p-4 rounded-[28px] border-2 border-zinc-200 overflow-hidden relative select-none">
           <div
-            className={`w-full ${device.maxWidth} h-full bg-white rounded-3xl shadow-2xl border-2 border-zinc-300/80 overflow-hidden transition-all duration-300 mx-auto flex flex-col`}
+            className={`bg-white transition-all duration-300 mx-auto flex flex-col relative overflow-hidden ${device.frameClass}`}
           >
             {isLoading ? (
               <div className="py-24 flex justify-center items-center flex-1">
@@ -111,8 +151,10 @@ export default function PagePreviewPage() {
               </div>
             ) : (
               <iframe
-                src={`/admin/preview-frame/page/${slug}`}
+                ref={iframeRef}
+                src={`/admin/preview-frame/page/${slug}?section=${activeSection}`}
                 title="Page Preview"
+                onLoad={handleIframeLoad}
                 className="w-full h-full border-0 bg-white"
               />
             )}
@@ -122,3 +164,4 @@ export default function PagePreviewPage() {
     </AdminLayout>
   );
 }
+

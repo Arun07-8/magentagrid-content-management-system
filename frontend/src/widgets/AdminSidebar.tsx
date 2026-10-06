@@ -7,18 +7,10 @@ import {
   Globe,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useUserStore } from '../entities/user';
-import { useAuth } from '../features/auth';
+import { useAuth } from '../app/context/AuthContext';
+import { useSiteSettings } from '../entities/settings';
 
 export type AdminTab =
-  | 'posts'
-  | 'post-create'
-  | 'post-edit'
-  | 'post-preview'
-  | 'create-post'
-  | 'edit-post'
-  | 'preview-post'
-  | 'empty-posts'
   | 'pages'
   | 'pages-edit'
   | 'pages-preview';
@@ -38,8 +30,13 @@ export function AdminSidebar({
 }: AdminSidebarProps = {}) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useUserStore();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const { data: siteSettings } = useSiteSettings();
+
+  const logo = siteSettings?.logo;
+  const logoUrl = '/logo/logo.png';
+  const logoText = logo?.text || 'Grido';
+  const logoHeight = logo?.height ? Math.min(38, Math.max(20, logo.height)) : 26;
 
   const isPagesActive =
     currentTab === 'pages' ||
@@ -76,16 +73,25 @@ export function AdminSidebar({
       {/* Top Part: Logo & Menu */}
       <div className="space-y-5 sm:space-y-6">
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-1 pb-3 sm:pb-4 border-b-2 border-zinc-100 shrink-0">
+        <div className="flex items-center justify-between px-2 pb-3 sm:pb-4 border-b-2 border-zinc-100 shrink-0">
           <Link
             to="/admin/pages"
             onClick={() => onCloseMobile?.()}
-            className="flex items-center gap-2 focus:outline-none cursor-pointer group"
+            className="flex items-center pl-2 focus:outline-none cursor-pointer group min-w-0"
           >
             <img
-              src="/logo/logo.png"
-              alt="Logo"
-              className="h-8 sm:h-9 w-auto max-w-[140px] object-contain transition-transform duration-300 group-hover:scale-105"
+              src={logoUrl}
+              alt={logoText}
+              style={{
+                height: `${logoHeight}px`,
+                maxHeight: '36px',
+              }}
+              className="w-auto max-w-[135px] object-contain transition-transform duration-300 group-hover:scale-105 shrink-0"
+              onError={(e) => {
+                if (logo?.url && e.currentTarget.src !== logo.url) {
+                  e.currentTarget.src = logo.url;
+                }
+              }}
             />
           </Link>
 
@@ -118,14 +124,13 @@ export function AdminSidebar({
             <Link
               to="/admin/pages"
               onClick={() => handleNav('pages', '/admin/pages')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] transition-all cursor-pointer ${
-                isPagesActive
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] transition-all cursor-pointer ${isPagesActive
                   ? 'bg-[#F1F3F7] text-[#2A3039] font-semibold shadow-2xs border border-white/80'
                   : 'text-zinc-500 hover:text-[#2A3039] hover:bg-[#F8F9FA] font-medium'
-              }`}
+                }`}
             >
               <Layers className="w-4 h-4 shrink-0" />
-              <span>Pages CMS</span>
+              <span>Pages</span>
             </Link>
 
             <Link
@@ -153,7 +158,7 @@ export function AdminSidebar({
               {user?.username || 'Administrator'}
             </span>
             <span className="text-[11px] text-zinc-400 truncate leading-tight font-normal mt-0.5">
-              {user?.email || 'admin@editorial.io'}
+              {user?.email || 'admin@grido.io'}
             </span>
           </div>
         </div>

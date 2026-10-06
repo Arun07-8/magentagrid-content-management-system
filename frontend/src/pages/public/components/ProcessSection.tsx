@@ -13,7 +13,7 @@ export function ProcessSection({ content }: ProcessSectionProps) {
   return (
     <section className="scroll-mt-20 py-14 sm:py-20 lg:py-28 bg-gradient-to-b from-white via-zinc-50/50 to-white relative">
       <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
           {proc.badgeText && (

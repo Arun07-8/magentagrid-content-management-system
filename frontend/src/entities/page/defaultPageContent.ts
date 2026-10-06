@@ -7,12 +7,19 @@ export const DEFAULT_HOME_SECTIONS: HomePageSections = {
     highlightWord: 'Problems',
     description:
       'A purpose-built digital publishing platform and creative editorial publication. We craft stories, ideas, and content architectures that elevate digital impact.',
-    primaryButtonText: 'Explore Stories',
-    primaryButtonLink: 'blog',
+    primaryButtonText: 'Our Services',
+    primaryButtonLink: 'services',
     secondaryButtonText: 'About',
     secondaryButtonLink: 'about',
     readersCount: '2.5M+',
     readersLabel: 'Active Readers',
+    readersBadgeText: '+10k',
+    readersAvatars: [
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
+    ],
+    showReadersStats: true,
     card1Image:
       'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80',
     card2Image:
@@ -131,7 +138,7 @@ export const DEFAULT_HOME_SECTIONS: HomePageSections = {
     heading: "LET'S CONNECT",
     description:
       'Have an editorial dispatch, platform inquiry, or story pitch? Reach out directly to our publishing team.',
-    contactEmail: 'contact@editorial.io',
+    contactEmail: 'contact@grido.io',
     workingHours: 'Monday – Friday : 08 AM – 06 PM',
     location: 'New York & Global Remote',
   },
@@ -150,6 +157,8 @@ export const DEFAULT_ABOUT_SECTIONS: AboutPageSections = {
       'Structured Taxonomies',
       'Real-time Distribution',
     ],
+    image:
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
   },
   philosophy: {
     badgeText: 'OUR PHILOSOPHY',
@@ -159,6 +168,8 @@ export const DEFAULT_ABOUT_SECTIONS: AboutPageSections = {
       'We built this platform to bring simplicity and dignity back to digital publishing. By focusing strictly on the essential requirements of content creation—writing, editing, categorizing, and distributing—we provide writers and editors with a calm, predictable environment.',
       'Whether publishing industry analysis, technical essays, or daily dispatches, our publication platform ensures every article looks polished and remains comfortable to read across every device.',
     ],
+    image:
+      'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80',
   },
   capabilities: {
     badgeText: 'PLATFORM CAPABILITIES',

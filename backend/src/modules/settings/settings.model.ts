@@ -12,6 +12,7 @@ export interface ISiteLogo {
   url: string;
   text?: string;
   link?: string;
+  height?: number;
 }
 
 export interface ISiteSettings extends Document {
@@ -33,8 +34,9 @@ const settingsSchema = new Schema<ISiteSettings>(
     },
     logo: {
       url: { type: String, default: '/logo/logo.png' },
-      text: { type: String, default: 'Editorial' },
+      text: { type: String, default: 'Grido' },
       link: { type: String, default: '/' },
+      height: { type: Number, default: 32 },
     },
     navigationItems: {
       type: [
@@ -50,8 +52,7 @@ const settingsSchema = new Schema<ISiteSettings>(
         { id: 'nav-1', label: 'Home', url: '/', isExternal: false, isEnabled: true },
         { id: 'nav-2', label: 'About', url: '/about', isExternal: false, isEnabled: true },
         { id: 'nav-3', label: 'Services', url: '/services', isExternal: false, isEnabled: true },
-        { id: 'nav-4', label: 'Blog / News', url: '/blog', isExternal: false, isEnabled: true },
-        { id: 'nav-5', label: 'Contact', url: '/contact', isExternal: false, isEnabled: true },
+        { id: 'nav-4', label: 'Contact', url: '/contact', isExternal: false, isEnabled: true },
       ],
     },
     footer: {
