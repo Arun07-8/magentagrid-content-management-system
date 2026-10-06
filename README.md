@@ -82,7 +82,7 @@ MONGODB_URI=<MONGODB_URI>
 ```
 
 ### Backend `.env.example`
-The repository includes `backend/.env.example` as a safe configuration template for version control:
+The repository includes `backend/.env.example` as a configuration template containing the original database connection string:
 
 ```env
 PORT=5000
@@ -90,12 +90,12 @@ JWT_ACCESS_SECRET=your_jwt_access_secret
 JWT_REFRESH_SECRET=your_jwt_refresh_secret
 ACCESS_TOKEN_TTL=15m
 REFRESH_TOKEN_TTL_DAYS=7
-MONGODB_URI=mongodb://localhost:27017/cms
+MONGODB_URI="mongodb://arun08kkv_db_user:RnRCekbuHTnypu0W@ac-zv997xk-shard-00-00.ynf43hd.mongodb.net:27017,ac-zv997xk-shard-00-01.ynf43hd.mongodb.net:27017,ac-zv997xk-shard-00-02.ynf43hd.mongodb.net:27017/?ssl=true&replicaSet=atlas-3tgvkr-shard-0&authSource=admin&appName=Cluster0"
 ```
 
 > **Key Distinction**:
-> - `backend/.env` → Contains real local database credentials and active secrets (do not commit to Git).
-> - `backend/.env.example` → Safe configuration template committed to public version control.
+> - `backend/.env` → Contains active local database credentials and JWT secret keys (excluded from Git via `.gitignore`).
+> - `backend/.env.example` → Repository template containing configuration keys and original database URI.
 
 ### Frontend `.env`
 Create `frontend/.env` to configure the API and WebSocket server URLs:
