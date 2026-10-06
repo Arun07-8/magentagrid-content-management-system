@@ -169,14 +169,24 @@ export function Navbar() {
       if (hash === 'home') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        const timer = setTimeout(() => {
+        const scrollToTarget = () => {
           const el = document.getElementById(hash);
           if (el) {
             const top = el.getBoundingClientRect().top + window.scrollY - 75;
             window.scrollTo({ top, behavior: 'smooth' });
+            return true;
           }
-        }, 120);
-        return () => clearTimeout(timer);
+          return false;
+        };
+
+        if (!scrollToTarget()) {
+          const t1 = setTimeout(scrollToTarget, 100);
+          const t2 = setTimeout(scrollToTarget, 350);
+          return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+          };
+        }
       }
     }
   }, [location.pathname, location.hash]);
@@ -215,10 +225,20 @@ export function Navbar() {
             const top = el.getBoundingClientRect().top + window.scrollY - 75;
             window.scrollTo({ top, behavior: 'smooth' });
             window.history.replaceState(null, '', `/#${sectionKey}`);
+          } else {
+            const cleanUrl = item.url ? (item.url.startsWith('/') ? item.url : `/${item.url}`) : `/${sectionKey}`;
+            navigate(cleanUrl);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }
       } else {
-        navigate(sectionKey === 'home' ? '/' : `/#${sectionKey}`);
+        const el = document.getElementById(sectionKey);
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.scrollY - 75;
+          window.scrollTo({ top, behavior: 'smooth' });
+        } else {
+          navigate(sectionKey === 'home' ? '/' : `/#${sectionKey}`);
+        }
       }
       return;
     }

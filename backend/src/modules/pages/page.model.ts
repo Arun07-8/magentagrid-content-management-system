@@ -22,6 +22,20 @@ export interface IPage extends Document {
   seo?: IPageSEO;
   sectionOrder: IPageSectionMeta[];
   sections: Record<string, any>;
+
+  // Working / Draft Content (CMS Editor & Preview)
+  draftTitle?: string;
+  draftSeo?: IPageSEO;
+  draftSectionOrder?: IPageSectionMeta[];
+  draftSections?: Record<string, any>;
+
+  // Published Content (Public Website ONLY)
+  publishedTitle?: string;
+  publishedSeo?: IPageSEO;
+  publishedSectionOrder?: IPageSectionMeta[];
+  publishedSections?: Record<string, any>;
+  publishedAt?: Date | null;
+
   updatedBy?: {
     id: mongoose.Types.ObjectId;
     name: string;
@@ -75,6 +89,26 @@ const pageSchema = new Schema<IPage>(
       required: true,
       default: {},
     },
+
+    // Draft working fields
+    draftTitle: { type: String },
+    draftSeo: {
+      metaTitle: { type: String, default: '' },
+      metaDescription: { type: String, default: '' },
+    },
+    draftSectionOrder: { type: Schema.Types.Mixed, default: [] },
+    draftSections: { type: Schema.Types.Mixed, default: {} },
+
+    // Published snapshots
+    publishedTitle: { type: String },
+    publishedSeo: {
+      metaTitle: { type: String, default: '' },
+      metaDescription: { type: String, default: '' },
+    },
+    publishedSectionOrder: { type: Schema.Types.Mixed, default: [] },
+    publishedSections: { type: Schema.Types.Mixed, default: {} },
+    publishedAt: { type: Date, default: null },
+
     updatedBy: {
       id: {
         type: Schema.Types.ObjectId,

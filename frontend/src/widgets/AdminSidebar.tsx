@@ -153,10 +153,17 @@ export function AdminSidebar({
           <div className="w-8 h-8 rounded-full bg-[#FCD06B] border border-[#eabf55] text-zinc-950 font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
             {user?.username ? user.username[0].toUpperCase() : 'A'}
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-[14px] leading-[16.1px] font-semibold text-[#2A3039] truncate">
-              {user?.username || 'Administrator'}
-            </span>
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[14px] leading-[16.1px] font-semibold text-[#2A3039] truncate">
+                {user?.username || 'User'}
+              </span>
+              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded font-mono uppercase tracking-wider shrink-0 ${
+                user?.role?.toLowerCase() === 'editor' ? 'bg-indigo-100 text-indigo-800' : 'bg-amber-100 text-amber-900'
+              }`}>
+                {user?.role || 'Admin'}
+              </span>
+            </div>
             <span className="text-[11px] text-zinc-400 truncate leading-tight font-normal mt-0.5">
               {user?.email || 'admin@grido.io'}
             </span>

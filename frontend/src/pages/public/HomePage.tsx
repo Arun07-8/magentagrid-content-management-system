@@ -15,7 +15,7 @@ export default function HomePage() {
   const { data: homeSections, isLoading: isHomeLoading } = usePublicHomePage();
   const { data: aboutSections, isLoading: isAboutLoading } = usePublicAboutPage();
 
-  const isLoading = isHomeLoading && isAboutLoading;
+  const isLoading = isHomeLoading || isAboutLoading;
 
   // Individual section-level publish checks
   const isHeroPublished =
@@ -43,10 +43,9 @@ export default function HomePage() {
     (homeSections.testimonials as any).isPublished !== false &&
     (homeSections.testimonials as any).status !== 'Draft';
 
-  const isAboutPublished =
-    aboutSections &&
-    (aboutSections as any).isPublished !== false &&
-    (aboutSections as any).status !== 'Draft';
+  const isAboutPublished = aboutSections
+    ? (aboutSections as any).isPublished !== false && (aboutSections as any).status !== 'Draft'
+    : true;
 
   return (
     <PublicLayout footerContent={homeSections?.cta}>
@@ -57,8 +56,8 @@ export default function HomePage() {
           {/* 1. Home / Hero Section (id="home") */}
           {isHeroPublished && <HeroSection content={homeSections!.hero} />}
 
-          {/* 2. About Section (id="about") - Only shows if About page is Published */}
-          {isAboutPublished && <AboutSection content={aboutSections!} />}
+          {/* 2. About Section (id="about") */}
+          {isAboutPublished && <AboutSection content={aboutSections || undefined} />}
 
           {/* 3. Services Section (id="services") */}
           {isServicesPublished && <ServicesSection content={homeSections!.services} />}

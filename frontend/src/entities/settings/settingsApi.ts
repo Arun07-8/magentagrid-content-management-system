@@ -17,6 +17,7 @@ export const settingsApi = {
     logo?: ISiteLogo;
     navigationItems?: INavigationItem[];
     footer?: Record<string, any>;
+    isPublishing?: boolean;
   }): Promise<ISiteSettings> {
     const res = await apiClient.put<ApiResponse<ISiteSettings>>('/settings', payload);
     return res.data;

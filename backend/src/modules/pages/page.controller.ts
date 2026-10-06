@@ -53,7 +53,7 @@ export class PageController {
   async createPage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { title, slug, seo, sectionOrder, sections } = req.body;
-      const user = req.user ? { id: req.user.id, name: req.user.username } : undefined;
+      const user = req.user ? { id: req.user.id, name: req.user.username, role: req.user.role } : undefined;
 
       const newPage = await pageService.createPage(
         { title, slug, seo, sectionOrder, sections },
@@ -75,7 +75,7 @@ export class PageController {
     try {
       const { slug } = req.params;
       const { title, newSlug, status, seo, sectionOrder, sections } = req.body;
-      const user = req.user ? { id: req.user.id, name: req.user.username } : undefined;
+      const user = req.user ? { id: req.user.id, name: req.user.username, role: req.user.role } : undefined;
 
       const updatedPage = await pageService.updatePage(
         slug as string,
@@ -97,7 +97,8 @@ export class PageController {
   async deletePage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { slug } = req.params;
-      await pageService.deletePage(slug as string);
+      const user = req.user ? { id: req.user.id, name: req.user.username, role: req.user.role } : undefined;
+      await pageService.deletePage(slug as string, user);
 
       res.status(200).json({
         success: true,
@@ -112,7 +113,7 @@ export class PageController {
   async publishPage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { slug } = req.params;
-      const user = req.user ? { id: req.user.id, name: req.user.username } : undefined;
+      const user = req.user ? { id: req.user.id, name: req.user.username, role: req.user.role } : undefined;
 
       const publishedPage = await pageService.publishPage(slug as string, user);
 
@@ -130,7 +131,7 @@ export class PageController {
   async unpublishPage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { slug } = req.params;
-      const user = req.user ? { id: req.user.id, name: req.user.username } : undefined;
+      const user = req.user ? { id: req.user.id, name: req.user.username, role: req.user.role } : undefined;
 
       const unpublishedPage = await pageService.unpublishPage(slug as string, user);
 
