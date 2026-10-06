@@ -195,10 +195,10 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[calc(100dvh-1.5rem)] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-200">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-zinc-200 shrink-0">
           <div>
             <h2 className="text-sm font-bold text-zinc-900">Crop Image</h2>
             <p className="text-[11px] text-zinc-400 mt-0.5">Drag to reposition · Zoom and rotate as needed</p>
@@ -213,7 +213,7 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
         </div>
 
         {/* Canvas */}
-        <div ref={containerRef} className="bg-zinc-900 flex items-center justify-center" style={{ height: 300 }}>
+        <div ref={containerRef} className="bg-zinc-900 flex items-center justify-center overflow-hidden shrink-0" style={{ height: 260 }}>
           <canvas
             ref={canvasRef}
             width={420}
@@ -225,13 +225,12 @@ export function ImageCropModal({ imageSrc, fileName, onConfirm, onCancel }: Imag
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleMouseUp}
-            className="cursor-move touch-none"
-            style={{ maxWidth: '100%' }}
+            className="cursor-move touch-none max-w-full max-h-full object-contain"
           />
         </div>
 
         {/* Controls */}
-        <div className="px-5 py-3 border-t border-zinc-100 space-y-3">
+        <div className="px-4 sm:px-5 py-3 border-t border-zinc-100 space-y-3 overflow-y-auto flex-1">
           {/* Zoom */}
           <div className="flex items-center gap-3">
             <button

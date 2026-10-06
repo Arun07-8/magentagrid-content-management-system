@@ -70,28 +70,28 @@ export function PostView({
         </div>
 
         {/* Large Article Title */}
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-zinc-950 tracking-tight leading-[1.1] mb-6">
+        <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-zinc-950 tracking-tight leading-[1.1] mb-6 break-words font-['Plus_Jakarta_Sans']">
           {title}
         </h1>
 
         {/* Excerpt / Lead Description */}
         {description && (
-          <p className="text-lg sm:text-xl text-zinc-600 leading-relaxed max-w-3xl mb-8 font-normal">
+          <p className="text-base sm:text-lg lg:text-xl text-zinc-600 leading-relaxed max-w-3xl mb-8 font-normal break-words">
             {description}
           </p>
         )}
 
         {/* Author Byline & Share Bar */}
-        <div className="flex items-center justify-between flex-wrap gap-4 py-6 border-y border-zinc-200/80">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-full bg-zinc-950 text-white font-bold flex items-center justify-center text-sm shadow-xs">
+        <div className="flex items-center justify-between flex-wrap gap-4 py-5 sm:py-6 border-y border-zinc-200/80">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-zinc-950 text-white font-bold flex items-center justify-center text-sm shadow-xs flex-shrink-0">
               {authorInitial}
             </div>
             <div>
-              <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+              <div className="text-[10px] sm:text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                 PUBLISHED BY
               </div>
-              <div className="text-sm font-bold text-zinc-950 capitalize">{authorName}</div>
+              <div className="text-xs sm:text-sm font-bold text-zinc-950 capitalize">{authorName}</div>
             </div>
           </div>
 
@@ -99,7 +99,7 @@ export function PostView({
             <button
               type="button"
               onClick={onShare}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-zinc-200 hover:border-zinc-950 text-xs font-bold uppercase tracking-wider text-zinc-900 transition-all bg-white hover:bg-zinc-50 cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-zinc-200 hover:border-zinc-950 text-xs font-bold uppercase tracking-wider text-zinc-900 transition-all bg-white hover:bg-zinc-50 cursor-pointer shadow-2xs"
             >
               {copied ? (
                 <>
@@ -118,8 +118,8 @@ export function PostView({
       </div>
 
       {/* Hero Featured Image */}
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
-        <div className="w-full aspect-[16/9] max-h-[560px] rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-sm">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12 lg:mb-16">
+        <div className="w-full aspect-[16/10] sm:aspect-[16/9] max-h-[560px] rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-sm">
           <img
             src={displayImage}
             alt={title}
@@ -130,14 +130,14 @@ export function PostView({
       </div>
 
       {/* Main Content Body */}
-      <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="prose prose-zinc prose-lg max-w-none text-[17px] sm:text-[19px] text-zinc-800 leading-[1.8]">
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
+        <div className="prose prose-zinc prose-lg max-w-none text-base sm:text-[18px] lg:text-[19px] text-zinc-800 leading-[1.8] break-words">
           {paragraphs.map((para, idx) => {
             if (idx === 0) {
               return (
                 <p
                   key={idx}
-                  className="text-lg sm:text-xl leading-relaxed text-zinc-900 font-normal mb-8 first-letter:float-left first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:leading-none first-letter:text-zinc-950"
+                  className="text-base sm:text-lg lg:text-xl leading-relaxed text-zinc-900 font-normal mb-6 sm:mb-8 first-letter:float-left first-letter:text-4xl sm:first-letter:text-5xl first-letter:font-black first-letter:mr-2.5 sm:first-letter:mr-3 first-letter:leading-none first-letter:text-zinc-950 break-words"
                 >
                   {para}
                 </p>
@@ -146,17 +146,17 @@ export function PostView({
 
             if (idx === Math.floor(paragraphs.length / 2) && paragraphs.length > 2) {
               return (
-                <div key={idx} className="my-10">
-                  <blockquote className="p-6 sm:p-8 rounded-2xl bg-amber-50/60 border-l-4 border-amber-400 text-xl sm:text-2xl text-zinc-900 font-semibold leading-snug my-6">
+                <div key={idx} className="my-8 sm:my-10">
+                  <blockquote className="p-4 sm:p-6 lg:p-8 rounded-2xl bg-amber-50/60 border-l-4 border-amber-400 text-lg sm:text-xl lg:text-2xl text-zinc-900 font-semibold leading-snug my-4 sm:my-6 break-words">
                     "{para.slice(0, 160)}..."
                   </blockquote>
-                  <p className="mb-8 whitespace-pre-wrap">{para}</p>
+                  <p className="mb-6 sm:mb-8 whitespace-pre-wrap break-words">{para}</p>
                 </div>
               );
             }
 
             return (
-              <p key={idx} className="mb-8 whitespace-pre-wrap">
+              <p key={idx} className="mb-6 sm:mb-8 whitespace-pre-wrap break-words">
                 {para}
               </p>
             );

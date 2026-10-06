@@ -22,7 +22,7 @@ export function NotFoundContent({ content, isInsidePreview = false }: NotFoundCo
   };
 
   return (
-    <main className="flex-1 flex flex-col items-center justify-center py-12 sm:py-20 px-4 sm:px-6 lg:px-8 text-center bg-white min-h-[calc(100vh-140px)]">
+    <main className="flex-1 flex flex-col items-center justify-center py-12 sm:py-20 px-4 sm:px-6 lg:px-8 text-center bg-white min-h-[calc(100dvh-140px)]">
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -30,7 +30,7 @@ export function NotFoundContent({ content, isInsidePreview = false }: NotFoundCo
         className="max-w-xl w-full flex flex-col items-center select-none"
       >
         {/* Custom Vector Illustration matching reference image */}
-        <div className="w-full max-w-[340px] sm:max-w-[380px] aspect-[16/11] mb-5 flex items-center justify-center">
+        <div className="w-full max-w-[280px] sm:max-w-[340px] md:max-w-[380px] aspect-[16/11] mb-5 flex items-center justify-center">
           <svg
             viewBox="0 0 360 240"
             className="w-full h-full drop-shadow-sm overflow-visible"
@@ -116,12 +116,12 @@ export function NotFoundContent({ content, isInsidePreview = false }: NotFoundCo
         </div>
 
         {/* Heading in exact cyan with uppercase letter spacing */}
-        <h1 className="text-3xl sm:text-4xl md:text-[42px] font-normal text-[#38bdf8] tracking-[0.14em] uppercase font-['Plus_Jakarta_Sans'] mb-5">
+        <h1 className="text-2xl sm:text-3xl md:text-[42px] font-normal text-[#38bdf8] tracking-[0.14em] uppercase font-['Plus_Jakarta_Sans'] mb-4 sm:mb-5 break-words">
           {data.heading || 'PAGE NOT FOUND'}
         </h1>
 
         {/* 3-Line Description */}
-        <div className="space-y-1.5 text-[15px] sm:text-base text-zinc-500 font-normal leading-relaxed mb-8 max-w-md">
+        <div className="space-y-1.5 text-sm sm:text-base text-zinc-500 font-normal leading-relaxed mb-6 sm:mb-8 max-w-md break-words">
           <p>{data.line1 || 'We looked everywhere for this page.'}</p>
           <p>{data.line2 || 'Are you sure the website URL is correct?'}</p>
           <p>{data.line3 || 'Get in touch with the site owner.'}</p>
@@ -131,7 +131,7 @@ export function NotFoundContent({ content, isInsidePreview = false }: NotFoundCo
         <button
           type="button"
           onClick={handleAction}
-          className="h-11 px-8 rounded-full border-2 border-[#38bdf8] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-white text-sm sm:text-[15px] font-normal tracking-wide transition-colors duration-200 cursor-pointer inline-flex items-center justify-center select-none"
+          className="h-11 px-6 sm:px-8 rounded-full border-2 border-[#38bdf8] text-[#38bdf8] hover:bg-[#38bdf8] hover:text-white text-xs sm:text-sm md:text-[15px] font-normal tracking-wide transition-colors duration-200 cursor-pointer inline-flex items-center justify-center select-none"
         >
           {data.buttonText || 'Go Back Home'}
         </button>
