@@ -15,14 +15,32 @@ A full-stack, responsive Content Management System (CMS) built with **React + Ty
 
 The application provides seeded accounts with distinct role capabilities:
 
-| Role | Email | Password | Allowed Actions |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `arunadmin@gmail.com` | `Admin123!` | Full access: View, Create, Edit, Publish, Unpublish, Delete pages and update settings |
-| **Editor** | `aruneditor@gmail.com` | `Admin123!` | Limited access: View, Edit pages (Cannot Publish, Unpublish, or Delete) |
+### Admin
+- **Role**: Admin
+- **Username**: Admin
+- **Email**: `admingrido@gmail.com`
+- **Password**: `<ADMIN_PASSWORD>`
+- **Allowed Actions**: Full access — View, Create, Edit, Publish, Unpublish, Delete pages and manage site settings.
 
-*Alternative seeded test accounts*:
-- Admin: `adminarun@gmail.com` / `Admin123!`
-- Editor: `test.editor@example.com` / `Admin123!`
+### Editor
+- **Role**: Editor
+- **Username**: Editor
+- **Email**: `editorgrido@gmail.com`
+- **Password**: `<EDITOR_PASSWORD>`
+- **Allowed Actions**: Limited access — View, Create, Edit draft content (Cannot Publish, Unpublish, or Delete pages).
+
+> **Note**: For security, actual credentials must be kept in local secrets or created via CLI scripts and never committed directly to public repositories.
+
+---
+
+## 🤖 AI Assistance Disclosure
+
+AI assistance was used only for:
+
+- Research and understanding of CMS platform concepts and implementation approaches.
+- Investigating and resolving small development errors and issues during development.
+
+AI was not used to generate the core application architecture or major application features.
 
 ---
 
@@ -57,15 +75,19 @@ npm install
 ### 2. Environment Configuration
 
 #### Backend Environment (`backend/.env`)
-Create `backend/.env` (or use existing `.env`):
+Create a local `backend/.env` file. This file contains private local secrets and is excluded from Git via `.gitignore`. A safe template is provided in `backend/.env.example`.
+
+Documented backend environment variables:
 ```env
 PORT=5000
-JWT_ACCESS_SECRET=7vK9mQ2xL8pR4tY6nW3zA9cF5hJ1sD8e
-JWT_REFRESH_SECRET=Q4xN7kP2vM9rL6tY3wF8cZ1aH5sE0uB7
+JWT_ACCESS_SECRET=<JWT_ACCESS_SECRET>
+JWT_REFRESH_SECRET=<JWT_REFRESH_SECRET>
 ACCESS_TOKEN_TTL=15m
 REFRESH_TOKEN_TTL_DAYS=7
-MONGODB_URI="mongodb://localhost:27017/cms"
+MONGODB_URI=<MONGODB_URI>
 ```
+
+> **Security Note**: `backend/.env` is for real local secrets, while `backend/.env.example` is the safe template committed to Git. Never put real MongoDB credentials or JWT secret values into `README.md` or `.env.example`.
 
 #### Frontend Environment (`frontend/.env`)
 Create `frontend/.env`:
@@ -203,7 +225,8 @@ frontend/
 ├── src/
 │   ├── app/                   # App setup, providers & router
 │   │   ├── App.tsx            # App root
-│   │   ├── providers/         # QueryProvider & auth check
+│   │   ├── context/           # AuthContext (React Context API)
+│   │   ├── providers/         # QueryProvider & context providers
 │   │   └── router/            # AppRoutes & ProtectedRoute
 │   ├── pages/                 # Full page components
 │   │   ├── public/            # HomePage, AboutPage, DynamicCustomPage, NotFoundPage
@@ -212,7 +235,7 @@ frontend/
 │   ├── features/              # Use-case modules
 │   │   └── auth/              # LoginForm, useAuth, authApi
 │   ├── entities/              # Core business entities
-│   │   ├── user/              # userStore (Zustand) & session check
+│   │   ├── user/              # authentication/session state handled through React Context API
 │   │   ├── page/              # pageApi, usePages, defaultPageContent
 │   │   └── settings/          # settingsApi, useSettings, types
 │   └── shared/                # Primitives & utilities
@@ -227,22 +250,26 @@ frontend/
 ## 💻 Technology Stack
 
 ### Frontend
-- **React 19 + TypeScript**: UI component layer with static type checking.
-- **React Router DOM v7**: Declarative client-side routing & protected route management.
-- **TanStack Query (React Query) v5**: Asynchronous server-state management, query caching, and cache invalidation.
-- **Zustand v5**: Lightweight client authentication & session store.
-- **Tailwind CSS v4**: Responsive utility-first styling.
-- **Socket.IO Client v4**: WebSockets for real-time `pages:changed` and `settings:changed` listeners.
+- **React**: UI component layer with static type checking.
+- **TypeScript**: End-to-end typed frontend logic.
+- **React Router**: Declarative client-side routing & protected route management.
+- **TanStack Query**: Asynchronous server-state management, query caching, and cache invalidation.
+- **React Context API**: Global authentication and user session state management.
+- **Tailwind CSS**: Responsive utility-first styling.
+- **Socket.IO Client**: WebSockets for real-time `pages:changed` and `settings:changed` listeners.
 - **Lucide React**: Modern icon primitives.
-- **Vite v8**: Development server & production bundler.
+- **Vite**: Fast development server & production bundler.
 
 ### Backend
-- **Node.js + Express 5**: Core REST API application framework.
+- **Node.js**: Server runtime environment.
+- **Express**: Core REST API application framework.
 - **TypeScript**: End-to-end type safety.
-- **MongoDB + Mongoose 9**: Document database & ODM schema modeling.
-- **JSON Web Tokens (jwt) & bcryptjs**: Cryptographic authentication tokens and password hashing.
+- **MongoDB**: Document database.
+- **Mongoose**: ODM schema modeling.
+- **JWT**: Cryptographic JSON Web Tokens for authentication.
+- **bcryptjs**: Secure password hashing.
 - **cookie-parser**: Parses HttpOnly auth cookies (`cms_token`, `cms_refresh_token`).
-- **Socket.IO v4**: WebSocket server for broadcasting real-time events.
-- **Zod 4**: Schema validation for request payloads and environment variables.
+- **Socket.IO**: WebSocket server for broadcasting real-time events.
+- **Zod**: Schema validation for request payloads and environment variables.
 - **Winston**: Structured HTTP request & application logging.
 - **tsx**: TypeScript execution engine for dev server and CLI scripts.
