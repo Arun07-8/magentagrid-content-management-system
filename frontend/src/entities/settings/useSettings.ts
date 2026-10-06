@@ -43,12 +43,15 @@ export function useUpdateSettings() {
       logo?: ISiteLogo;
       navigationItems?: INavigationItem[];
       footer?: Record<string, any>;
+      isPublishing?: boolean;
     }) => settingsApi.updateSettings(payload),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.setQueryData(SETTINGS_KEY, data);
-      queryClient.setQueryData(['public-settings'], data);
       queryClient.invalidateQueries({ queryKey: SETTINGS_KEY });
-      queryClient.invalidateQueries({ queryKey: ['public-settings'] });
+      if (variables.isPublishing) {
+        queryClient.setQueryData(['public-settings'], data);
+        queryClient.invalidateQueries({ queryKey: ['public-settings'] });
+      }
     },
   });
 }
@@ -60,18 +63,29 @@ export function useRealtimeSettings() {
     const socket = getSocket();
     if (!socket) return;
 
+    // Published changes
     const handleSettingsChange = (payload: { settings?: ISiteSettings }) => {
       if (payload?.settings) {
-        queryClient.setQueryData(SETTINGS_KEY, payload.settings);
         queryClient.setQueryData(['public-settings'], payload.settings);
+        queryClient.setQueryData(SETTINGS_KEY, payload.settings);
       }
       queryClient.invalidateQueries({ queryKey: SETTINGS_KEY });
       queryClient.invalidateQueries({ queryKey: ['public-settings'] });
     };
 
+    // Internal CMS draft updates
+    const handleDraftSettingsChange = (payload: { settings?: ISiteSettings }) => {
+      if (payload?.settings) {
+        queryClient.setQueryData(SETTINGS_KEY, payload.settings);
+      }
+      queryClient.invalidateQueries({ queryKey: SETTINGS_KEY });
+    };
+
     socket.on('settings:changed', handleSettingsChange);
+    socket.on('settings:draft_updated', handleDraftSettingsChange);
     return () => {
       socket.off('settings:changed', handleSettingsChange);
+      socket.off('settings:draft_updated', handleDraftSettingsChange);
     };
   }, [queryClient]);
 }

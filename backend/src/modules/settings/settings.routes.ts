@@ -7,7 +7,7 @@ const router = Router();
 
 // Public route to read published navigation & logo
 router.get('/public', (req, res, next) =>
-  settingsController.getSettings(req, res, next)
+  settingsController.getPublicSettings(req, res, next)
 );
 
 // Protected routes (Admin & Editor)
@@ -17,7 +17,7 @@ router.get('/', (req, res, next) =>
   settingsController.getSettings(req, res, next)
 );
 
-router.put('/', requireRole('admin', 'editor'), (req, res, next) =>
+router.put('/', requireRole('admin'), (req, res, next) =>
   settingsController.updateSettings(req, res, next)
 );
 

@@ -134,10 +134,14 @@ export function useUpdatePage() {
       sectionOrder?: PageSectionMeta[];
       sections?: any;
     }) => pageApi.updatePage(slug, { title, newSlug, status, seo, sectionOrder, sections }),
-    onSuccess: (updatedPage) => {
+    onSuccess: (updatedPage, variables) => {
       queryClient.invalidateQueries({ queryKey: PAGE_KEYS.all });
       queryClient.invalidateQueries({ queryKey: PAGE_KEYS.adminDetail(updatedPage.slug) });
-      queryClient.invalidateQueries({ queryKey: PAGE_KEYS.public(updatedPage.slug) });
+
+      // ONLY invalidate public website cache if status was explicitly published or unpublished
+      if (variables.status === 'Published' || variables.status === 'Draft') {
+        queryClient.invalidateQueries({ queryKey: PAGE_KEYS.public(updatedPage.slug) });
+      }
     },
   });
 }
@@ -189,6 +193,7 @@ export function useRealtimePages() {
     const socket = getSocket();
     if (!socket) return;
 
+    // Public changes (Publish / Unpublish / Delete)
     const handlePageChange = (payload: { slug?: string }) => {
       if (payload?.slug) {
         queryClient.invalidateQueries({ queryKey: PAGE_KEYS.public(payload.slug) });
@@ -197,9 +202,19 @@ export function useRealtimePages() {
       queryClient.invalidateQueries({ queryKey: PAGE_KEYS.all });
     };
 
+    // Internal CMS Draft updates (Does NOT invalidate public queries)
+    const handleDraftUpdate = (payload: { slug?: string }) => {
+      if (payload?.slug) {
+        queryClient.invalidateQueries({ queryKey: PAGE_KEYS.adminDetail(payload.slug) });
+      }
+      queryClient.invalidateQueries({ queryKey: PAGE_KEYS.all });
+    };
+
     socket.on('pages:changed', handlePageChange);
+    socket.on('pages:draft_updated', handleDraftUpdate);
     return () => {
       socket.off('pages:changed', handlePageChange);
+      socket.off('pages:draft_updated', handleDraftUpdate);
     };
   }, [queryClient]);
 }

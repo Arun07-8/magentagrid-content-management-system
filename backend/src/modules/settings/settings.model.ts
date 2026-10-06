@@ -20,6 +20,17 @@ export interface ISiteSettings extends Document {
   logo: ISiteLogo;
   navigationItems: INavigationItem[];
   footer?: Record<string, any>;
+
+  // Draft working fields
+  draftLogo?: ISiteLogo;
+  draftNavigationItems?: INavigationItem[];
+  draftFooter?: Record<string, any>;
+
+  // Published snapshot fields
+  publishedLogo?: ISiteLogo;
+  publishedNavigationItems?: INavigationItem[];
+  publishedFooter?: Record<string, any>;
+
   updatedAt: Date;
   createdAt: Date;
 }
@@ -59,6 +70,16 @@ const settingsSchema = new Schema<ISiteSettings>(
       type: Schema.Types.Mixed,
       default: {},
     },
+
+    // Draft fields
+    draftLogo: { type: Schema.Types.Mixed },
+    draftNavigationItems: { type: Schema.Types.Mixed },
+    draftFooter: { type: Schema.Types.Mixed },
+
+    // Published fields
+    publishedLogo: { type: Schema.Types.Mixed },
+    publishedNavigationItems: { type: Schema.Types.Mixed },
+    publishedFooter: { type: Schema.Types.Mixed },
   },
   {
     timestamps: true,

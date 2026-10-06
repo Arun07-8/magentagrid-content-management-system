@@ -172,7 +172,7 @@ export default function PageEditPage() {
   // Save changes handler
   const handleSave = async (statusOverride?: 'Draft' | 'Published') => {
     const sectionsToSave = slug === 'home' ? homeState : is404 ? notFoundState : aboutState;
-    const finalStatus = statusOverride || pageStatus;
+    const finalStatus = !isAdmin ? 'Draft' : (statusOverride || pageStatus);
     try {
       await updateMutation.mutateAsync({
         slug,
@@ -192,7 +192,10 @@ export default function PageEditPage() {
   };
 
   const handleTogglePublish = async () => {
-    if (!isAdmin) return;
+    if (!isAdmin) {
+      showNotification('Publishing actions are restricted to Administrators.', 'error');
+      return;
+    }
     if (pageStatus === 'Published') {
       await unpublishMutation.mutateAsync(slug);
       setPageStatus('Draft');

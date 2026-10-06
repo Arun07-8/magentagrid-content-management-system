@@ -584,7 +584,7 @@ export default function AdminPagesPage() {
   };
 
   // Save Navbar Settings
-  const handleSaveNavbar = async () => {
+  const handleSaveNavbar = async (isPublishing: boolean = false) => {
     try {
       const normalizedNav = settingsNavItems.map((item) => ({
         id: item.id,
@@ -598,6 +598,7 @@ export default function AdminPagesPage() {
         logo: settingsLogo,
         navigationItems: normalizedNav,
         footer: footerData,
+        isPublishing,
       });
 
       const savedSnapshot = JSON.stringify({
@@ -611,7 +612,11 @@ export default function AdminPagesPage() {
         footer: JSON.stringify(footerData),
       }));
 
-      showNotification('Navbar settings & branding saved and published live!');
+      showNotification(
+        isPublishing
+          ? 'Navbar settings & branding published live!'
+          : 'Navbar draft settings saved.'
+      );
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Navbar settings.', 'error');
     }
@@ -868,18 +873,23 @@ export default function AdminPagesPage() {
   };
 
   // Save Footer & Logo Settings
-  const handleSaveFooter = async () => {
+  const handleSaveFooter = async (isPublishing: boolean = false) => {
     try {
       await updateSettingsMutation.mutateAsync({
         logo: settingsLogo,
         navigationItems: settingsNavItems,
         footer: footerData,
+        isPublishing,
       });
       setInitialSnapshots((prev) => ({
         ...prev,
         footer: JSON.stringify(footerData),
       }));
-      showNotification('Footer content & branding saved and published live!');
+      showNotification(
+        isPublishing
+          ? 'Footer content & branding published live!'
+          : 'Footer draft settings saved.'
+      );
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Footer settings.', 'error');
     }
@@ -1001,8 +1011,12 @@ export default function AdminPagesPage() {
 
   // Unified Save / Publish current active section or page
   const handlePublishCurrentSection = async () => {
+    if (!isAdmin) {
+      showNotification('Publishing changes is restricted to Administrators.', 'error');
+      return;
+    }
     if (activeSectionKey === 'navbar') {
-      await handleSaveNavbar();
+      await handleSaveNavbar(true);
     } else if (activeSectionKey === 'home') {
       await handleSaveHome('Published');
     } else if (activeSectionKey === 'services') {
@@ -1018,7 +1032,7 @@ export default function AdminPagesPage() {
     } else if (activeSectionKey === 'contact') {
       await handleSaveContact();
     } else if (activeSectionKey === 'footer') {
-      await handleSaveFooter();
+      await handleSaveFooter(true);
     } else if (activeSectionKey === '404') {
       await handleSaveNotFound('Published');
     } else {
@@ -1029,7 +1043,7 @@ export default function AdminPagesPage() {
 
   const handleSaveDraftCurrentSection = async () => {
     if (activeSectionKey === 'navbar') {
-      await handleSaveNavbar();
+      await handleSaveNavbar(false);
     } else if (activeSectionKey === 'home') {
       await handleSaveHome('Draft');
     } else if (activeSectionKey === 'services') {
@@ -1045,7 +1059,7 @@ export default function AdminPagesPage() {
     } else if (activeSectionKey === 'contact') {
       await handleSaveContact();
     } else if (activeSectionKey === 'footer') {
-      await handleSaveFooter();
+      await handleSaveFooter(false);
     } else if (activeSectionKey === '404') {
       await handleSaveNotFound('Draft');
     } else {
@@ -1381,16 +1395,14 @@ export default function AdminPagesPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                {isAdmin && (
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPageModal(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition shadow-xs cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4 text-[#FCD06B]" />
-                    <span>+ Add New Page</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowNewPageModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-[#FCD06B]" />
+                  <span>+ Add New Page</span>
+                </button>
               </div>
             </div>
 
@@ -1544,11 +1556,6 @@ export default function AdminPagesPage() {
 
                 {hasCurrentSectionChanges ? (
                   <>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200/90 text-amber-800 text-[11px] font-bold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                      Unsaved Changes
-                    </span>
-
                     <button
                       type="button"
                       disabled={isPendingSave}
@@ -1570,15 +1577,17 @@ export default function AdminPagesPage() {
                       <span>Save Draft</span>
                     </button>
 
-                    <button
-                      type="button"
-                      disabled={isPendingSave}
-                      onClick={handlePublishCurrentSection}
-                      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#52B788] hover:bg-emerald-600 text-white text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-60"
-                    >
-                      {isPendingSave ? <Spinner size="sm" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                      <span>Publish Changes</span>
-                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        disabled={isPendingSave}
+                        onClick={handlePublishCurrentSection}
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#52B788] hover:bg-emerald-600 text-white text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-60"
+                      >
+                        {isPendingSave ? <Spinner size="sm" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                        <span>Publish Changes</span>
+                      </button>
+                    )}
                   </>
                 ) : (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200/80 text-zinc-500 text-xs font-medium">
@@ -1969,11 +1978,10 @@ export default function AdminPagesPage() {
                                 },
                               }))
                             }
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                              homeSections.hero.showReadersStats !== false
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${homeSections.hero.showReadersStats !== false
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                 : 'bg-zinc-200 text-zinc-600'
-                            }`}
+                              }`}
                           >
                             {homeSections.hero.showReadersStats !== false ? (
                               <>
@@ -2136,7 +2144,7 @@ export default function AdminPagesPage() {
                                     (homeSections.hero.readersAvatars ||
                                       DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
                                       []).length -
-                                      1
+                                    1
                                   }
                                   onClick={() => {
                                     const next = [
