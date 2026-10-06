@@ -1,39 +1,289 @@
 # Content Management System (CMS) Platform
 
-A full-stack, responsive Content Management System (CMS) built with **React + TypeScript** on the frontend and **Node.js/Express + MongoDB** on the backend. Designed with role-based access control (Admin & Editor), secure JWT authentication via HttpOnly cookies with automatic token refresh, real-time cross-client data synchronization via Socket.IO, multi-device preview simulation, and a Feature-Sliced Design (FSD) architecture.
+A full-stack, responsive Content Management System (CMS) built with **React + TypeScript** on the frontend and **Node.js/Express + MongoDB** on the backend. Engineered with role-based access control (Admin & Editor), secure JWT authentication via HttpOnly cookies with automatic token refresh, real-time cross-client synchronization using Socket.IO, multi-device preview simulation, and a Feature-Sliced Design (FSD) architecture.
 
 ---
 
-## 📌 Submission Overview & Quick Links
+## 1. Project Introduction
 
-- **Git Repository**: [https://github.com/Arun07-8/magentagrid-content-management-system.git](https://github.com/Arun07-8/magentagrid-content-management-system.git)
-- **Deployment Status**: Configured for local evaluation (`http://localhost:5173` frontend & `http://localhost:5000` backend).
+**Content Management System (CMS) Platform** is a modern, production-grade publishing application designed for content creators and editorial teams.
+
+- **Frontend**: React 19, TypeScript, Tailwind CSS, TanStack Query, React Router, Socket.IO Client, Vite
+- **Backend**: Node.js, Express, TypeScript, MongoDB (Mongoose), JWT, Socket.IO, Zod, Winston
+- **Core Functionality**: Enables administrators and editors to manage site settings, build custom pages with block-based sections, stage content in draft mode, publish changes live in real-time, and view multi-device responsive previews.
 
 ---
 
-## 🔐 Test Login Credentials
+## 2. Project Overview
 
-The application provides seeded accounts with distinct role capabilities:
+The CMS Platform separates concern between a public-facing website and an authenticated Admin CMS:
 
-### Admin
-- **Role**: Admin
-- **Username**: Admin
+- **What it is**: An end-to-end headless/hybrid content management platform with real-time editorial capabilities.
+- **Main Purpose**: Provide a fast, accessible, and structured medium for publishing digital content without technical friction.
+- **Role Concept**:
+  - **Admin**: Complete system governance including page creation, editing, publishing, unpublishing, deleting, and site branding settings.
+  - **Editor**: Content creation and draft editing permissions without administrative publishing or deletion rights.
+- **Public Website vs. Admin CMS**:
+  - **Public Website**: Renders published dynamic pages, services, hero banners, methodology steps, and testimonials with live updates.
+  - **Admin CMS**: A secure management portal featuring drag-and-drop block ordering, image cropping, live canvas previews, and section toggles.
+
+---
+
+## 3. Prerequisites
+
+Ensure your development environment meets the following software requirements before installation:
+
+- **Node.js**: `v18.0.0` or higher
+- **npm**: `v9.0.0` or higher
+- **MongoDB**: Local MongoDB instance (`mongodb://localhost:27017/cms`) or a remote MongoDB Atlas connection string
+
+---
+
+## 4. Clone & Install Project
+
+First, clone the repository to your local machine:
+
+```bash
+git clone https://github.com/Arun07-8/magentagrid-content-management-system.git
+cd magentagrid-content-management-system
+```
+
+Install dependencies for both backend and frontend applications:
+
+### Backend Dependencies
+```bash
+cd backend
+npm install
+```
+
+### Frontend Dependencies
+```bash
+cd frontend
+npm install
+```
+
+---
+
+## 5. Environment Configuration
+
+Configure environment variables before starting the servers.
+
+### Backend `.env`
+Create `backend/.env` on your local environment. This file contains your actual local database connection string and secret keys. **This file is excluded from Git via `.gitignore` and must never be committed.**
+
+Documented backend environment variables structure:
+```env
+PORT=5000
+JWT_ACCESS_SECRET=<JWT_ACCESS_SECRET>
+JWT_REFRESH_SECRET=<JWT_REFRESH_SECRET>
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL_DAYS=7
+MONGODB_URI=<MONGODB_URI>
+```
+
+### Backend `.env.example`
+The repository includes `backend/.env.example` as a safe configuration template for version control:
+
+```env
+PORT=5000
+JWT_ACCESS_SECRET=your_jwt_access_secret
+JWT_REFRESH_SECRET=your_jwt_refresh_secret
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL_DAYS=7
+MONGODB_URI=mongodb://localhost:27017/cms
+```
+
+> **Key Distinction**:
+> - `backend/.env` → Contains real local database credentials and active secrets (do not commit to Git).
+> - `backend/.env.example` → Safe configuration template committed to public version control.
+
+### Frontend `.env`
+Create `frontend/.env` to configure the API and WebSocket server URLs:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_SOCKET_URL=http://localhost:5000
+```
+
+---
+
+## 6. Admin & Editor Credentials
+
+The application provides default seeded accounts with distinct role capabilities:
+
+### Admin Account
+- **Username**: `Admin`
 - **Email**: `admingrido@gmail.com`
-- **Password**: `<ADMIN_PASSWORD>`
-- **Allowed Actions**: Full access — View, Create, Edit, Publish, Unpublish, Delete pages and manage site settings.
+- **Password**: `admin@123`
+- **Allowed Actions**: Full access — View, Create, Edit, Publish, Unpublish, Delete pages and manage site-wide settings.
 
-### Editor
-- **Role**: Editor
-- **Username**: Editor
+### Editor Account
+- **Username**: `Editor`
 - **Email**: `editorgrido@gmail.com`
-- **Password**: `<EDITOR_PASSWORD>`
-- **Allowed Actions**: Limited access — View, Create, Edit draft content (Cannot Publish, Unpublish, or Delete pages).
+- **Password**: `editor@123`
+- **Allowed Actions**: Limited access — View, Create, and Edit draft content. Cannot Publish, Unpublish, or Delete pages.
 
-> **Note**: For security, actual credentials must be kept in local secrets or created via CLI scripts and never committed directly to public repositories.
+> ⚠️ **Security Warning**: When committing code to a public GitHub repository, ensure real production credentials or production database URIs are never exposed in public documentation.
 
 ---
 
-## 🤖 AI Assistance Disclosure
+## 7. CLI User Creation
+
+As an alternative to default seeded credentials, developers can create custom Admin or Editor users directly from the command line:
+
+```bash
+cd backend
+
+# Create a custom Admin user
+npm run create:admin
+
+# Create a custom Editor user
+npm run create:editor
+```
+
+### CLI Workflow & Verification:
+- **Interactive Prompts**: Requests Username, Email, and Password.
+- **Masked Input**: Password typing is masked in the terminal for security.
+- **Validation**: Enforces non-empty values, valid email syntax, and minimum 6-character passwords.
+- **Duplicate Prevention**: Checks MongoDB for existing usernames or email addresses.
+- **Password Hashing**: Automatically hashes passwords via `bcryptjs` before database insertion.
+
+---
+
+## 8. Run the Application
+
+Both backend and frontend servers must be run simultaneously.
+
+### Step 1: Start Backend Server
+```bash
+cd backend
+npm run dev
+```
+- **Backend Service**: `http://localhost:5000`
+- **Health Check Endpoint**: `http://localhost:5000/api/health`
+
+### Step 2: Start Frontend Server
+Open a second terminal window:
+```bash
+cd frontend
+npm run dev
+```
+- **Frontend Application**: `http://localhost:5173`
+
+---
+
+## 9. Login & First Use
+
+Follow this step-by-step walkthrough for evaluating the application:
+
+1. Launch backend server (`cd backend && npm run dev`).
+2. Launch frontend server (`cd frontend && npm run dev`).
+3. Open `http://localhost:5173` in your browser to view the public website.
+4. Navigate to the Admin Login page at `http://localhost:5173/admin/login`.
+5. Log in using Admin credentials (`admingrido@gmail.com` / `admin@123`) or Editor credentials (`editorgrido@gmail.com` / `editor@123`).
+6. Access the CMS dashboard to manage pages, edit section content, toggle device preview modes, or test real-time Socket.IO broadcasts.
+
+---
+
+## 10. Main Features
+
+### Public Website
+- **Home Page (`/`)**: Dynamic hero section, service items, why choose us features, process steps, reader testimonials, and contact block.
+- **About Page (`/about`)**: Detailed editorial philosophy, studio pillars, capabilities, mission/vision, and guiding principles.
+- **Services (`/services`)**: Capabilities overview with smooth anchor navigation.
+- **Contact (`/contact`)**: Editorial desk details, operating hours, and inquiry form.
+- **Dynamic Custom Pages (`/page/:slug`)**: Custom user-created pages with configurable section orders.
+- **404 Fallback (`*`)**: Configurable Not Found page.
+
+### Admin CMS Portal
+- **Page Management Dashboard (`/admin/pages`)**: Overview of all system and custom pages with status indicators (Published / Draft).
+- **Block-Level Editor (`/admin/pages/edit/:slug`)**: Granular editing of text, links, badge text, and image URLs with client-side cropping.
+- **Responsive Simulator Preview (`/admin/pages/preview/:slug`)**: Multi-device toggle for **Desktop (~1280px)**, **Tablet (~768px)**, and **Mobile (~390px)**.
+- **Draft & Publish Lifecycle**: Staging environment allowing draft editing before pushing updates to the live site.
+
+### Authentication & Security
+- **Dual JWT + HttpOnly Cookie Flow**: Short-lived access tokens (`15m`) and refresh tokens (`7d`) stored in HttpOnly cookies.
+- **Automatic Token Refresh**: Seamless session renewal on access token expiration without logging out.
+- **Role-Based Guards**: Backend middleware (`requireRole('admin')`) preventing non-admin accounts from executing protected actions.
+
+### Real-Time Synchronization
+- Socket.IO event broadcasting (`pages:changed`, `settings:changed`) invalidating TanStack Query caches across open clients instantly.
+
+---
+
+## 11. Architecture & Project Structure
+
+### Backend Architecture: Modular Monolith
+```text
+backend/
+├── src/
+│   ├── cli/                   # User creation CLI entrypoints
+│   ├── config/                # DB, Environment (Zod), and Socket.IO configuration
+│   ├── middleware/            # Auth, Role, Validation, Upload, and Error handling
+│   ├── modules/
+│   │   ├── auth/              # Auth controller, service, routes, user model
+│   │   ├── pages/             # Page controller, service, routes, page model
+│   │   └── settings/          # Site settings controller, service, routes
+│   ├── utils/                 # Logger (Winston)
+│   ├── app.ts                 # Express application & CORS configuration
+│   └── server.ts              # HTTP server & Socket.IO server startup
+```
+
+### Frontend Architecture: Feature-Sliced Design (FSD)
+```text
+frontend/
+├── src/
+│   ├── app/                   # Root providers, context, router
+│   │   ├── context/           # AuthContext (React Context API session state)
+│   │   ├── providers/         # QueryProvider & ToastProvider
+│   │   └── router/            # AppRoutes & ProtectedRoute
+│   ├── pages/                 # Public & Admin view pages
+│   ├── widgets/               # Layout components (Navbar, Footer, AdminSidebar, AdminHeader)
+│   ├── features/              # Use-case modules (auth/LoginForm, useAuth)
+│   ├── entities/              # Business entities (user session via React Context API, page, settings)
+│   └── shared/                # Primitives, API client interceptor, UI components
+```
+
+> **Note**: State management is handled cleanly via the **React Context API** and **TanStack Query**. No third-party state libraries like Zustand are used.
+
+---
+
+## 12. Technology Stack
+
+### Frontend
+- **Framework**: React 19 + TypeScript
+- **Routing**: React Router DOM v7
+- **Server State Management**: TanStack Query (React Query) v5
+- **Client Session State**: React Context API
+- **Styling**: Tailwind CSS v4
+- **Real-Time Communication**: Socket.IO Client v4
+- **Icons**: Lucide React
+- **Build Tool**: Vite v8
+
+### Backend
+- **Runtime**: Node.js + Express 5
+- **Language**: TypeScript
+- **Database**: MongoDB + Mongoose 9
+- **Authentication**: JSON Web Tokens (JWT) & bcryptjs
+- **Cookie Parsing**: cookie-parser (HttpOnly cookies)
+- **Real-Time Engine**: Socket.IO v4
+- **Validation**: Zod 4
+- **Logging**: Winston
+- **Runner**: tsx (TypeScript execute)
+
+---
+
+## 13. Testing
+
+- **TypeScript Type Checking**:
+  - Backend: `npm run build` (`tsc`)
+  - Frontend: `npm run build` (`tsc -b && vite build`)
+- **Linting & Formatting**: `npm run lint` (ESLint on frontend)
+- **API Endpoint Verification**: `/api/health` status check endpoint for backend liveness checks.
+
+---
+
+## 14. AI Assistance Disclosure
 
 AI assistance was used only for:
 
@@ -44,232 +294,9 @@ AI was not used to generate the core application architecture or major applicati
 
 ---
 
-## 🛠️ Setup & Running Instructions
+## 15. Assumptions / Notes
 
-### Prerequisites
-- **Node.js**: v18.0.0 or higher
-- **npm**: v9.0.0 or higher
-- **MongoDB**: Local MongoDB instance (`mongodb://localhost:27017/cms`) or MongoDB Atlas URI
-
-### 1. Clone Repository & Install Dependencies
-
-```bash
-git clone https://github.com/Arun07-8/magentagrid-content-management-system.git
-cd magentagrid-content-management-system
-```
-
-#### Backend Setup:
-```bash
-cd backend
-npm install
-```
-
-#### Frontend Setup:
-```bash
-cd frontend
-npm install
-```
-
----
-
-### 2. Environment Configuration
-
-#### Backend Environment (`backend/.env`)
-Create a local `backend/.env` file. This file contains private local secrets and is excluded from Git via `.gitignore`. A safe template is provided in `backend/.env.example`.
-
-Documented backend environment variables:
-```env
-PORT=5000
-JWT_ACCESS_SECRET=<JWT_ACCESS_SECRET>
-JWT_REFRESH_SECRET=<JWT_REFRESH_SECRET>
-ACCESS_TOKEN_TTL=15m
-REFRESH_TOKEN_TTL_DAYS=7
-MONGODB_URI=<MONGODB_URI>
-```
-
-> **Security Note**: `backend/.env` is for real local secrets, while `backend/.env.example` is the safe template committed to Git. Never put real MongoDB credentials or JWT secret values into `README.md` or `.env.example`.
-
-#### Frontend Environment (`frontend/.env`)
-Create `frontend/.env`:
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_SOCKET_URL=http://localhost:5000
-```
-
----
-
-### 3. CLI User Creation Scripts
-
-Create Admin or Editor accounts directly from the terminal:
-
-```bash
-cd backend
-
-# Create an Admin User
-npm run create:admin
-
-# Create an Editor User
-npm run create:editor
-```
-
-**CLI Prompt Interaction**:
-```text
-Username: newadmin
-Email: newadmin@example.com
-Password: ******** (masked)
-
-Admin user created successfully.
-Username: newadmin
-Email: newadmin@example.com
-Role: Admin
-```
-- Validates input format (non-empty username/email, email regex, min 6-char password).
-- Checks for duplicate username or email in MongoDB.
-- Automatically hashes passwords via `bcryptjs` before persisting.
-- Masked password input in terminal.
-
----
-
-### 4. Running the Application
-
-#### Step 1: Start Backend Server
-```bash
-cd backend
-npm run dev
-```
-*Backend runs on `http://localhost:5000` (Health check: `http://localhost:5000/api/health`).*
-
-#### Step 2: Start Frontend Development Server
-```bash
-cd frontend
-npm run dev
-```
-*Frontend runs on `http://localhost:5173`.*
-
----
-
-## 🌟 Main Features
-
-### Public Website
-- **Home (`/`)**: Hero banner, services capabilities, why choose us features, 3-step process methodology, testimonials, and contact section.
-- **About (`/about`)**: Structured overview of philosophy, pillars, capabilities, mission/vision, and guiding principles.
-- **Services (`/services`)**: Single-page smooth anchor routing to capabilities & solutions.
-- **Contact (`/contact`)**: Editorial desk inquiries, contact details, and response commitment.
-- **Dynamic Pages (`/page/:slug` & `/p/:slug`)**: Bespoke CMS-managed modular pages.
-- **404 Fallback (`*`)**: Custom configurable not found page.
-
-### Protected Admin CMS
-- **Pages Management (`/admin/pages`)**: Centralized dashboard to configure global Navbar, Home page, About page, Contact desk, Footer, 404 Fallback, and custom dynamic pages.
-- **Page Editor (`/admin/pages/edit/:slug`)**: Modular block-level builder with drag-and-drop section ordering, image cropping, and section enable/disable controls.
-- **Responsive Simulator Preview (`/admin/pages/preview/:slug`)**: Real-time page preview with device width toggles (**Desktop ~1280px**, **Tablet ~768px**, **Mobile ~390px**).
-- **Draft & Publish Lifecycle**: Instant toggle between draft staging and live broadcast.
-
-### Authentication & Session Management
-- **Dual JWT + HttpOnly Cookie Flow**: Short-lived access token (`15m` TTL) and refresh token (`7d` TTL) stored in HttpOnly cookies (`cms_token`, `cms_refresh_token`).
-- **Seamless Page Refresh**: `checkAuth()` verifies `/api/auth/me` on startup. If access token is expired, `apiClient` automatically initiates a single-flight `/api/auth/refresh` call and retries pending requests without logging out the user.
-- **ProtectedRoute Guard**: Prevents premature redirection to `/admin/login` while initial session check is pending by rendering a clean loading indicator.
-
-### Role-Based Authorization
-- **Admin**: Full permissions (Create, View, Edit, Publish, Unpublish, Delete).
-- **Editor**: Limited permissions (Create, View, Edit). Protected actions (Publish, Unpublish, Delete) are disabled in the UI and enforced at the backend middleware level (`requireRole('admin')` returning `403 Forbidden`).
-
-### Real-Time Synchronization
-- Socket.IO broadcasts `pages:changed` and `settings:changed` events on mutations.
-- TanStack Query automatically invalidates query caches in open browser windows without requiring manual page reloads.
-
----
-
-### Responsive Design
-- Optimized across all breakpoints: **Desktop (1920px/1440px)**, **Laptop (1366px)**, **Tablet (1024px/768px)**, **Mobile (430px/390px)**, and **Small Mobile (320px)**.
-- Slide-over mobile navigation drawer on public header (`Navbar.tsx`) and admin layout (`AdminSidebar.tsx`).
-
----
-
-## 🏗️ Architecture & Project Structure
-
-### Backend Architecture: Modular Monolith
-The backend isolates business modules with clear boundaries and centralized middleware:
-
-```
-backend/
-├── src/
-│   ├── cli/                   # User creation CLI commands
-│   │   ├── createAdmin.ts     # Admin creation entrypoint
-│   │   ├── createEditor.ts    # Editor creation entrypoint
-│   │   └── userPrompt.ts      # Shared masked input & DB creation handler
-│   ├── config/                # Environment, DB & Socket setup
-│   │   ├── env.ts             # Zod type-safe environment configuration
-│   │   ├── db.ts              # MongoDB Mongoose connection handler
-│   │   └── socket.ts          # Socket.IO server broadcaster
-│   ├── middleware/            # Express middlewares
-│   │   ├── auth.middleware.ts # JWT verification (Cookie & Bearer)
-│   │   ├── role.middleware.ts # Role guard (Admin / Editor)
-│   │   ├── validate.middleware.ts # Zod schema validator
-│   │   ├── upload.middleware.ts   # Multer file upload handler
-│   │   └── error.middleware.ts    # Centralized error middleware
-│   ├── modules/               # Domain business modules
-│   │   ├── auth/              # Auth module (User model, Controller, Service, Routes)
-│   │   ├── pages/             # Pages module (Page model, Controller, Service, Routes, Defaults)
-│   │   └── settings/          # Settings module (Settings model, Controller, Service, Routes)
-│   ├── utils/
-│   │   └── logger.ts          # Winston logger
-│   ├── app.ts                 # Express application setup & CORS configuration
-│   └── server.ts              # HTTP server & Socket.IO initialization
-```
-
-### Frontend Architecture: Feature-Sliced Design (FSD)
-The frontend separates responsibilities into layers:
-
-```
-frontend/
-├── src/
-│   ├── app/                   # App setup, providers & router
-│   │   ├── App.tsx            # App root
-│   │   ├── context/           # AuthContext (React Context API)
-│   │   ├── providers/         # QueryProvider & context providers
-│   │   └── router/            # AppRoutes & ProtectedRoute
-│   ├── pages/                 # Full page components
-│   │   ├── public/            # HomePage, AboutPage, DynamicCustomPage, NotFoundPage
-│   │   └── admin/             # AdminLoginPage, AdminPagesPage, PageEditPage, PagePreviewPage, PagePreviewFrame
-│   ├── widgets/               # Layout components (Navbar, Footer, AdminSidebar, AdminHeader, AdminLayout, PublicLayout)
-│   ├── features/              # Use-case modules
-│   │   └── auth/              # LoginForm, useAuth, authApi
-│   ├── entities/              # Core business entities
-│   │   ├── user/              # authentication/session state handled through React Context API
-│   │   ├── page/              # pageApi, usePages, defaultPageContent
-│   │   └── settings/          # settingsApi, useSettings, types
-│   └── shared/                # Primitives & utilities
-│       ├── api/               # apiClient (fetch wrapper with auto-refresh interceptor)
-│       ├── lib/               # Utility formatters & helpers
-│       ├── ui/                # Logo, Spinner, Button, Badge, Toast, ImageCropModal
-│       └── types/             # Shared TypeScript types
-```
-
----
-
-## 💻 Technology Stack
-
-### Frontend
-- **React**: UI component layer with static type checking.
-- **TypeScript**: End-to-end typed frontend logic.
-- **React Router**: Declarative client-side routing & protected route management.
-- **TanStack Query**: Asynchronous server-state management, query caching, and cache invalidation.
-- **React Context API**: Global authentication and user session state management.
-- **Tailwind CSS**: Responsive utility-first styling.
-- **Socket.IO Client**: WebSockets for real-time `pages:changed` and `settings:changed` listeners.
-- **Lucide React**: Modern icon primitives.
-- **Vite**: Fast development server & production bundler.
-
-### Backend
-- **Node.js**: Server runtime environment.
-- **Express**: Core REST API application framework.
-- **TypeScript**: End-to-end type safety.
-- **MongoDB**: Document database.
-- **Mongoose**: ODM schema modeling.
-- **JWT**: Cryptographic JSON Web Tokens for authentication.
-- **bcryptjs**: Secure password hashing.
-- **cookie-parser**: Parses HttpOnly auth cookies (`cms_token`, `cms_refresh_token`).
-- **Socket.IO**: WebSocket server for broadcasting real-time events.
-- **Zod**: Schema validation for request payloads and environment variables.
-- **Winston**: Structured HTTP request & application logging.
-- **tsx**: TypeScript execution engine for dev server and CLI scripts.
+1. **Environment Requirements**: Requires Node.js 18+ and a accessible MongoDB instance (local or MongoDB Atlas).
+2. **Session Persistence**: Authentication relies on HttpOnly cookies (`cms_token`, `cms_refresh_token`) requiring `credentials: 'include'` on client fetch calls.
+3. **Database Defaults**: Default system pages (`home`, `about`, `404`) and site settings are auto-seeded on first server boot if database collections are empty.
+4. **Credential Security**: Production database URI and secrets should remain strictly inside local `backend/.env` files and never committed to public repositories.
