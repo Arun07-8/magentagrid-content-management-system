@@ -1,38 +1,24 @@
-import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '../api/authApi';
-import { useUserStore } from '../../../entities/user';
+import { useAuth as useAuthContext } from '../../../app/context/AuthContext';
 
 export const useAuth = () => {
   const navigate = useNavigate();
-  const { setAuth, logout, user, isAuthenticated, role } = useUserStore();
+  const auth = useAuthContext();
 
-  const loginMutation = useMutation({
-    mutationFn: authApi.login,
-    onSuccess: (data) => {
-      setAuth(data.user, data.token);
-      navigate('/admin/posts');
-    },
-  });
+  const handleLogin = async (credentials: { email: string; password: string }) => {
+    const res = await auth.login(credentials);
+    navigate('/admin/pages');
+    return res;
+  };
 
   const handleLogout = async () => {
-    try {
-      await authApi.logout();
-    } catch (e) {
-      console.error('Logout error:', e);
-    } finally {
-      logout();
-      navigate('/admin/login');
-    }
+    await auth.logout();
+    navigate('/admin/login');
   };
 
   return {
-    login: loginMutation.mutateAsync,
-    isLoading: loginMutation.isPending,
-    error: loginMutation.error,
+    ...auth,
+    login: handleLogin,
     logout: handleLogout,
-    user,
-    isAuthenticated,
-    role,
   };
 };

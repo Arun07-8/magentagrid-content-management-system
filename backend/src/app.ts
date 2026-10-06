@@ -1,9 +1,9 @@
-import path from 'path';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './modules/auth/auth.routes.js';
-import postRoutes from './modules/posts/post.routes.js';
+import pageRoutes from './modules/pages/page.routes.js';
+import settingsRoutes from './modules/settings/settings.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import logger from './utils/logger.js';
 
@@ -25,9 +25,7 @@ export const createApp = () => {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 
-  // Static uploads directory
-  const uploadsPath = path.join(process.cwd(), 'uploads');
-  app.use('/uploads', express.static(uploadsPath));
+
 
   // HTTP Request Logging
   app.use((req: Request, _res: Response, next) => {
@@ -46,7 +44,8 @@ export const createApp = () => {
 
   // Module Routes
   app.use('/api/auth', authRoutes);
-  app.use('/api/posts', postRoutes);
+  app.use('/api/pages', pageRoutes);
+  app.use('/api/settings', settingsRoutes);
 
   // 404 for unhandled API routes
   app.use((req: Request, res: Response) => {

@@ -1,6 +1,7 @@
 import { Search, Menu, SlidersHorizontal } from 'lucide-react';
 
 export interface AdminHeaderProps {
+  title?: string;
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
   onToggleMobileMenu?: () => void;
@@ -8,6 +9,7 @@ export interface AdminHeaderProps {
 }
 
 export function AdminHeader({
+  title,
   searchQuery = '',
   onSearchChange,
   onToggleMobileMenu,
@@ -18,19 +20,29 @@ export function AdminHeader({
       {/* Mobile Sidebar Toggle Button */}
       {onToggleMobileMenu && (
         <button
+          type="button"
           onClick={onToggleMobileMenu}
-          className="lg:hidden w-10 h-10 rounded-full bg-white border-2 border-zinc-200 shadow-[0_6px_24px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition flex-shrink-0 cursor-pointer"
+          className="lg:hidden w-10 h-10 rounded-full bg-white border-2 border-zinc-200 shadow-[0_6px_24px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition shrink-0 cursor-pointer"
           aria-label="Open sidebar"
         >
           <Menu className="w-4 h-4 stroke-[2]" />
         </button>
       )}
 
+      {/* Optional Title on mobile when search is off */}
+      {!showSearch && title && (
+        <div className="flex-1 min-w-0">
+          <h1 className="text-base sm:text-lg font-bold text-[#2A3039] truncate">
+            {title}
+          </h1>
+        </div>
+      )}
+
       {/* Center Pill: Search input with Filter icon */}
       {showSearch && onSearchChange && (
         <div className="flex-1 max-w-xl min-w-0">
           <div className="w-full h-10 px-4 rounded-full bg-white border-2 border-zinc-200 shadow-[0_6px_24px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] flex items-center gap-2.5 transition-all focus-within:border-zinc-400 focus-within:shadow-md">
-            <Search className="w-4 h-4 text-zinc-400 stroke-[2] flex-shrink-0" />
+            <Search className="w-4 h-4 text-zinc-400 stroke-[2] shrink-0" />
             <input
               type="text"
               placeholder="Search for articles, drafts..."
@@ -41,7 +53,7 @@ export function AdminHeader({
             <button
               type="button"
               title="Filters"
-              className="text-zinc-400 hover:text-zinc-700 transition flex-shrink-0 cursor-pointer"
+              className="text-zinc-400 hover:text-zinc-700 transition shrink-0 cursor-pointer"
             >
               <SlidersHorizontal className="w-3.5 h-3.5 stroke-[1.75]" />
             </button>
@@ -51,4 +63,5 @@ export function AdminHeader({
     </header>
   );
 }
+
 

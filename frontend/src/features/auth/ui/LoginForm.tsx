@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../model/useAuth';
-import { toast } from '../../../store/toast';
+import { useToast } from '../../../app/context/ToastContext';
 
 export function LoginForm() {
   const { login, isLoading } = useAuth();
+  const { success, error } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,11 +39,11 @@ export function LoginForm() {
 
     try {
       await login({ email: cleanEmail, password });
-      toast.success('Signed in successfully!');
+      success('Signed in successfully!');
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Login failed. Please check your credentials.';
-      toast.error(message);
+      error(message);
     }
   };
 

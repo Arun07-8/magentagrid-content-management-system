@@ -4,6 +4,7 @@ import { AdminHeader } from './AdminHeader';
 
 export interface AdminLayoutProps {
   children: React.ReactNode;
+  title?: string;
   currentTab?: AdminTab;
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
@@ -12,6 +13,7 @@ export interface AdminLayoutProps {
 
 export function AdminLayout({
   children,
+  title,
   currentTab,
   searchQuery,
   onSearchChange,
@@ -35,6 +37,7 @@ export function AdminLayout({
           {showSearch ? (
             <div className="mb-4 lg:mb-5">
               <AdminHeader
+                title={title}
                 searchQuery={searchQuery}
                 onSearchChange={onSearchChange}
                 showSearch={showSearch}
@@ -44,6 +47,7 @@ export function AdminLayout({
           ) : (
             <div className="lg:hidden mb-3">
               <AdminHeader
+                title={title}
                 showSearch={false}
                 onToggleMobileMenu={() => setMobileMenuOpen(true)}
               />
@@ -51,7 +55,7 @@ export function AdminLayout({
           )}
 
           {/* Main Content Area */}
-          <main className="flex-1 flex flex-col min-w-0 lg:h-full">
+          <main className="flex-1 flex flex-col min-w-0 min-h-0 lg:h-full overflow-y-auto">
             {children}
           </main>
         </div>

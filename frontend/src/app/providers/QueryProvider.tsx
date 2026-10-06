@@ -1,38 +1,20 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useRealtimePosts } from '../../entities/post';
-import { useUserStore } from '../../entities/user';
 
-
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 1000 * 30, 
+      staleTime: 1000 * 30, // 30 seconds
     },
   },
 });
 
-function RealtimeListener({ children }: { children: React.ReactNode }) {
-  useRealtimePosts();
-  const { checkAuth } = useUserStore();
-  const hasCheckedRef = React.useRef(false);
-
-  useEffect(() => {
-    if (!hasCheckedRef.current) {
-      hasCheckedRef.current = true;
-      checkAuth();
-    }
-  }, [checkAuth]);
-
-  return <>{children}</>;
-}
-
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <RealtimeListener>{children}</RealtimeListener>
+      {children}
     </QueryClientProvider>
   );
 }

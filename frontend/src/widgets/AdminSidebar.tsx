@@ -1,25 +1,19 @@
+import { useEffect } from 'react';
 import {
-  FileText,
   LogOut,
   X,
-  Plus,
   LayoutGrid,
-  Sparkles,
+  Layers,
+  Globe,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Logo } from '../shared/ui';
-import { useUserStore } from '../entities/user';
-import { useAuth } from '../features/auth';
+import { useAuth } from '../app/context/AuthContext';
+import { useSiteSettings } from '../entities/settings';
 
 export type AdminTab =
-  | 'posts'
-  | 'post-create'
-  | 'post-edit'
-  | 'post-preview'
-  | 'create-post'
-  | 'edit-post'
-  | 'preview-post'
-  | 'empty-posts';
+  | 'pages'
+  | 'pages-edit'
+  | 'pages-preview';
 
 export interface AdminSidebarProps {
   currentTab?: AdminTab;
@@ -36,18 +30,19 @@ export function AdminSidebar({
 }: AdminSidebarProps = {}) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useUserStore();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const { data: siteSettings } = useSiteSettings();
 
-  const isPostsActive =
-    currentTab === 'posts' ||
-    location.pathname === '/admin/posts' ||
-    location.pathname === '/admin/dashboard';
+  const logo = siteSettings?.logo;
+  const logoUrl = '/logo/logo.png';
+  const logoText = logo?.text || 'Grido';
+  const logoHeight = logo?.height ? Math.min(38, Math.max(20, logo.height)) : 26;
 
-  const isCreateActive =
-    currentTab === 'post-create' ||
-    currentTab === 'create-post' ||
-    location.pathname === '/admin/posts/create';
+  const isPagesActive =
+    currentTab === 'pages' ||
+    currentTab === 'pages-edit' ||
+    currentTab === 'pages-preview' ||
+    location.pathname.startsWith('/admin/pages');
 
   const handleNav = (tabId: string, path: string) => {
     if (onNavigate) {
@@ -62,27 +57,49 @@ export function AdminSidebar({
     if (onCloseMobile) onCloseMobile();
   };
 
+  // Prevent background scroll when mobile sidebar is open
+  useEffect(() => {
+    if (mobileOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [mobileOpen]);
+
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-white rounded-[28px] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] border-2 border-zinc-200 select-none justify-between overflow-y-auto">
+    <div className="flex flex-col h-full bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 shadow-[0_12px_40px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] border-2 border-zinc-200 select-none justify-between overflow-y-auto min-h-0">
       {/* Top Part: Logo & Menu */}
-      <div className="space-y-6">
+      <div className="space-y-5 sm:space-y-6">
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-1 pb-4 border-b-2 border-zinc-100">
+        <div className="flex items-center justify-between px-2 pb-3 sm:pb-4 border-b-2 border-zinc-100 shrink-0">
           <Link
-            to="/admin/posts"
+            to="/admin/pages"
             onClick={() => onCloseMobile?.()}
-            className="flex items-center gap-2 focus:outline-none cursor-pointer group"
+            className="flex items-center pl-2 focus:outline-none cursor-pointer group min-w-0"
           >
-            <Logo imageClassName="h-7 sm:h-8" />
-            <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200/80">
-              Studio
-            </span>
+            <img
+              src={logoUrl}
+              alt={logoText}
+              style={{
+                height: `${logoHeight}px`,
+                maxHeight: '36px',
+              }}
+              className="w-auto max-w-[135px] object-contain transition-transform duration-300 group-hover:scale-105 shrink-0"
+              onError={(e) => {
+                if (logo?.url && e.currentTarget.src !== logo.url) {
+                  e.currentTarget.src = logo.url;
+                }
+              }}
+            />
           </Link>
 
           {onCloseMobile ? (
             <button
+              type="button"
               onClick={onCloseMobile}
-              className="lg:hidden w-7 h-7 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center cursor-pointer transition"
+              className="lg:hidden w-8 h-8 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center cursor-pointer transition"
               aria-label="Close menu"
             >
               <X className="w-4 h-4" />
@@ -99,55 +116,41 @@ export function AdminSidebar({
         </div>
 
         {/* MENU Section with bottom divider line */}
-        <div className="pb-5 border-b-2 border-zinc-100">
+        <div className="pb-4 sm:pb-5 border-b-2 border-zinc-100">
           <div className="px-3 mb-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
             Menu
           </div>
           <nav className="space-y-1">
             <Link
-              to="/admin/posts"
-              onClick={() => handleNav('posts', '/admin/posts')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] transition-all cursor-pointer ${
-                isPostsActive
+              to="/admin/pages"
+              onClick={() => handleNav('pages', '/admin/pages')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] transition-all cursor-pointer ${isPagesActive
                   ? 'bg-[#F1F3F7] text-[#2A3039] font-semibold shadow-2xs border border-white/80'
                   : 'text-zinc-500 hover:text-[#2A3039] hover:bg-[#F8F9FA] font-medium'
-              }`}
+                }`}
             >
-              <FileText className="w-4 h-4 flex-shrink-0" />
-              <span>Posts</span>
+              <Layers className="w-4 h-4 shrink-0" />
+              <span>Pages</span>
             </Link>
 
             <Link
-              to="/admin/posts/create"
-              onClick={() => handleNav('post-create', '/admin/posts/create')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] transition-all cursor-pointer ${
-                isCreateActive
-                  ? 'bg-[#F1F3F7] text-[#2A3039] font-semibold shadow-2xs border border-white/80'
-                  : 'text-zinc-500 hover:text-[#2A3039] hover:bg-[#F8F9FA] font-medium'
-              }`}
-            >
-              <Plus className="w-4 h-4 flex-shrink-0" />
-              <span>New Article</span>
-            </Link>
-
-            <Link
-              to="/blog"
+              to="/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[14px] leading-[16.1px] tracking-[0px] font-medium text-zinc-500 hover:text-[#2A3039] hover:bg-[#F8F9FA] transition-all cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 flex-shrink-0 text-[#FCD06B]" />
-              <span>Public Feed</span>
+              <Globe className="w-4 h-4 shrink-0 text-[#FCD06B]" />
+              <span>View Website</span>
             </Link>
           </nav>
         </div>
       </div>
 
       {/* Bottom Part: User Profile & Logout Action */}
-      <div className="pt-3 border-t-2 border-zinc-100 space-y-2">
-        {/* User Profile Pill Card (Positioned directly above Sign Out) */}
+      <div className="pt-3 border-t-2 border-zinc-100 space-y-2 shrink-0">
+        {/* User Profile Pill Card */}
         <div className="bg-[#F8F9FA] rounded-2xl p-2.5 flex items-center gap-2.5 border border-zinc-100 hover:bg-zinc-100/70 transition cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-[#FCD06B] border border-[#eabf55] text-zinc-950 font-bold flex items-center justify-center text-xs flex-shrink-0 shadow-xs">
+          <div className="w-8 h-8 rounded-full bg-[#FCD06B] border border-[#eabf55] text-zinc-950 font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
             {user?.username ? user.username[0].toUpperCase() : 'A'}
           </div>
           <div className="flex flex-col min-w-0">
@@ -155,17 +158,18 @@ export function AdminSidebar({
               {user?.username || 'Administrator'}
             </span>
             <span className="text-[11px] text-zinc-400 truncate leading-tight font-normal mt-0.5">
-              {user?.email || 'admin@magentagrid.com'}
+              {user?.email || 'admin@grido.io'}
             </span>
           </div>
         </div>
 
         {/* Sign Out Button */}
         <button
+          type="button"
           onClick={handleLogout}
           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[14px] leading-[16.1px] font-medium text-zinc-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-4 h-4 shrink-0" />
           <span>Sign Out</span>
         </button>
       </div>
@@ -175,18 +179,19 @@ export function AdminSidebar({
   return (
     <>
       {/* Desktop Floating Sidebar */}
-      <aside className="hidden lg:block w-[260px] flex-shrink-0 h-[calc(100vh-2.5rem)] sticky top-5">
+      <aside className="hidden lg:block w-[260px] shrink-0 h-[calc(100vh-2.5rem)] sticky top-5">
         {sidebarContent}
       </aside>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (Left -> Right Slide) */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex p-3">
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
+            aria-hidden="true"
           />
-          <div className="relative flex-1 flex flex-col max-w-[280px] w-full z-10">
+          <div className="relative flex-1 flex flex-col max-w-[280px] w-[82vw] z-10 h-[calc(100dvh-1.5rem)] max-h-[calc(100dvh-1.5rem)]">
             {sidebarContent}
           </div>
         </div>
@@ -196,4 +201,5 @@ export function AdminSidebar({
 }
 
 export const Sidebar = AdminSidebar;
+
 

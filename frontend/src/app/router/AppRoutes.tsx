@@ -1,96 +1,82 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from '../../pages/public/HomePage';
 import AboutPage from '../../pages/public/AboutPage';
-import BlogPage from '../../pages/public/BlogPage';
-import BlogDetailPage from '../../pages/public/BlogDetailPage';
+import DynamicCustomPage from '../../pages/public/DynamicCustomPage';
 import NotFoundPage from '../../pages/public/NotFoundPage';
 
 import AdminLoginPage from '../../pages/admin/AdminLoginPage';
-import AdminPostsPage from '../../pages/admin/AdminPostsPage';
-import PostCreatePage from '../../pages/admin/PostCreatePage';
-import PostEditPage from '../../pages/admin/PostEditPage';
-import PostPreviewPage from '../../pages/admin/PostPreviewPage';
+import AdminPagesPage from '../../pages/admin/AdminPagesPage';
+import PageEditPage from '../../pages/admin/PageEditPage';
+import PagePreviewPage from '../../pages/admin/PagePreviewPage';
+import PagePreviewFrame from '../../pages/admin/PagePreviewFrame';
 import { ProtectedRoute } from './ProtectedRoute';
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* PUBLIC ROUTES*/}
+      {/* PUBLIC CLEAN ROUTES */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/home" element={<Navigate to="/" replace />} />
       <Route path="/about" element={<AboutPage />} />
-      <Route path="/blog" element={<BlogPage />} />
-      <Route path="/blog/:id" element={<BlogDetailPage />} />
-      <Route path="/blog-detail" element={<BlogDetailPage />} />
-      <Route path="/news" element={<BlogPage />} />
-      <Route path="/news/:id" element={<BlogDetailPage />} />
+      <Route path="/services" element={<HomePage />} />
+      <Route path="/contact" element={<HomePage />} />
+      <Route path="/page/:slug" element={<DynamicCustomPage />} />
+      <Route path="/p/:slug" element={<DynamicCustomPage />} />
 
-
-      {/* ADMIN ROUTES */}
+      {/* ADMIN AUTH & REDIRECT ROUTES */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route path="/login" element={<AdminLoginPage />} />
       <Route
         path="/admin"
-        element={<Navigate to="/admin/posts" replace />}
+        element={<Navigate to="/admin/pages" replace />}
       />
+
+      {/* PAGES CMS ROUTES */}
       <Route
-        path="/admin/posts"
+        path="/admin/pages"
         element={
           <ProtectedRoute>
-            <AdminPostsPage />
+            <AdminPagesPage />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/posts/create"
+        path="/admin/pages/edit/:slug"
         element={
           <ProtectedRoute>
-            <PostCreatePage />
+            <PageEditPage />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/posts/edit/:id"
+        path="/admin/pages/edit"
         element={
           <ProtectedRoute>
-            <PostEditPage />
+            <Navigate to="/admin/pages" replace />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/posts/edit"
+        path="/admin/pages/preview/:slug"
         element={
           <ProtectedRoute>
-            <PostEditPage />
+            <PagePreviewPage />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/posts/preview/:id"
+        path="/admin/pages/preview"
         element={
           <ProtectedRoute>
-            <PostPreviewPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts/preview"
-        element={
-          <ProtectedRoute>
-            <PostPreviewPage />
+            <Navigate to="/admin/pages" replace />
           </ProtectedRoute>
         }
       />
 
-      <Route
-        path="/admin/posts/empty"
-        element={
-          <ProtectedRoute>
-            <Navigate to="/admin/posts" replace />
-          </ProtectedRoute>
-        }
-      />
+      {/* PREVIEW FRAME EMBED ROUTES FOR RESPONSIVE SIMULATION */}
+      <Route path="/admin/preview-frame/page/:slug" element={<PagePreviewFrame />} />
+      <Route path="/admin/preview-frame/page" element={<PagePreviewFrame />} />
 
-      {/* 404 UNKNOWN ROUTE*/}
+      {/* 404 UNKNOWN ROUTE */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

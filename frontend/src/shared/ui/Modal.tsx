@@ -54,7 +54,7 @@ export function Modal({
 
       {/* Dialog */}
       <div
-        className={`relative bg-white rounded-xl w-full p-5 sm:p-6 shadow-xl border border-zinc-200 z-10 animate-in fade-in zoom-in-95 duration-150 ${maxWidthClasses[maxWidth]}`}
+        className={`relative bg-white rounded-2xl w-full p-4 sm:p-6 shadow-xl border border-zinc-200 z-10 animate-in fade-in zoom-in-95 duration-150 max-h-[calc(100dvh-2rem)] overflow-y-auto ${maxWidthClasses[maxWidth]}`}
         role="dialog"
         aria-modal="true"
       >
