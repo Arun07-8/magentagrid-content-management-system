@@ -49,6 +49,7 @@ import {
   useCreatePage,
   useUpdatePage,
   useDeletePage,
+  pageApi,
   DEFAULT_HOME_SECTIONS,
   DEFAULT_ABOUT_SECTIONS,
   DEFAULT_NOT_FOUND_SECTIONS,
@@ -61,6 +62,7 @@ import {
 import {
   useSiteSettings,
   useUpdateSettings,
+  settingsApi,
   type INavigationItem,
   type ISiteLogo,
 } from '../../entities/settings';
@@ -660,12 +662,12 @@ export default function AdminPagesPage() {
 
   // Save Home Section
   const handleSaveHome = async (targetStatus?: 'Draft' | 'Published') => {
-    const nextStatus = targetStatus || homeStatus;
+    const isPublishing = targetStatus === 'Published';
     try {
       const updatedHero = {
         ...homeSections.hero,
-        isPublished: nextStatus === 'Published',
-        status: nextStatus,
+        isPublished: isPublishing,
+        status: isPublishing ? 'Published' : 'Draft',
       };
       const updatedHomeSections = {
         ...homeSections,
@@ -676,12 +678,12 @@ export default function AdminPagesPage() {
         },
       };
       setHomeSections(updatedHomeSections);
-      setHomeStatus(nextStatus);
+      if (isPublishing) setHomeStatus('Published');
 
       await updatePageMutation.mutateAsync({
         slug: 'home',
         title: 'Home Page',
-        status: 'Published',
+        status: isPublishing ? 'Published' : undefined,
         sections: updatedHomeSections,
       });
       setInitialSnapshots((prev) => ({
@@ -689,7 +691,7 @@ export default function AdminPagesPage() {
         home: JSON.stringify(updatedHero),
         contact: JSON.stringify(contactData),
       }));
-      showNotification(`Hero section saved as ${nextStatus}!`);
+      showNotification(isPublishing ? 'Hero section published live!' : 'Hero section draft saved.');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Home section.', 'error');
     }
@@ -697,13 +699,12 @@ export default function AdminPagesPage() {
 
   // Save Services Section
   const handleSaveServices = async (targetStatus?: 'Draft' | 'Published') => {
-    const currentStatus = (homeSections?.services as any)?.isPublished === false || (homeSections?.services as any)?.status === 'Draft' ? 'Draft' : 'Published';
-    const nextStatus = targetStatus || currentStatus;
+    const isPublishing = targetStatus === 'Published';
     try {
       const updatedServices = {
         ...homeSections.services,
-        isPublished: nextStatus === 'Published',
-        status: nextStatus,
+        isPublished: isPublishing,
+        status: isPublishing ? 'Published' : 'Draft',
       };
       const updatedHomeSections = {
         ...homeSections,
@@ -714,14 +715,14 @@ export default function AdminPagesPage() {
       await updatePageMutation.mutateAsync({
         slug: 'home',
         title: 'Home Page',
-        status: 'Published',
+        status: isPublishing ? 'Published' : undefined,
         sections: updatedHomeSections,
       });
       setInitialSnapshots((prev) => ({
         ...prev,
         services: JSON.stringify(updatedServices),
       }));
-      showNotification(`Services section saved as ${nextStatus}!`);
+      showNotification(isPublishing ? 'Services section published live!' : 'Services section draft saved.');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Services section.', 'error');
     }
@@ -729,13 +730,12 @@ export default function AdminPagesPage() {
 
   // Save Why Choose Us Section
   const handleSaveWhyUs = async (targetStatus?: 'Draft' | 'Published') => {
-    const currentStatus = (homeSections?.whyUs as any)?.isPublished === false || (homeSections?.whyUs as any)?.status === 'Draft' ? 'Draft' : 'Published';
-    const nextStatus = targetStatus || currentStatus;
+    const isPublishing = targetStatus === 'Published';
     try {
       const updatedWhyUs = {
         ...homeSections.whyUs,
-        isPublished: nextStatus === 'Published',
-        status: nextStatus,
+        isPublished: isPublishing,
+        status: isPublishing ? 'Published' : 'Draft',
       };
       const updatedHomeSections = {
         ...homeSections,
@@ -746,14 +746,14 @@ export default function AdminPagesPage() {
       await updatePageMutation.mutateAsync({
         slug: 'home',
         title: 'Home Page',
-        status: 'Published',
+        status: isPublishing ? 'Published' : undefined,
         sections: updatedHomeSections,
       });
       setInitialSnapshots((prev) => ({
         ...prev,
         whyUs: JSON.stringify(updatedWhyUs),
       }));
-      showNotification(`Why Choose Us section saved as ${nextStatus}!`);
+      showNotification(isPublishing ? 'Why Choose Us section published live!' : 'Why Choose Us section draft saved.');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Why Choose Us section.', 'error');
     }
@@ -761,13 +761,12 @@ export default function AdminPagesPage() {
 
   // Save Process & Methodology Section
   const handleSaveProcess = async (targetStatus?: 'Draft' | 'Published') => {
-    const currentStatus = (homeSections?.process as any)?.isPublished === false || (homeSections?.process as any)?.status === 'Draft' ? 'Draft' : 'Published';
-    const nextStatus = targetStatus || currentStatus;
+    const isPublishing = targetStatus === 'Published';
     try {
       const updatedProcess = {
         ...homeSections.process,
-        isPublished: nextStatus === 'Published',
-        status: nextStatus,
+        isPublished: isPublishing,
+        status: isPublishing ? 'Published' : 'Draft',
       };
       const updatedHomeSections = {
         ...homeSections,
@@ -778,14 +777,14 @@ export default function AdminPagesPage() {
       await updatePageMutation.mutateAsync({
         slug: 'home',
         title: 'Home Page',
-        status: 'Published',
+        status: isPublishing ? 'Published' : undefined,
         sections: updatedHomeSections,
       });
       setInitialSnapshots((prev) => ({
         ...prev,
         process: JSON.stringify(updatedProcess),
       }));
-      showNotification(`Process section saved as ${nextStatus}!`);
+      showNotification(isPublishing ? 'Process section published live!' : 'Process section draft saved.');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Process section.', 'error');
     }
@@ -793,13 +792,12 @@ export default function AdminPagesPage() {
 
   // Save Testimonials Section
   const handleSaveTestimonials = async (targetStatus?: 'Draft' | 'Published') => {
-    const currentStatus = (homeSections?.testimonials as any)?.isPublished === false || (homeSections?.testimonials as any)?.status === 'Draft' ? 'Draft' : 'Published';
-    const nextStatus = targetStatus || currentStatus;
+    const isPublishing = targetStatus === 'Published';
     try {
       const updatedTestimonials = {
         ...homeSections.testimonials,
-        isPublished: nextStatus === 'Published',
-        status: nextStatus,
+        isPublished: isPublishing,
+        status: isPublishing ? 'Published' : 'Draft',
       };
       const updatedHomeSections = {
         ...homeSections,
@@ -810,14 +808,14 @@ export default function AdminPagesPage() {
       await updatePageMutation.mutateAsync({
         slug: 'home',
         title: 'Home Page',
-        status: 'Published',
+        status: isPublishing ? 'Published' : undefined,
         sections: updatedHomeSections,
       });
       setInitialSnapshots((prev) => ({
         ...prev,
         testimonials: JSON.stringify(updatedTestimonials),
       }));
-      showNotification(`Testimonials section saved as ${nextStatus}!`);
+      showNotification(isPublishing ? 'Testimonials section published live!' : 'Testimonials section draft saved.');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Testimonials section.', 'error');
     }
@@ -825,27 +823,28 @@ export default function AdminPagesPage() {
 
   // Save About Section
   const handleSaveAbout = async (targetStatus?: 'Draft' | 'Published') => {
-    const nextStatus = targetStatus || aboutStatus;
+    const isPublishing = targetStatus === 'Published';
     try {
       await updatePageMutation.mutateAsync({
         slug: 'about',
         title: 'About Page',
-        status: nextStatus,
+        status: isPublishing ? 'Published' : undefined,
         sections: aboutSections,
       });
-      setAboutStatus(nextStatus);
+      if (isPublishing) setAboutStatus('Published');
       setInitialSnapshots((prev) => ({
         ...prev,
         about: JSON.stringify(aboutSections),
       }));
-      showNotification(`About section saved as ${nextStatus}!`);
+      showNotification(isPublishing ? 'About page published live!' : 'About page draft saved.');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save About section.', 'error');
     }
   };
 
   // Save Contact Section
-  const handleSaveContact = async () => {
+  const handleSaveContact = async (targetStatus?: 'Draft' | 'Published') => {
+    const isPublishing = targetStatus === 'Published';
     try {
       const updatedHomeSections = {
         ...homeSections,
@@ -859,14 +858,14 @@ export default function AdminPagesPage() {
       await updatePageMutation.mutateAsync({
         slug: 'home',
         title: 'Home Page',
-        status: homeStatus,
+        status: isPublishing ? 'Published' : undefined,
         sections: updatedHomeSections,
       });
       setInitialSnapshots((prev) => ({
         ...prev,
         contact: JSON.stringify(contactData),
       }));
-      showNotification('Contact section saved & published live!');
+      showNotification(isPublishing ? 'Contact section published live!' : 'Contact section draft saved.');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save Contact section.', 'error');
     }
@@ -897,20 +896,20 @@ export default function AdminPagesPage() {
 
   // Save 404 Section
   const handleSaveNotFound = async (targetStatus?: 'Draft' | 'Published') => {
-    const nextStatus = targetStatus || notFoundStatus;
+    const isPublishing = targetStatus === 'Published';
     try {
       await updatePageMutation.mutateAsync({
         slug: '404',
         title: '404 Not Found Page',
-        status: nextStatus,
+        status: isPublishing ? 'Published' : undefined,
         sections: notFoundSections,
       });
-      setNotFoundStatus(nextStatus);
+      if (isPublishing) setNotFoundStatus('Published');
       setInitialSnapshots((prev) => ({
         ...prev,
         '404': JSON.stringify(notFoundSections),
       }));
-      showNotification(`404 page saved as ${nextStatus}!`);
+      showNotification(isPublishing ? '404 page published live!' : '404 page draft saved.');
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save 404 page.', 'error');
     }
@@ -985,16 +984,16 @@ export default function AdminPagesPage() {
 
   // Save Custom Page
   const handleSaveCustomPage = async (targetStatus?: 'Draft' | 'Published') => {
-    const nextStatus = targetStatus || customPageStatus;
+    const isPublishing = targetStatus === 'Published';
     try {
       await updatePageMutation.mutateAsync({
         slug: activeSectionKey,
         title: customPageTitle.trim(),
-        status: nextStatus,
+        status: isPublishing ? 'Published' : undefined,
         sectionOrder: customSectionOrder,
         sections: customSectionsData,
       });
-      setCustomPageStatus(nextStatus);
+      if (isPublishing) setCustomPageStatus('Published');
       setInitialSnapshots((prev) => ({
         ...prev,
         [activeSectionKey]: JSON.stringify({
@@ -1003,7 +1002,7 @@ export default function AdminPagesPage() {
           sections: customSectionsData,
         }),
       }));
-      showNotification(`Page "${customPageTitle}" saved as ${nextStatus}!`);
+      showNotification(isPublishing ? `Page "${customPageTitle}" published live!` : `Page "${customPageTitle}" draft saved.`);
     } catch (err: any) {
       showNotification(err?.message || 'Failed to save page.', 'error');
     }
@@ -1138,6 +1137,56 @@ export default function AdminPagesPage() {
       showNotification('Unsaved changes discarded. Restored saved version.');
     } catch {
       showNotification('Failed to reset changes.', 'error');
+    }
+  };
+
+  // Revert draft version to currently published live version (Admin only)
+  const handleRevertDraftToPublished = async () => {
+    if (!isAdmin) {
+      showNotification('Reverting drafts is restricted to Administrators.', 'error');
+      return;
+    }
+    try {
+      if (['navbar', 'footer'].includes(activeSectionKey)) {
+        const pubSettings = await settingsApi.getPublicSettings();
+        if (activeSectionKey === 'navbar') {
+          setSettingsNavItems(pubSettings.navigationItems || []);
+          setSettingsLogo(pubSettings.logo || siteSettings?.logo);
+          await updateSettingsMutation.mutateAsync({
+            logo: pubSettings.logo,
+            navigationItems: pubSettings.navigationItems,
+            isPublishing: false,
+          });
+        } else {
+          setFooterData((prev) => ({ ...prev, ...(pubSettings.footer || {}) }));
+          await updateSettingsMutation.mutateAsync({
+            footer: pubSettings.footer,
+            isPublishing: false,
+          });
+        }
+      } else {
+        const pubSlug = ['navbar', 'home', 'about', 'contact', 'footer', '404'].includes(activeSectionKey) ? 'home' : activeSectionKey;
+        const targetSlug = activeSectionKey === 'about' ? 'about' : activeSectionKey === '404' ? '404' : pubSlug;
+        const pubPage = await pageApi.getPublicPage(targetSlug);
+        if (pubPage && pubPage.sections) {
+          if (targetSlug === 'home') {
+            setHomeSections((prev) => ({ ...prev, ...pubPage.sections }));
+          } else if (targetSlug === 'about') {
+            setAboutSections((prev) => ({ ...prev, ...pubPage.sections }));
+          } else if (targetSlug === '404') {
+            setNotFoundSections((prev) => ({ ...prev, ...pubPage.sections }));
+          } else {
+            setCustomSectionsData(pubPage.sections || {});
+          }
+          await updatePageMutation.mutateAsync({
+            slug: targetSlug,
+            sections: pubPage.sections,
+          });
+        }
+      }
+      showNotification('Draft discarded. Restored live published version!');
+    } catch (err: any) {
+      showNotification(err?.message || 'Failed to revert draft.', 'error');
     }
   };
 
@@ -1554,46 +1603,64 @@ export default function AdminPagesPage() {
                   <span>Full Preview</span>
                 </button>
 
-                {hasCurrentSectionChanges ? (
+                {hasCurrentSectionChanges && (
+                  <button
+                    type="button"
+                    disabled={isPendingSave}
+                    onClick={handleDiscardChanges}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100/80 text-rose-700 text-xs font-semibold transition cursor-pointer disabled:opacity-60"
+                    title="Discard unsaved edits and restore saved content"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
+                    <span>Reset</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  disabled={isPendingSave || !hasCurrentSectionChanges || ((activeSectionKey === 'navbar' || activeSectionKey === 'footer') && !isAdmin)}
+                  onClick={handleSaveDraftCurrentSection}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border text-xs font-bold transition ${
+                    hasCurrentSectionChanges
+                      ? 'bg-zinc-900 hover:bg-zinc-800 text-white border-zinc-900 shadow-xs cursor-pointer'
+                      : 'bg-zinc-100 border-zinc-200 text-zinc-500 cursor-not-allowed opacity-80'
+                  }`}
+                  title={
+                    (activeSectionKey === 'navbar' || activeSectionKey === 'footer') && !isAdmin
+                      ? 'Site Settings require Admin permissions'
+                      : !hasCurrentSectionChanges
+                      ? 'No unsaved changes - Draft saved'
+                      : 'Save draft changes'
+                  }
+                >
+                  {hasCurrentSectionChanges ? <Save className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                  <span>{hasCurrentSectionChanges ? 'Save Draft' : 'Draft Saved'}</span>
+                </button>
+
+                {isAdmin && (
                   <>
                     <button
                       type="button"
                       disabled={isPendingSave}
-                      onClick={handleDiscardChanges}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100/80 text-rose-700 text-xs font-semibold transition cursor-pointer disabled:opacity-60"
-                      title="Discard unsaved edits and restore saved content"
+                      onClick={handleRevertDraftToPublished}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-zinc-100 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 text-zinc-700 text-xs font-semibold transition cursor-pointer disabled:opacity-60"
+                      title="Discard current draft and restore the live published version"
                     >
-                      <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
-                      <span>Reset</span>
+                      <RotateCcw className="w-3.5 h-3.5 text-zinc-500" />
+                      <span>Discard Draft</span>
                     </button>
 
                     <button
                       type="button"
                       disabled={isPendingSave}
-                      onClick={handleSaveDraftCurrentSection}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 text-xs font-bold transition cursor-pointer disabled:opacity-60"
+                      onClick={handlePublishCurrentSection}
+                      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#52B788] hover:bg-emerald-600 text-white text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-60"
+                      title="Publish saved draft changes live to the public website"
                     >
-                      <Save className="w-3.5 h-3.5" />
-                      <span>Save Draft</span>
+                      {isPendingSave ? <Spinner size="sm" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                      <span>Publish Changes</span>
                     </button>
-
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        disabled={isPendingSave}
-                        onClick={handlePublishCurrentSection}
-                        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#52B788] hover:bg-emerald-600 text-white text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-60"
-                      >
-                        {isPendingSave ? <Spinner size="sm" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                        <span>Publish Changes</span>
-                      </button>
-                    )}
                   </>
-                ) : (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200/80 text-zinc-500 text-xs font-medium">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Up to date</span>
-                  </div>
                 )}
               </div>
             </div>
@@ -1812,16 +1879,18 @@ export default function AdminPagesPage() {
                                       <EyeOff className="w-3.5 h-3.5 text-rose-400" />
                                     )}
                                   </button>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setSettingsNavItems((prev) => prev.filter((_, i) => i !== idx))
-                                    }
-                                    className="p-1 text-zinc-400 hover:text-rose-600 cursor-pointer"
-                                    title="Delete Navigation Item"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
+                                  {isAdmin && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setSettingsNavItems((prev) => prev.filter((_, i) => i !== idx))
+                                      }
+                                      className="p-1 text-zinc-400 hover:text-rose-600 cursor-pointer"
+                                      title="Delete Navigation Item"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
                                 </div>
                               </div>
 
@@ -1979,8 +2048,8 @@ export default function AdminPagesPage() {
                               }))
                             }
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${homeSections.hero.showReadersStats !== false
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-zinc-200 text-zinc-600'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-zinc-200 text-zinc-600'
                               }`}
                           >
                             {homeSections.hero.showReadersStats !== false ? (
@@ -3043,18 +3112,20 @@ export default function AdminPagesPage() {
                                   >
                                     <ArrowDown className="w-3 h-3" />
                                   </button>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setCustomSectionOrder((prev) =>
-                                        prev.filter((s) => s.id !== sec.id)
-                                      );
-                                    }}
-                                    className="p-1 hover:bg-white/20 rounded text-rose-400 cursor-pointer"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
+                                  {isAdmin && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCustomSectionOrder((prev) =>
+                                          prev.filter((s) => s.id !== sec.id)
+                                        );
+                                      }}
+                                      className="p-1 hover:bg-white/20 rounded text-rose-400 cursor-pointer"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             );
@@ -3101,16 +3172,18 @@ export default function AdminPagesPage() {
                       )}
 
                       {/* Delete Custom Page */}
-                      <div className="pt-4 border-t border-zinc-200">
-                        <button
-                          type="button"
-                          onClick={() => setShowDeletePageModal(true)}
-                          className="w-full py-2 px-3 rounded-xl border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Delete Custom Page</span>
-                        </button>
-                      </div>
+                      {isAdmin && (
+                        <div className="pt-4 border-t border-zinc-200">
+                          <button
+                            type="button"
+                            onClick={() => setShowDeletePageModal(true)}
+                            className="w-full py-2 px-3 rounded-xl border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete Custom Page</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 

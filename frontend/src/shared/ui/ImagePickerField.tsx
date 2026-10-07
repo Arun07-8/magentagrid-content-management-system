@@ -1,5 +1,6 @@
 import React from 'react';
 import { Upload, Trash2 } from 'lucide-react';
+import { useAuth } from '../../app/context/AuthContext';
 
 export interface ImagePickerFieldProps {
   label: string;
@@ -20,6 +21,8 @@ export function ImagePickerField({
   className = '',
   placeholder = 'https://example.com/image.jpg',
 }: ImagePickerFieldProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
   const safeVal = value || '';
 
   return (
@@ -31,7 +34,7 @@ export function ImagePickerField({
         {safeVal ? (
           <div className="relative w-14 h-14 rounded-xl border border-zinc-200 overflow-hidden bg-zinc-100 shrink-0 group">
             <img src={safeVal} alt="Preview" className="w-full h-full object-cover" />
-            {onRemove && (
+            {onRemove && isAdmin && (
               <button
                 type="button"
                 onClick={onRemove}

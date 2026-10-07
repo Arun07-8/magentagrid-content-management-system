@@ -730,24 +730,26 @@ export default function PageEditPage() {
                                   >
                                     <ArrowDown className="w-3.5 h-3.5" />
                                   </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const next = (
-                                        homeState.hero.readersAvatars ||
-                                        DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
-                                        []
-                                      ).filter((_, i) => i !== aIdx);
-                                      setHomeState({
-                                        ...homeState,
-                                        hero: { ...homeState.hero, readersAvatars: next },
-                                      });
-                                    }}
-                                    className="p-1 rounded-md text-zinc-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
-                                    title="Remove Avatar"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
+                                  {isAdmin && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const next = (
+                                          homeState.hero.readersAvatars ||
+                                          DEFAULT_HOME_SECTIONS.hero.readersAvatars ||
+                                          []
+                                        ).filter((_, i) => i !== aIdx);
+                                        setHomeState({
+                                          ...homeState,
+                                          hero: { ...homeState.hero, readersAvatars: next },
+                                        });
+                                      }}
+                                      className="p-1 rounded-md text-zinc-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                      title="Remove Avatar"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
                                 </div>
                               ))}
                             </div>
